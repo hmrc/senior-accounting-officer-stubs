@@ -22,7 +22,7 @@ lazy val it = project
   .settings(libraryDependencies ++= AppDependencies.it)
 
 val scalafixSettings: Seq[Setting[?]] = Seq(
-  semanticdbEnabled := true,
+  semanticdbEnabled := true
 )
 
 addCommandAlias("checkLint", "scalafmtSbtCheck;scalafmtCheckAll")
