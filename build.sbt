@@ -13,6 +13,7 @@ lazy val microservice = Project("senior-accounting-officer-stubs", file("."))
     PlayKeys.playDefaultPort := 10061
   )
   .settings(CodeCoverageSettings.settings: _*)
+  .settings(scalafixSettings *)
 
 lazy val it = project
   .enablePlugins(PlayScala)
@@ -20,5 +21,9 @@ lazy val it = project
   .settings(DefaultBuildSettings.itSettings())
   .settings(libraryDependencies ++= AppDependencies.it)
 
+val scalafixSettings: Seq[Setting[?]] = Seq(
+  semanticdbEnabled := true
+)
+
 addCommandAlias("checkLint", "scalafmtSbtCheck;scalafmtCheckAll")
-addCommandAlias("lint", "scalafmtSbt;scalafmtAll")
+addCommandAlias("lint", "scalafixAll;scalafmtSbt;scalafmtAll")
