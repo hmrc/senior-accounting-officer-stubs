@@ -24,4 +24,8 @@ import javax.inject.{Inject, Singleton}
 class AppConfig @Inject() (config: Configuration) {
 
   val appName: String = config.get[String]("appName")
+
+  val clientId: String     = config.get[String]("hip.clientId")
+  val clientSecret: String = config.get[String]("hip.clientSecret")
+
 }
