@@ -16,30 +16,34 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.filters
 
+import org.apache.pekko.stream.Materializer
 import play.api.mvc.Filter
-
-import scala.concurrent.Future
 import play.api.mvc.RequestHeader
 import play.api.mvc.Result
-import org.apache.pekko.stream.Materializer
-
-import javax.inject.Inject
 import play.api.mvc.Results.Unauthorized
 import uk.gov.hmrc.senioraccountingofficerstubs.config.AppConfig
 
-class AuthFilter @Inject()(appConfig: AppConfig)(using m: Materializer) extends Filter {
+import scala.concurrent.Future
+
+import java.util.Base64
+import javax.inject.Inject
+
+class AuthFilter @Inject() (appConfig: AppConfig)(using m: Materializer) extends Filter {
 
   override implicit def mat: Materializer = m
 
   override def apply(nextFilter: RequestHeader => Future[Result])(requestHeader: RequestHeader): Future[Result] = {
     val authorisationHeader = requestHeader.headers.get("Authorization")
+    val validAuthorisation  = s"Basic $tokenBase64"
 
     authorisationHeader match {
-      case None    => Future.successful(Unauthorized)
-      case Some(h) if !matchAuth(h)  => Future.successful(Unauthorized)
-      case Some(_) => nextFilter(requestHeader)
+      case Some(`validAuthorisation`) => nextFilter(requestHeader)
+      case _                          => Future.successful(Unauthorized)
     }
-  } 
-  
-  def matchAuth (header: String): Boolean = header == appConfig.clientId + ":" + appConfig.clientSecret
+
+  }
+
+  private def tokenBase64: String =
+    Base64.getEncoder.encodeToString(s"${appConfig.clientId}:${appConfig.clientSecret}".getBytes("UTF-8"))
+
 }

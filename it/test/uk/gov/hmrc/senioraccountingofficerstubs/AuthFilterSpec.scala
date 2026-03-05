@@ -23,6 +23,7 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.WSClient
+import uk.gov.hmrc.senioraccountingofficerstubs.config.AppConfig
 
 class AuthFilterSpec
     extends AnyWordSpec
@@ -32,6 +33,7 @@ class AuthFilterSpec
     with GuiceOneServerPerSuite {
 
   private val wsClient = app.injector.instanceOf[WSClient]
+  private val appConfig = app.injector.instanceOf[AppConfig]
   private val baseUrl  = s"http://localhost:$port"
 
   override def fakeApplication(): Application =
@@ -61,10 +63,18 @@ class AuthFilterSpec
     }
 
     "respond with 200 status when an authorisation header is provided" in {
+
+      val base64String = "Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
+      
+      val decodedAuth = java.util.Base64.getDecoder.decode(base64String)
+      val stringAuth: String = new String(decodedAuth)
+
+      stringAuth shouldBe s"${appConfig.clientId}:${appConfig.clientSecret}"
+
       val response =
         wsClient
           .url(s"$baseUrl/hello-world")
-          .withHttpHeaders(("Authorization", "testHeader"))
+          .withHttpHeaders(("Authorization", s"Basic $base64String"))
           .get()
           .futureValue
 
