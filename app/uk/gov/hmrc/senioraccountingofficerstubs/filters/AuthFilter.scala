@@ -17,14 +17,17 @@
 package uk.gov.hmrc.senioraccountingofficerstubs.filters
 
 import play.api.mvc.Filter
+
 import scala.concurrent.Future
 import play.api.mvc.RequestHeader
 import play.api.mvc.Result
 import org.apache.pekko.stream.Materializer
+
 import javax.inject.Inject
 import play.api.mvc.Results.Unauthorized
+import uk.gov.hmrc.senioraccountingofficerstubs.config.AppConfig
 
-class AuthFilter @Inject() ()(using m: Materializer) extends Filter {
+class AuthFilter @Inject()(appConfig: AppConfig)(using m: Materializer) extends Filter {
 
   override implicit def mat: Materializer = m
 
@@ -33,7 +36,10 @@ class AuthFilter @Inject() ()(using m: Materializer) extends Filter {
 
     authorisationHeader match {
       case None    => Future.successful(Unauthorized)
-      case Some(h) => nextFilter(requestHeader)
+      case Some(h) if !matchAuth(h)  => Future.successful(Unauthorized)
+      case Some(_) => nextFilter(requestHeader)
     }
-  }
+  } 
+  
+  def matchAuth (header: String): Boolean = header == appConfig.clientId + ":" + appConfig.clientSecret
 }

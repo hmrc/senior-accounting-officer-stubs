@@ -32,7 +32,7 @@ class AuthFilterSpec
     with GuiceOneServerPerSuite {
 
   private val wsClient = app.injector.instanceOf[WSClient]
-  private val baseUrl  = s"http://localhost:$port/senior-accounting-officer-stubs"
+  private val baseUrl  = s"http://localhost:$port"
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
@@ -49,11 +49,22 @@ class AuthFilterSpec
       response.status shouldBe 401
     }
 
-    "respond with 200 status when an authorisation header is provided" in {
+    "respond with 401 status when an invalid authorisation header is provided" in {
       val response =
         wsClient
           .url(s"$baseUrl/hello-world")
           .withHttpHeaders(("Authorization","testHeader"))
+          .get()
+          .futureValue
+
+      response.status shouldBe 401
+    }
+
+    "respond with 200 status when an authorisation header is provided" in {
+      val response =
+        wsClient
+          .url(s"$baseUrl/hello-world")
+          .withHttpHeaders(("Authorization", "testHeader"))
           .get()
           .futureValue
 
