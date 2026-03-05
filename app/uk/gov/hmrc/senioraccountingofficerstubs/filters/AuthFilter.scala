@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package filters
+package uk.gov.hmrc.senioraccountingofficerstubs.filters
 
 import play.api.mvc.Filter
 import scala.concurrent.Future
