@@ -3,4 +3,6 @@
 GET        /contact-details/:saoSubscriptionId             uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.getContactDetails(saoSubscriptionId: String)
 PUT        /subscriptions                                  uk.gov.hmrc.senioraccountingofficerstubs.controllers.SubscriptionsController.putSubscription
 
-POST       /notification/:saoSubscriptionId                uk.gov.hmrc.senioraccountingofficerstubs.controllers.NotificationController.postNotification(saoSubscriptionId: String)
+POST        /notification/:saoSubscriptionId           uk.gov.hmrc.senioraccountingofficerstubs.controllers.NotificationController.postNotification(saoSubscriptionId: String)
+
+GET         /obligations/:saoSubscriptionId            uk.gov.hmrc.senioraccountingofficerstubs.controllers.ObligationController.getObligation(saoSubscriptionId: String)
