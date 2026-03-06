@@ -39,8 +39,8 @@ class ObligationController @Inject() (cc: ControllerComponents) extends BackendC
     "submissions" -> Json.arr(
       Json.obj(
         "financialYearEnd" -> 2025,
-        "notification"     -> Json.obj("id" -> "notificationId", "notificationTimestamp" -> "notificationTimestamp"),
-        "certificate"      -> Json.obj("id" -> "certificateId", "certificateTimestamp" -> "certificateTimestamp")
+        "notification"     -> Json.obj("id" -> "notificationId", "notificationTimestamp" -> "2021-01-01T00:00:00Z"),
+        "certificate"      -> Json.obj("id" -> "certificateId", "certificateTimestamp" -> "2021-01-01T00:00:00Z")
       )
     )
   )
