@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,21 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import play.api.http.Status
+import play.api.test.Helpers.*
+import play.api.test.{FakeRequest, Helpers}
 
-import scala.concurrent.Future
+class ContactDetailsControllerSpec extends AnyWordSpec with Matchers {
 
-import javax.inject.{Inject, Singleton}
+  private val fakeRequest = FakeRequest("GET", "/")
+  private val controller  = new ContactDetailsController(Helpers.stubControllerComponents())
 
-@Singleton()
-class MicroserviceHelloWorldController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
-
-  def hello: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok("Hello world"))
+  "GET /" should {
+    "return 200" in {
+      val result = controller.hello()(fakeRequest)
+      status(result) shouldBe Status.OK
+    }
   }
 }
