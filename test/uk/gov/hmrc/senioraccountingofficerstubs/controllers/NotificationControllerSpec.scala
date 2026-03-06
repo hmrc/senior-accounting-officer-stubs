@@ -29,53 +29,62 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers {
 
   private val knownId   = "123"
   private val unknownId = "567"
-  private val validNotificationRequest: JsValue = Json.parse(
+  def validNotificationRequest: JsValue = Json.parse(
     """
+      |{
       |"companies": [
-      |{
-      |"name": "Example Ltd",
-      |"uniqueTaxReference": "1234567890",
-      |"companyReferenceNumber": "AB123456",
-      |"companyType": "LTD",
-      |"financialYearEndDate": "2024-12-31",
-      |"seniorAccountingOfficers": [
-      | {
-      | "name": "Firstname Lastname",
-      | "email": "Firstname.Lastname@example.com",
-      | "startDate": "2024-04-01",
-      | "endDate": "2025-03-31"
-      | },
-      | {
-      | "name": "Secondpersonname Theirlastname",
-      | "email": "non.empty.email@companyname.com",
-      | "startDate": "2024-12-01",
-      | "endDate": "2025-12-31"
-      | }
-      |]
-      |},
-      |{
-      |"name": "Example PLC",
-      |"uniqueTaxReference": "0987654321",
-      |"companyReferenceNumber": "CD654321",
-      |"companyType": "PLC",
-      |"financialYearEndDate": "2024-06-30",
-      |"seniorAccountingOfficers": []
-      |}
-      |],
+      |     {
+      |     "name": "Example Ltd",
+      |     "uniqueTaxReference": "1234567890",
+      |     "companyReferenceNumber": "AB123456",
+      |     "companyType": "LTD",
+      |     "financialYearEndDate": "2024-12-31",
+      |     "seniorAccountingOfficers": [
+      |         {
+      |         "name": "Firstname Lastname",
+      |         "email": "Firstname.Lastname@example.com",
+      |         "startDate": "2024-04-01",
+      |         "endDate": "2025-03-31"
+      |         },
+      |         {
+      |         "name": "Secondpersonname Theirlastname",
+      |         "email": "nonemptyemail@companyname.com",
+      |         "startDate": "2024-12-01",
+      |         "endDate": "2025-12-31"
+      |         }
+      |       ]
+      |      },
+      |       {
+      |         "name": "Example PLC",
+      |         "uniqueTaxReference": "0987654321",
+      |         "companyReferenceNumber": "CD654321",
+      |         "companyType": "PLC",
+      |         "financialYearEndDate": "2024-06-30",
+      |         "seniorAccountingOfficers": [
+      |         {
+      |            "name": "Firstname Lastname",
+      |            "email": "Firstname.Lastname@example.com",
+      |            "startDate": "2024-04-01",
+      |            "endDate": "2025-03-31"
+      |         }
+      |       ]
+      |       }
+      |   ],
       |"additionalInformation": "non-empty string"
       |}
-      |
       |""".stripMargin
   )
 
-  private val invalidNotificationRequest: JsValue = Json.parse(
+  def invalidNotificationRequest: JsValue = Json.parse(
     """
-      |"companies": ""
+      |{
+      | "companies": []
+      |}
       |""".stripMargin
   )
 
   "POST /notification/:saoSubscriptionId" should {
-    "return 200 and contact details for a known saoSubscriptionId" in {
+    "return 200 and notification payload for a known saoSubscriptionId" in {
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON)
         .withBody(validNotificationRequest)

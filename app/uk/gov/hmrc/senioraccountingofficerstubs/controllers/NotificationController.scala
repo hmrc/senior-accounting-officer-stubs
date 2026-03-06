@@ -17,7 +17,7 @@
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.models.NotificationRequest
 
