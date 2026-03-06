@@ -2,4 +2,4 @@
 
 GET        /contact-details/:saoSubscriptionId        uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.getContactDetails(saoSubscriptionId: String)
 
-GET        /obligations/:saoSubscriptionId            uk.gov.hmrc.senioraccountingofficerstubs.controllers.ObligationController.getObligation(saoSubscriptionId: String)
+GET        /obligation/:saoSubscriptionId            uk.gov.hmrc.senioraccountingofficerstubs.controllers.ObligationController.getObligation(saoSubscriptionId: String)
