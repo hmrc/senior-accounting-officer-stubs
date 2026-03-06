@@ -37,19 +37,20 @@ class ObligationControllerSpec extends AnyWordSpec with Matchers {
 
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.obj(
-        "saoSubscriptionId" -> knownId,
-        "subscription"      -> Json
-          .obj(
-            "subscriptionTimestamp"     -> "6/3/26",
-            "companyRegistrationNumber" -> "01234567",
-            "uniqueTaxReference"        -> "1234567890",
-            "companyName"               -> "Stub Global",
-            "contacts"                  -> Json.arr(Json.obj("name" -> "jacob", "email" -> "wozere@gmail.com"))
-          ),
-        "submissions" -> Json.obj(
-          "financialYearEnd" -> 2025,
-          "notification"     -> Json.obj("id" -> "notificationId", "notificationTimestamp" -> "notificationTimestamp"),
-          "certificate"      -> Json.obj("id" -> "certificateId", "certificateTimestamp" -> "certificateTimestamp")
+        "saoSubscriptionId" -> stubbedSaoSubscriptionId,
+        "subscription"      -> Json.obj(
+          "subscriptionTimestamp"     -> "6/3/26",
+          "companyRegistrationNumber" -> "01234567",
+          "uniqueTaxReference"        -> "1234567890",
+          "companyName"               -> "Stub Global",
+          "contacts"                  -> Json.arr(Json.obj("name" -> "jacob", "email" -> "wozere@gmail.com"))
+        ),
+        "submissions" -> Json.arr(
+          Json.obj(
+            "financialYearEnd" -> 2025,
+            "notification" -> Json.obj("id" -> "notificationId", "notificationTimestamp" -> "notificationTimestamp"),
+            "certificate"  -> Json.obj("id" -> "certificateId", "certificateTimestamp" -> "certificateTimestamp")
+          )
         )
       )
     }
