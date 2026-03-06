@@ -18,14 +18,15 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers.*
-import play.api.test.{FakeRequest, Helpers}
+import play.api.test.FakeRequest
 
-class SubscriptionsControllerSpec extends AnyWordSpec with Matchers {
+class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
-  private val controller = new SubscriptionsController(Helpers.stubControllerComponents())
+  private val controller = app.injector.instanceOf[SubscriptionsController]
 
   "PUT /subscriptions" should {
     "return 200 for a valid request payload" in {
