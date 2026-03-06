@@ -65,7 +65,8 @@ class AuthFilterSpec
     "respond with 200 status when an authorisation header is provided" in {
 
       val base64String = "Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
-      
+      val stubbedSaoSubscriptionId: String = "123"
+
       val decodedAuth = java.util.Base64.getDecoder.decode(base64String)
       val stringAuth: String = new String(decodedAuth)
 
@@ -73,7 +74,7 @@ class AuthFilterSpec
 
       val response =
         wsClient
-          .url(s"$baseUrl/contact-details")
+          .url(s"$baseUrl/contact-details:$stubbedSaoSubscriptionId")
           .withHttpHeaders(("Authorization", s"Basic $base64String"))
           .get()
           .futureValue

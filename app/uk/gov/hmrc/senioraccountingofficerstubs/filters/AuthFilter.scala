@@ -33,9 +33,7 @@ class AuthFilter @Inject() (appConfig: AppConfig)(using m: Materializer) extends
   override implicit def mat: Materializer = m
 
   override def apply(nextFilter: RequestHeader => Future[Result])(requestHeader: RequestHeader): Future[Result] = {
-    if (isHealthCheck(requestHeader.path)) {
-      return nextFilter(requestHeader)
-    }
+    if isHealthCheck(requestHeader.path) then nextFilter(requestHeader)
 
     val authorisationHeader = requestHeader.headers.get("Authorization")
     val validAuthorisation  = s"Basic $tokenBase64"
@@ -46,7 +44,7 @@ class AuthFilter @Inject() (appConfig: AppConfig)(using m: Materializer) extends
     }
 
   }
-  
+
   private def tokenBase64: String =
     Base64.getEncoder.encodeToString(s"${appConfig.clientId}:${appConfig.clientSecret}".getBytes("UTF-8"))
 

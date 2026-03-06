@@ -27,9 +27,9 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers {
 
   private val fakeGETRequest = FakeRequest("GET", "/contact-details")
   private val fakePUTRequest = FakeRequest("PUT", "/contact-details")
-  private val controller = new ContactDetailsController(Helpers.stubControllerComponents())
+  private val controller     = new ContactDetailsController(Helpers.stubControllerComponents())
 
-  private val knownId = "123"
+  private val knownId   = "123"
   private val unknownId = "567"
 
   "GET /contact-details/:saoSubscriptionId" should {
@@ -39,8 +39,8 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers {
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.obj(
         "saoSubscriptionId" -> knownId,
-        "name" -> "Jane Doe",
-        "email" -> "jane.doe@acme.example"
+        "name"              -> "Jane Doe",
+        "email"             -> "jane.doe@acme.example"
       )
     }
 
