@@ -25,14 +25,14 @@ import play.api.test.{FakeRequest, Helpers}
 
 class ObligationControllerSpec extends AnyWordSpec with Matchers {
 
-  private val fakeGETRequest = FakeRequest("GET", "/obligations")
+  private val fakeGETRequest = FakeRequest("GET", "/obligation")
   private val controller     = new ObligationController(Helpers.stubControllerComponents())
 
   private val knownId   = "123"
   private val unknownId = "567"
 
-  "GET /obligations/:saoSubscriptionId" should {
-    "return 200 and obligations for a known saoSubscriptionId" in {
+  "GET /obligation/:saoSubscriptionId" should {
+    "return 200 and obligation for a known saoSubscriptionId" in {
       val result = controller.getObligation(knownId)(fakeGETRequest)
 
       status(result) shouldBe Status.OK

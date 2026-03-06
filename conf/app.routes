@@ -5,4 +5,4 @@ PUT        /subscriptions                                  uk.gov.hmrc.senioracc
 
 POST        /notification/:saoSubscriptionId           uk.gov.hmrc.senioraccountingofficerstubs.controllers.NotificationController.postNotification(saoSubscriptionId: String)
 
-GET         /obligations/:saoSubscriptionId            uk.gov.hmrc.senioraccountingofficerstubs.controllers.ObligationController.getObligation(saoSubscriptionId: String)
+GET        /obligation/:saoSubscriptionId            uk.gov.hmrc.senioraccountingofficerstubs.controllers.ObligationController.getObligation(saoSubscriptionId: String)
