@@ -21,7 +21,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.Future
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 
 class ContactDetailsController @Inject()(cc: ControllerComponents) extends BackendController(cc) {
 
@@ -31,7 +31,7 @@ class ContactDetailsController @Inject()(cc: ControllerComponents) extends Backe
     "name" -> "Jane Doe",
     "email" -> "jane.doe@acme.example"
   )
-  
+
   def getContactDetails(saoSubscriptionId: String): Action[AnyContent] = Action.async { implicit request =>
     if (saoSubscriptionId == stubbedSaoSubscriptionId) {
       Future.successful(Ok(stubbedContactDetailsPayload))
@@ -39,4 +39,14 @@ class ContactDetailsController @Inject()(cc: ControllerComponents) extends Backe
       Future.successful(NotFound)
     }
   }
+
+  def putContactDetails(saoSubscriptionId: String): Action[AnyContent] = Action.async { implicit request =>
+    if (saoSubscriptionId == stubbedSaoSubscriptionId) {
+      Future.successful(NoContent)
+    } else {
+      Future.successful(NotFound)
+    }
+
+  }
+
 }

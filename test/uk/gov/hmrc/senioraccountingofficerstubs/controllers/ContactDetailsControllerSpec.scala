@@ -19,18 +19,48 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.http.Status
+import play.api.libs.json.Json
 import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
 
 class ContactDetailsControllerSpec extends AnyWordSpec with Matchers {
 
-  private val fakeRequest = FakeRequest("GET", "/")
-  private val controller  = new ContactDetailsController(Helpers.stubControllerComponents())
+  private val fakeGETRequest = FakeRequest("GET", "/contact-details")
+  private val fakePUTRequest = FakeRequest("PUT", "/contact-details")
+  private val controller = new ContactDetailsController(Helpers.stubControllerComponents())
 
-  "GET /" should {
-    "return 200" in {
-      val result = controller.hello()(fakeRequest)
+  private val knownId = "123"
+  private val unknownId = "567"
+
+  "GET /contact-details/:saoSubscriptionId" should {
+    "return 200 and contact details for a known saoSubscriptionId" in {
+      val result = controller.getContactDetails(knownId)(fakeGETRequest)
+
       status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe Json.obj(
+        "saoSubscriptionId" -> knownId,
+        "name" -> "Jane Doe",
+        "email" -> "jane.doe@acme.example"
+      )
+    }
+
+    "return a 404 for an unknown saoSubscriptionId" in {
+      val result = controller.getContactDetails(unknownId)(fakeGETRequest)
+      status(result) shouldBe Status.NOT_FOUND
     }
   }
+
+  "PUT /contact-details/:saoSubscriptionId" should {
+    "return 204 for a known saoSubscriptionId" in {
+      val result = controller.putContactDetails(knownId)(fakePUTRequest)
+
+      status(result) shouldBe Status.NO_CONTENT
+    }
+
+    "return a 404 for an unknown saoSubscriptionId" in {
+      val result = controller.putContactDetails(unknownId)(fakePUTRequest)
+      status(result) shouldBe Status.NOT_FOUND
+    }
+  }
+
 }

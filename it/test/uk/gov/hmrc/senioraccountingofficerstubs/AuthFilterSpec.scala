@@ -44,7 +44,7 @@ class AuthFilterSpec
     "respond with 401 status when no authorisation header is provided" in {
       val response =
         wsClient
-          .url(s"$baseUrl/hello-world")
+          .url(s"$baseUrl/contact-details")
           .get()
           .futureValue
 
@@ -54,7 +54,7 @@ class AuthFilterSpec
     "respond with 401 status when an invalid authorisation header is provided" in {
       val response =
         wsClient
-          .url(s"$baseUrl/hello-world")
+          .url(s"$baseUrl/contact-details")
           .withHttpHeaders(("Authorization","testHeader"))
           .get()
           .futureValue
@@ -73,7 +73,7 @@ class AuthFilterSpec
 
       val response =
         wsClient
-          .url(s"$baseUrl/hello-world")
+          .url(s"$baseUrl/contact-details")
           .withHttpHeaders(("Authorization", s"Basic $base64String"))
           .get()
           .futureValue
