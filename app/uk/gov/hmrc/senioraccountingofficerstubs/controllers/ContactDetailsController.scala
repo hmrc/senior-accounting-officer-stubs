@@ -20,8 +20,6 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import scala.concurrent.Future
-
 import javax.inject.Inject
 
 class ContactDetailsController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
@@ -33,19 +31,19 @@ class ContactDetailsController @Inject() (cc: ControllerComponents) extends Back
     "email"             -> "jane.doe@acme.example"
   )
 
-  def getContactDetails(saoSubscriptionId: String): Action[AnyContent] = Action.async { implicit request =>
+  def getContactDetails(saoSubscriptionId: String): Action[AnyContent] = Action { implicit request =>
     if saoSubscriptionId == stubbedSaoSubscriptionId then {
-      Future.successful(Ok(stubbedContactDetailsPayload))
+      Ok(stubbedContactDetailsPayload)
     } else {
-      Future.successful(NotFound)
+      NotFound
     }
   }
 
-  def putContactDetails(saoSubscriptionId: String): Action[AnyContent] = Action.async { implicit request =>
+  def putContactDetails(saoSubscriptionId: String): Action[AnyContent] = Action { implicit request =>
     if saoSubscriptionId == stubbedSaoSubscriptionId then {
-      Future.successful(NoContent)
+      NoContent
     } else {
-      Future.successful(NotFound)
+      NotFound
     }
 
   }

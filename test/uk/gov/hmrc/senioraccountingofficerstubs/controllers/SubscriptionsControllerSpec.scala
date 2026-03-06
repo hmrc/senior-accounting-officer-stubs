@@ -21,8 +21,8 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.libs.json.Json
-import play.api.test.Helpers.*
 import play.api.test.FakeRequest
+import play.api.test.Helpers.*
 
 class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -31,7 +31,7 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
   "PUT /subscriptions" should {
     "return 200 for a valid request payload" in {
       val request = FakeRequest("PUT", "/subscriptions")
-        .withJsonBody(Json.obj("subscription" -> Json.obj("name" -> "Dell Ltd")))
+        .withJsonBody(Json.obj("subscription" -> Json.obj("name" -> "Test Data Ltd")))
 
       val result = controller.putSubscription(request)
 
