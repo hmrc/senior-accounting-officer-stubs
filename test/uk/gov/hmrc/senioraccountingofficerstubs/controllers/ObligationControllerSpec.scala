@@ -22,11 +22,12 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class ObligationControllerSpec extends AnyWordSpec with Matchers {
+class ObligationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
   private val fakeGETRequest = FakeRequest("GET", "/obligation")
-  private val controller     = new ObligationController(Helpers.stubControllerComponents())
+  private val controller     = app.injector.instanceOf[ObligationController]
 
   private val knownId   = "123"
   private val unknownId = "567"
@@ -37,13 +38,13 @@ class ObligationControllerSpec extends AnyWordSpec with Matchers {
 
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.obj(
-        "saoSubscriptionId" -> stubbedSaoSubscriptionId,
+        "saoSubscriptionId" -> knownId,
         "subscription"      -> Json.obj(
-          "subscriptionTimestamp"     -> "6/3/26",
+          "subscriptionTimestamp"     -> "2021-01-01T00:00:00Z",
           "companyRegistrationNumber" -> "01234567",
           "uniqueTaxReference"        -> "1234567890",
           "companyName"               -> "Stub Global",
-          "contacts"                  -> Json.arr(Json.obj("name" -> "jacob", "email" -> "wozere@gmail.com"))
+          "contacts"                  -> Json.arr(Json.obj("name" -> "jacob", "email" -> "example@example.com"))
         ),
         "submissions" -> Json.arr(
           Json.obj(
