@@ -18,16 +18,17 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.Helpers.*
-import play.api.test.{FakeRequest, Helpers}
+import play.api.test.FakeRequest
 
-class ContactDetailsControllerSpec extends AnyWordSpec with Matchers {
+class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
   private val fakeGETRequest = FakeRequest("GET", "/contact-details")
   private val fakePUTRequest = FakeRequest("PUT", "/contact-details")
-  private val controller     = new ContactDetailsController(Helpers.stubControllerComponents())
+  private val controller     = app.injector.instanceOf[ContactDetailsController]
 
   private val knownId   = "123"
   private val unknownId = "567"
