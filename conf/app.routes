@@ -1,3 +1,5 @@
 # microservice specific routes
 
-GET        /contact-details/:saoSubscriptionId             uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.getContactDetails(saoSubscriptionId: String)
+GET        /contact-details/:saoSubscriptionId        uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.getContactDetails(saoSubscriptionId: String)
+
+GET        /obligations/:saoSubscriptionId            uk.gov.hmrc.senioraccountingofficerstubs.controllers.ObligationController.getObligation(saoSubscriptionId: String)
