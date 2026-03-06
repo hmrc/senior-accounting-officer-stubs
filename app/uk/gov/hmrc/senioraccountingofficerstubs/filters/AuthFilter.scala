@@ -33,7 +33,7 @@ class AuthFilter @Inject() (appConfig: AppConfig)(using m: Materializer) extends
   override implicit def mat: Materializer = m
 
   override def apply(nextFilter: RequestHeader => Future[Result])(requestHeader: RequestHeader): Future[Result] = {
-    if (isHealthCheck(requestHeader.path)) {
+    if isHealthCheck(requestHeader.path) then {
       nextFilter(requestHeader)
     } else {
       val authorisationHeader = requestHeader.headers.get("Authorization")

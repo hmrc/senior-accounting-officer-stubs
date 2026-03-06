@@ -16,36 +16,18 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
-import play.api.libs.json.Json
+import play.api.libs.json.JsObject
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.Inject
 
-class ContactDetailsController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
+class SubscriptionsController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
-  private val stubbedSaoSubscriptionId     = "123"
-  private val stubbedContactDetailsPayload = Json.obj(
-    "saoSubscriptionId" -> stubbedSaoSubscriptionId,
-    "name"              -> "Jane Doe",
-    "email"             -> "jane.doe@acme.example"
-  )
-
-  def getContactDetails(saoSubscriptionId: String): Action[AnyContent] = Action { implicit request =>
-    if saoSubscriptionId == stubbedSaoSubscriptionId then {
-      Ok(stubbedContactDetailsPayload)
-    } else {
-      NotFound
+  def putSubscription: Action[AnyContent] = Action { implicit request =>
+    request.body.asJson match {
+      case Some(body: JsObject) if body.value.nonEmpty => Ok
+      case _                                           => BadRequest
     }
   }
-
-  def putContactDetails(saoSubscriptionId: String): Action[AnyContent] = Action { implicit request =>
-    if saoSubscriptionId == stubbedSaoSubscriptionId then {
-      NoContent
-    } else {
-      NotFound
-    }
-
-  }
-
 }

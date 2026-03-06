@@ -22,7 +22,9 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
+import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.senioraccountingofficerstubs.config.AppConfig
 
 class AuthFilterSpec
@@ -41,7 +43,7 @@ class AuthFilterSpec
     GuiceApplicationBuilder()
       .build()
 
-  "Auth filter" should {
+  "Auth filter - Contact-details" should {
     "respond with 401 status when no authorisation header is provided" in {
       val response =
         wsClient
@@ -76,6 +78,47 @@ class AuthFilterSpec
           .url(s"$baseUrl/contact-details/$knownSubscriptionId")
           .withHttpHeaders(("Authorization", s"Basic $base64String"))
           .get()
+          .futureValue
+
+      response.status shouldBe 200
+    }
+  }
+
+  "Auth filter - Subscriptions" should {
+    "respond with 401 status when no authorisation header is provided" in {
+      val response =
+        wsClient
+          .url(s"$baseUrl/subscriptions")
+          .put(Json.obj("subscription" -> Json.obj("name" -> "Test Data Ltd")))
+          .futureValue
+
+      response.status shouldBe 401
+    }
+
+    "respond with 401 status when an invalid authorisation header is provided" in {
+      val response =
+        wsClient
+          .url(s"$baseUrl/subscriptions")
+          .withHttpHeaders(("Authorization","testHeader"))
+          .put(Json.obj("subscription" -> Json.obj("name" -> "Test Data Ltd")))
+          .futureValue
+
+      response.status shouldBe 401
+    }
+
+    "respond with 200 status when an authorisation header is provided" in {
+
+      val base64String = "Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
+      val decodedAuth = java.util.Base64.getDecoder.decode(base64String)
+      val stringAuth: String = new String(decodedAuth)
+
+      stringAuth shouldBe s"${appConfig.clientId}:${appConfig.clientSecret}"
+
+      val response =
+        wsClient
+          .url(s"$baseUrl/subscriptions")
+          .withHttpHeaders(("Authorization", s"Basic $base64String"))
+          .put(Json.obj("subscription" -> Json.obj("name" -> "Test Data Ltd")))
           .futureValue
 
       response.status shouldBe 200
