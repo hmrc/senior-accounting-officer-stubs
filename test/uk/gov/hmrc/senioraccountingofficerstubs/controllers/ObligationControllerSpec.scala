@@ -23,6 +23,7 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import uk.gov.hmrc.domain.SaUtrGenerator
 
 class ObligationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -42,7 +43,7 @@ class ObligationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAp
         "subscription"      -> Json.obj(
           "subscriptionTimestamp"     -> "2021-01-01T00:00:00Z",
           "companyRegistrationNumber" -> "01234567",
-          "uniqueTaxReference"        -> "1234567890",
+          "uniqueTaxReference"        -> SaUtrGenerator(123456).nextSaUtr,
           "companyName"               -> "Stub Global",
           "contacts"                  -> Json.arr(Json.obj("name" -> "jacob", "email" -> "example@example.com"))
         ),

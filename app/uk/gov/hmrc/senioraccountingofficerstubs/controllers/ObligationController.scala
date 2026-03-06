@@ -22,19 +22,25 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.Future
 
+import uk.gov.hmrc.domain.SaUtrGenerator
+
 import javax.inject.Inject
+import scala.util.Random
 
 class ObligationController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
   private val stubbedSaoSubscriptionId = "123"
+
   private val stubbedObligationPayload = Json.obj(
     "saoSubscriptionId" -> stubbedSaoSubscriptionId,
     "subscription"      -> Json.obj(
       "subscriptionTimestamp"     -> "2021-01-01T00:00:00Z",
-      "companyRegistrationNumber" -> "01234567",
-      "uniqueTaxReference"        -> "1234567890",
-      "companyName"               -> "Stub Global",
-      "contacts"                  -> Json.arr(Json.obj("name" -> "jacob", "email" -> "example@example.com"))
+      "companyRegistrationNumber" -> generateCrn,
+      "uniqueTaxReference"        -> generateUtr,
+      "companyName"               -> "Testdata Company Ltd",
+      "contacts"                  -> Json.arr(
+        Json.obj("name" -> "Firstname Middlename Lastname", "email" -> "example@example.com")
+      )
     ),
     "submissions" -> Json.arr(
       Json.obj(
@@ -51,5 +57,21 @@ class ObligationController @Inject() (cc: ControllerComponents) extends BackendC
     } else {
       Future.successful(NotFound)
     }
+  }
+
+  // TODO: make this unit testable.
+
+  // in .NET, this sort of thing would go in a service which you could
+  // then mock in your unit tests. I'm unsure the of the "right"
+  // approach in play/hmrc so will leave these here for now.
+
+  private def generateCrn = {
+    val num = Random.nextInt(1000000)
+    f"$num%010d"
+  }
+
+  private def generateUtr = {
+    val seed = Random.nextInt(1000000)
+    SaUtrGenerator(seed).nextSaUtr
   }
 }
