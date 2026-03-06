@@ -21,8 +21,8 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.libs.json.Json
-import play.api.test.Helpers.*
 import play.api.test.FakeRequest
+import play.api.test.Helpers.*
 
 class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
