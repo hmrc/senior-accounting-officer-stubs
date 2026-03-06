@@ -33,22 +33,23 @@ class AuthFilter @Inject() (appConfig: AppConfig)(using m: Materializer) extends
   override implicit def mat: Materializer = m
 
   override def apply(nextFilter: RequestHeader => Future[Result])(requestHeader: RequestHeader): Future[Result] = {
-    if isHealthCheck(requestHeader.path) then nextFilter(requestHeader)
+    if (isHealthCheck(requestHeader.path)) {
+      nextFilter(requestHeader)
+    } else {
+      val authorisationHeader = requestHeader.headers.get("Authorization")
+      val validAuthorisation  = s"Basic $tokenBase64"
 
-    val authorisationHeader = requestHeader.headers.get("Authorization")
-    val validAuthorisation  = s"Basic $tokenBase64"
-
-    authorisationHeader match {
-      case Some(`validAuthorisation`) => nextFilter(requestHeader)
-      case _                          => Future.successful(Unauthorized)
+      authorisationHeader match {
+        case Some(`validAuthorisation`) => nextFilter(requestHeader)
+        case _                          => Future.successful(Unauthorized)
+      }
     }
-
   }
 
   private def tokenBase64: String =
     Base64.getEncoder.encodeToString(s"${appConfig.clientId}:${appConfig.clientSecret}".getBytes("UTF-8"))
 
   private def isHealthCheck(path: String): Boolean =
-    path.startsWith("/ping/ping")
+    path.startsWith("/ping/")
 
 }

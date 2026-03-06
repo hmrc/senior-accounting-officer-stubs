@@ -35,6 +35,7 @@ class AuthFilterSpec
   private val wsClient = app.injector.instanceOf[WSClient]
   private val appConfig = app.injector.instanceOf[AppConfig]
   private val baseUrl  = s"http://localhost:$port"
+  private val knownSubscriptionId = "123"
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
@@ -44,7 +45,7 @@ class AuthFilterSpec
     "respond with 401 status when no authorisation header is provided" in {
       val response =
         wsClient
-          .url(s"$baseUrl/contact-details")
+          .url(s"$baseUrl/contact-details/$knownSubscriptionId")
           .get()
           .futureValue
 
@@ -54,7 +55,7 @@ class AuthFilterSpec
     "respond with 401 status when an invalid authorisation header is provided" in {
       val response =
         wsClient
-          .url(s"$baseUrl/contact-details")
+          .url(s"$baseUrl/contact-details/$knownSubscriptionId")
           .withHttpHeaders(("Authorization","testHeader"))
           .get()
           .futureValue
@@ -65,8 +66,6 @@ class AuthFilterSpec
     "respond with 200 status when an authorisation header is provided" in {
 
       val base64String = "Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
-      val stubbedSaoSubscriptionId: String = "123"
-
       val decodedAuth = java.util.Base64.getDecoder.decode(base64String)
       val stringAuth: String = new String(decodedAuth)
 
@@ -74,7 +73,7 @@ class AuthFilterSpec
 
       val response =
         wsClient
-          .url(s"$baseUrl/contact-details:$stubbedSaoSubscriptionId")
+          .url(s"$baseUrl/contact-details/$knownSubscriptionId")
           .withHttpHeaders(("Authorization", s"Basic $base64String"))
           .get()
           .futureValue
