@@ -22,10 +22,11 @@ import play.api.http.{MimeTypes, Status}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class NotificationControllerSpec extends AnyWordSpec with Matchers {
+class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
-  private val controller = new NotificationController(Helpers.stubControllerComponents())
+  private val controller = app.injector.instanceOf[NotificationController]
 
   private val knownId                   = "123"
   private val unknownId                 = "567"
