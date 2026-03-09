@@ -20,10 +20,10 @@ import play.api.libs.json.*
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.domain.SaUtrGenerator
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.senioraccountingofficerstubs.models.Obligation
 import scala.util.Random
 
 import javax.inject.Inject
+import play.api.mvc.AnyContent
 
 class ObligationController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
@@ -49,11 +49,11 @@ class ObligationController @Inject() (cc: ControllerComponents) extends BackendC
     )
   )
 
-  def getObligation(saoSubscriptionId: String): Action[JsValue] = Action(parse.json) { implicit request =>
-    request.body.validate[Obligation] match {
-      case JsSuccess(_, _) if saoSubscriptionId == stubbedSaoSubscriptionId => Ok(stubbedObligationPayload)
-      case JsSuccess(_, _)                                                  => NotFound
-      case JsError(e)                                                       => BadRequest(e.mkString)
+  def getObligation(saoSubscriptionId: String): Action[AnyContent] = Action { implicit request =>
+    if saoSubscriptionId == stubbedSaoSubscriptionId then {
+      Ok(stubbedObligationPayload)
+    } else {
+      NotFound
     }
   }
 
