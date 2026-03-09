@@ -94,7 +94,6 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers {
       status(result) shouldBe Status.OK
 
       contentAsJson(result) shouldBe Json.obj(
-        "saoSubscriptionId" -> knownId,
         "id" -> "NOT0123456789",
         "timestamp" -> "2026-03-01T12:00:14Z"
       )

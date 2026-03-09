@@ -28,7 +28,6 @@ class NotificationController @Inject()(cc: ControllerComponents) extends Backend
 
   private val stubbedSaoSubscriptionId     = "123"
   private val stubbedNotificationPayload = Json.obj(
-    "saoSubscriptionId" -> stubbedSaoSubscriptionId,
     "id" -> "NOT0123456789",
     "timestamp" -> "2026-03-01T12:00:14Z"
   )
