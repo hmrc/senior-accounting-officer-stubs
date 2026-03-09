@@ -22,6 +22,7 @@ import play.api.http.{MimeTypes, Status}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
+import uk.gov.hmrc.senioraccountingofficerstubs.models.NotificationResponse
 
 class NotificationControllerSpec extends AnyWordSpec with Matchers {
 
@@ -91,12 +92,16 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers {
 
       val result = controller.postNotification(knownId)(fakePOSTRequest)
 
+      val testNotificationResponse = Json.toJson(
+        NotificationResponse(
+          "NOT0123456789",
+          "2026-03-01T12:00:14Z"
+        )
+      )
+
       status(result) shouldBe Status.OK
 
-      contentAsJson(result) shouldBe Json.obj(
-        "id"        -> "NOT0123456789",
-        "timestamp" -> "2026-03-01T12:00:14Z"
-      )
+      contentAsJson(result) shouldBe testNotificationResponse
     }
 
     "return a 404 for an unknown saoSubscriptionId" in {
