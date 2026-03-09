@@ -18,12 +18,11 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
+import play.api.libs.json.JsArray
 import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import uk.gov.hmrc.domain.SaUtrGenerator
-import play.api.libs.json.JsArray
 
 class ObligationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -63,7 +62,6 @@ class ObligationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAp
       val certificate = firstSubmission \ "certificate"
       (certificate \ "id").as[String] shouldBe "certificateId"
       (certificate \ "certificateTimestamp").as[String] shouldBe "2021-01-01T00:00:00Z"
-
     }
 
     "return a 404 for an unknown saoSubscriptionId" in {
@@ -71,5 +69,4 @@ class ObligationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAp
       status(result) shouldBe Status.NOT_FOUND
     }
   }
-
 }
