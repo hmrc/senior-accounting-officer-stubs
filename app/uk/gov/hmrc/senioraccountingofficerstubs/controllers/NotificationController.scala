@@ -26,18 +26,16 @@ import javax.inject.Inject
 class NotificationController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
   private val stubbedSaoSubscriptionId    = "123"
-  private val stubbedNotificationResponse = Json.toJson(
-    NotificationResponse(
+  private val stubbedNotificationResponse = NotificationResponse(
       "NOT0123456789",
       "2026-03-01T12:00:14Z"
     )
-  )
 
   def postNotification(saoSubscriptionId: String): Action[JsValue] = Action(parse.json) { implicit request =>
     request.body.validate[NotificationRequest] match {
       case JsSuccess(_, _) =>
         if saoSubscriptionId == stubbedSaoSubscriptionId then {
-          Ok(stubbedNotificationResponse)
+          Ok(Json.toJson(stubbedNotificationResponse))
         } else {
           NotFound
         }
