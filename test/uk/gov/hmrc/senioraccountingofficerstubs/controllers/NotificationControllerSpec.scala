@@ -25,10 +25,10 @@ import play.api.test.{FakeRequest, Helpers}
 
 class NotificationControllerSpec extends AnyWordSpec with Matchers {
 
-  private val controller     = new NotificationController(Helpers.stubControllerComponents())
+  private val controller = new NotificationController(Helpers.stubControllerComponents())
 
-  private val knownId   = "123"
-  private val unknownId = "567"
+  private val knownId                   = "123"
+  private val unknownId                 = "567"
   def validNotificationRequest: JsValue = Json.parse(
     """
       |{
@@ -94,20 +94,20 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers {
       status(result) shouldBe Status.OK
 
       contentAsJson(result) shouldBe Json.obj(
-        "id" -> "NOT0123456789",
+        "id"        -> "NOT0123456789",
         "timestamp" -> "2026-03-01T12:00:14Z"
       )
     }
 
     "return a 404 for an unknown saoSubscriptionId" in {
-        val fakePOSTRequest = FakeRequest("POST", s"/notification/$unknownId")
-          .withHeaders(CONTENT_TYPE -> MimeTypes.JSON)
-          .withBody(validNotificationRequest)
+      val fakePOSTRequest = FakeRequest("POST", s"/notification/$unknownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON)
+        .withBody(validNotificationRequest)
 
-        val result = controller.postNotification(unknownId)(fakePOSTRequest)
+      val result = controller.postNotification(unknownId)(fakePOSTRequest)
 
-        status(result) shouldBe Status.NOT_FOUND
-      }
+      status(result) shouldBe Status.NOT_FOUND
+    }
 
     "return a 400 for a request with invalid Json" in {
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
@@ -118,5 +118,5 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers {
 
       status(result) shouldBe Status.BAD_REQUEST
     }
-    }
   }
+}
