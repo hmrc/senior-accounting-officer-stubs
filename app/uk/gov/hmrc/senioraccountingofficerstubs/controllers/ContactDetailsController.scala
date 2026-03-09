@@ -17,7 +17,7 @@
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
 import play.api.libs.json.*
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
+import play.api.mvc.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.models.*
 
@@ -26,7 +26,7 @@ import javax.inject.Inject
 class ContactDetailsController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
   private val stubbedSaoSubscriptionId = "123"
-  private val saoSubscriptionIdRegex = "^[0-9]{1,15}$".r
+  private val saoSubscriptionIdRegex   = "^[0-9]{1,15}$".r
 
   private val stubbedContactDetailsPayload = ContactDetails(
     saoSubscriptionId = stubbedSaoSubscriptionId,
@@ -34,32 +34,33 @@ class ContactDetailsController @Inject() (cc: ControllerComponents) extends Back
     email = "jane.doe@acme.example"
   )
 
-  private def validateId(id: String): Option[Result] = id match {
+  private def validateIdFormat(id: String): Option[Result] = id match {
     case saoSubscriptionIdRegex() => None
-    case _ => Some(BadRequest(Json.obj("error" -> "Invalid subscription ID format")))
+    case _                        => Some(BadRequest(Json.obj("error" -> "Invalid subscription ID format")))
   }
 
-  private def checkIdExists(id: String): Option[Result] =
-    if (id == stubbedSaoSubscriptionId) None
-    else Some(NotFound(Json.obj("error" -> "Subscription ID not found")))
+  private def validateIdExists(id: String): Option[Result] = {
+    if id == stubbedSaoSubscriptionId then None
+    else Some(NotFound(Json.obj("error" -> "SubscriptionId not found")))
+  }
+
+  private def validateBody(body: JsValue): Option[Result] = {
+    body.validate[ContactDetailsRequest] match {
+      case JsSuccess(_, _) => None
+      case JsError(errors) => Some(BadRequest(JsError.toJson(errors)))
+    }
+  }
 
   def getContactDetails(saoSubscriptionId: String): Action[AnyContent] = Action {
-    validateId(saoSubscriptionId)
-      .orElse(checkIdExists(saoSubscriptionId))
+    validateIdFormat(saoSubscriptionId)
+      .orElse(validateIdExists(saoSubscriptionId))
       .getOrElse(Ok(Json.toJson(stubbedContactDetailsPayload)))
   }
 
   def putContactDetails(saoSubscriptionId: String): Action[JsValue] = Action(parse.json) { implicit request =>
-    validateId(saoSubscriptionId)
-      .orElse {
-        request.body.validate[ContactDetailsRequest] match {
-          case JsSuccess(_, _) => checkIdExists(saoSubscriptionId)
-          case JsError(errors) => Some(BadRequest(JsError.toJson(errors)))
-        }
-      }
+    validateIdFormat(saoSubscriptionId)
+      .orElse(validateBody(request.body))
+      .orElse(validateIdExists(saoSubscriptionId))
       .getOrElse(NoContent)
   }
 }
-
-
-
