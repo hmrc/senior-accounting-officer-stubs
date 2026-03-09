@@ -9,7 +9,7 @@ case class Company (
                      uniqueTaxReference: String,
                      companyReferenceNumber: String,
                      companyType: String,
-                     financialYearEndDate: LocalDate,
+                     financialYearEndDate: String,
                      seniorAccountingOfficers: List[SeniorAccountingOfficer]
                    )
 

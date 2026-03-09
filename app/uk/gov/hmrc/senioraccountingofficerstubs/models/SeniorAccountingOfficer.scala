@@ -6,8 +6,8 @@ import java.time.LocalDate
 
 case class SeniorAccountingOfficer (
     name: String,
-    startDate: LocalDate,
-    endDate: LocalDate,
+    startDate: String,
+    endDate: String,
     email: String
                                    )
 

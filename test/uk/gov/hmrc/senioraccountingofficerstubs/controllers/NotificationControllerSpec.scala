@@ -34,7 +34,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers {
       |{
       |"companies": [
       |     {
-      |     "name": "Example Ltd",
+      |     "companyName": "Example Ltd",
       |     "uniqueTaxReference": "1234567890",
       |     "companyReferenceNumber": "AB123456",
       |     "companyType": "LTD",
@@ -55,7 +55,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers {
       |       ]
       |      },
       |       {
-      |         "name": "Example PLC",
+      |         "companyName": "Example PLC",
       |         "uniqueTaxReference": "0987654321",
       |         "companyReferenceNumber": "CD654321",
       |         "companyType": "PLC",
@@ -78,7 +78,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers {
   def invalidNotificationRequest: JsValue = Json.parse(
     """
       |{
-      | "companies": []
+      | "companies": ["Test"]
       |}
       |""".stripMargin
   )
