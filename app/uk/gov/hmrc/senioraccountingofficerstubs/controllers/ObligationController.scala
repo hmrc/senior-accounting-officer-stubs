@@ -57,12 +57,6 @@ class ObligationController @Inject() (cc: ControllerComponents) extends BackendC
     }
   }
 
-  // TODO: make this unit testable.
-
-  // in .NET, this sort of thing would go in a service which you could
-  // then mock in your unit tests. I'm unsure the of the "right"
-  // approach in play/hmrc so will leave these here for now.
-
   private def generateCrn = {
     val num = Random.nextInt(1000000)
     f"$num%010d"
