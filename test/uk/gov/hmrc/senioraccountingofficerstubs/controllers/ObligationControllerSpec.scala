@@ -44,7 +44,7 @@ class ObligationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAp
           "subscriptionTimestamp"     -> "2021-01-01T00:00:00Z",
           "companyRegistrationNumber" -> "01234567",
           "uniqueTaxReference"        -> SaUtrGenerator(123456).nextSaUtr,
-          "companyName"               -> "Stub Global",
+          "companyName"               -> "Testdata Company Ltd",
           "contacts"                  -> Json.arr(Json.obj("name" -> "jacob", "email" -> "example@example.com"))
         ),
         "submissions" -> Json.arr(
