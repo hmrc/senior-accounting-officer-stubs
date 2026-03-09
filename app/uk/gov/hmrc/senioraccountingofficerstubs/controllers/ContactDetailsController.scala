@@ -17,7 +17,7 @@
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
 import play.api.libs.json.*
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.models.*
 
@@ -26,7 +26,7 @@ import javax.inject.Inject
 class ContactDetailsController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
   private val stubbedSaoSubscriptionId = "123"
-  private val saoSubscriptionIdRegex   = "^[0-9]{1,15}$".r
+  private val saoSubscriptionIdRegex = "^[0-9]{1,15}$".r
 
   private val stubbedContactDetailsPayload = ContactDetails(
     saoSubscriptionId = stubbedSaoSubscriptionId,
@@ -34,35 +34,32 @@ class ContactDetailsController @Inject() (cc: ControllerComponents) extends Back
     email = "jane.doe@acme.example"
   )
 
-  def getContactDetails(saoSubscriptionId: String): Action[AnyContent] = Action { implicit request =>
-    saoSubscriptionId match {
-      case saoSubscriptionIdRegex() =>
-        if saoSubscriptionId == stubbedSaoSubscriptionId then {
-          Ok(Json.toJson(stubbedContactDetailsPayload))
-        } else {
-          NotFound
-        }
-      case _ =>
-        BadRequest
-    }
+  private def validateId(id: String): Option[Result] = id match {
+    case saoSubscriptionIdRegex() => None
+    case _ => Some(BadRequest(Json.obj("error" -> "Invalid subscription ID format")))
+  }
+
+  private def checkIdExists(id: String): Option[Result] =
+    if (id == stubbedSaoSubscriptionId) None
+    else Some(NotFound(Json.obj("error" -> "Subscription ID not found")))
+
+  def getContactDetails(saoSubscriptionId: String): Action[AnyContent] = Action {
+    validateId(saoSubscriptionId)
+      .orElse(checkIdExists(saoSubscriptionId))
+      .getOrElse(Ok(Json.toJson(stubbedContactDetailsPayload)))
   }
 
   def putContactDetails(saoSubscriptionId: String): Action[JsValue] = Action(parse.json) { implicit request =>
-    saoSubscriptionId match {
-      case saoSubscriptionIdRegex() =>
+    validateId(saoSubscriptionId)
+      .orElse {
         request.body.validate[ContactDetailsRequest] match {
-          case JsSuccess(_, _) =>
-            if saoSubscriptionId == stubbedSaoSubscriptionId then {
-              NoContent
-            } else {
-              NotFound
-            }
-          case JsError(e) =>
-            BadRequest(JsError.toJson(e))
+          case JsSuccess(_, _) => checkIdExists(saoSubscriptionId)
+          case JsError(errors) => Some(BadRequest(JsError.toJson(errors)))
         }
-      case _ =>
-        BadRequest
-    }
+      }
+      .getOrElse(NoContent)
   }
-
 }
+
+
+
