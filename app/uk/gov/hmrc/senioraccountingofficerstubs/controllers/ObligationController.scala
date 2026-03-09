@@ -51,11 +51,11 @@ class ObligationController @Inject() (cc: ControllerComponents) extends BackendC
     )
   )
 
-  def getObligation(saoSubscriptionId: String): Action[AnyContent] = Action.async { implicit request =>
+  def getObligation(saoSubscriptionId: String): Action[AnyContent] = Action { implicit request =>
     if saoSubscriptionId == stubbedSaoSubscriptionId then {
-      Future.successful(Ok(stubbedObligationPayload))
+      Ok(stubbedObligationPayload)
     } else {
-      Future.successful(NotFound)
+      NotFound
     }
   }
 
