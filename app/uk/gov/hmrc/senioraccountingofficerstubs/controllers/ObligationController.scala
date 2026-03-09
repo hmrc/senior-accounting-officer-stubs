@@ -20,8 +20,6 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import scala.concurrent.Future
-
 import uk.gov.hmrc.domain.SaUtrGenerator
 
 import javax.inject.Inject

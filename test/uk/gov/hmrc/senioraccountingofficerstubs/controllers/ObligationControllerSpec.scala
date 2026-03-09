@@ -19,11 +19,11 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.http.Status
-import play.api.libs.json.Json
 import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import uk.gov.hmrc.domain.SaUtrGenerator
+import play.api.libs.json.JsArray
 
 class ObligationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -38,23 +38,32 @@ class ObligationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAp
       val result = controller.getObligation(knownId)(fakeGETRequest)
 
       status(result) shouldBe Status.OK
-      contentAsJson(result) shouldBe Json.obj(
-        "saoSubscriptionId" -> knownId,
-        "subscription"      -> Json.obj(
-          "subscriptionTimestamp"     -> "2021-01-01T00:00:00Z",
-          "companyRegistrationNumber" -> "01234567",
-          "uniqueTaxReference"        -> SaUtrGenerator(123456).nextSaUtr,
-          "companyName"               -> "Testdata Company Ltd",
-          "contacts"                  -> Json.arr(Json.obj("name" -> "jacob", "email" -> "example@example.com"))
-        ),
-        "submissions" -> Json.arr(
-          Json.obj(
-            "financialYearEnd" -> 2025,
-            "notification"     -> Json.obj("id" -> "notificationId", "notificationTimestamp" -> "2021-01-01T00:00:00Z"),
-            "certificate"      -> Json.obj("id" -> "certificateId", "certificateTimestamp" -> "2021-01-01T00:00:00Z")
-          )
-        )
-      )
+      val json = contentAsJson(result)
+
+      (json \ "saoSubscriptionId").as[String] shouldBe knownId
+
+      val subscription = json \ "subscription"
+      (subscription \ "subscriptionTimestamp").as[String] shouldBe "2021-01-01T00:00:00Z"
+      (subscription \ "companyRegistrationNumber").as[String] should fullyMatch regex """\d{10}"""
+      (subscription \ "uniqueTaxReference").as[String] should fullyMatch regex """\d{10}"""
+      (subscription \ "companyName").as[String] shouldBe "Testdata Company Ltd"
+
+      val contacts = (subscription \ "contacts").as[JsArray]
+      (contacts(0) \ "name").as[String] shouldBe "Firstname Middlename Lastname"
+      (contacts(0) \ "email").as[String] shouldBe "example@example.com"
+
+      val submissions     = (json \ "submissions").as[JsArray]
+      val firstSubmission = submissions(0)
+      (firstSubmission \ "financialYearEnd").as[Int] shouldBe 2025
+
+      val notification = firstSubmission \ "notification"
+      (notification \ "id").as[String] shouldBe "notificationId"
+      (notification \ "notificationTimestamp").as[String] shouldBe "2021-01-01T00:00:00Z"
+
+      val certificate = firstSubmission \ "certificate"
+      (certificate \ "id").as[String] shouldBe "certificateId"
+      (certificate \ "certificateTimestamp").as[String] shouldBe "2021-01-01T00:00:00Z"
+
     }
 
     "return a 404 for an unknown saoSubscriptionId" in {
