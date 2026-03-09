@@ -49,18 +49,43 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
       val result = controller.getContactDetails(unknownId)(fakeGETRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
+
+    "return a 400 for an invalid saoSubscriptionId format" in {
+      val result = controller.getContactDetails("invalid-format")(fakeGETRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+    }
   }
 
   "PUT /contact-details/:saoSubscriptionId" should {
-    "return 204 for a known saoSubscriptionId" in {
-      val result = controller.putContactDetails(knownId)(fakePUTRequest)
+    val validBody = Json.obj("name" -> "Jane Doe", "email" -> "jane.doe@acme.example")
+
+    "return 204 for a known saoSubscriptionId and valid body" in {
+      val request = fakePUTRequest.withBody(validBody)
+      val result  = controller.putContactDetails(knownId)(request)
 
       status(result) shouldBe Status.NO_CONTENT
     }
 
-    "return a 404 for an unknown saoSubscriptionId" in {
-      val result = controller.putContactDetails(unknownId)(fakePUTRequest)
+    "return a 404 for an unknown saoSubscriptionId and valid body" in {
+      val request = fakePUTRequest.withBody(validBody)
+      val result  = controller.putContactDetails(unknownId)(request)
+
       status(result) shouldBe Status.NOT_FOUND
+    }
+
+    "return a 400 for an invalid saoSubscriptionId format" in {
+      val request = fakePUTRequest.withBody(validBody)
+      val result  = controller.putContactDetails("invalid-format")(request)
+
+      status(result) shouldBe Status.BAD_REQUEST
+    }
+
+    "return a 400 for an invalid JSON body" in {
+      val invalidBody = Json.obj("invalid" -> "field")
+      val request     = fakePUTRequest.withBody(invalidBody)
+      val result      = controller.putContactDetails(knownId)(request)
+
+      status(result) shouldBe Status.BAD_REQUEST
     }
   }
 
