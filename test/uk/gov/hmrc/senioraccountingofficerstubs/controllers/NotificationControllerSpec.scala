@@ -18,14 +18,15 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.{MimeTypes, Status}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.*
 import play.api.test.{FakeRequest, Helpers}
 
-class NotificationControllerSpec extends AnyWordSpec with Matchers {
+class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
-  private val controller = new NotificationController(Helpers.stubControllerComponents())
+  private val controller = app.injector.instanceOf[NotificationController]
 
   private val knownId                   = "123"
   private val unknownId                 = "567"
