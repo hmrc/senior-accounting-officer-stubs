@@ -19,7 +19,6 @@ package uk.gov.hmrc.senioraccountingofficerstubs.models
 import play.api.libs.json.{Json, OFormat}
 
 case class ContactDetails(
-    saoSubscriptionId: String,
     name: String,
     email: String
 )

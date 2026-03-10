@@ -29,7 +29,6 @@ class ContactDetailsController @Inject() (cc: ControllerComponents) extends Back
   private val saoSubscriptionIdRegex   = "^[0-9]{1,15}$".r
 
   private val stubbedContactDetailsPayload = ContactDetails(
-    saoSubscriptionId = stubbedSaoSubscriptionId,
     name = "Jane Doe",
     email = "jane.doe@acme.example"
   )
