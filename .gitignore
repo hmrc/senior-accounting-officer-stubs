@@ -38,3 +38,11 @@ target
 test-result
 tmp
 .vscode/
+
+# Secrets
+bruno/.env*
+
+# Dependencies
+bruno/node_modules
+
+Thumbs.db
