@@ -125,7 +125,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       val result = call(controller.postNotification(knownId), fakePOSTRequest)
       contentAsString(
         result
-      ) shouldBe "{\"statusCode\":400,\"message\":\"Json validation error List((obj.companies[0],List(JsonValidationError(List(error.expected.jsobject),ArraySeq()))))\"}"
+      ) shouldBe """{"statusCode":400,"message":"Json validation error List((obj.companies[0],List(JsonValidationError(List(error.expected.jsobject),ArraySeq()))))"}"""
       status(result) shouldBe Status.BAD_REQUEST
     }
   }
