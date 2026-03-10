@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
+import org.apache.pekko.stream.Materializer
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -27,6 +28,7 @@ import uk.gov.hmrc.senioraccountingofficerstubs.models.NotificationResponse
 
 class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
+  given Materializer     = app.injector.instanceOf[Materializer]
   private val controller = app.injector.instanceOf[NotificationController]
 
   private val knownId                   = "123"
@@ -91,7 +93,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON)
         .withBody(validNotificationRequest)
 
-      val result = controller.postNotification(knownId)(fakePOSTRequest)
+      val result = call(controller.postNotification(knownId), fakePOSTRequest)
 
       val testNotificationResponse = Json.toJson(
         NotificationResponse(
@@ -110,7 +112,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON)
         .withBody(validNotificationRequest)
 
-      val result = controller.postNotification(unknownId)(fakePOSTRequest)
+      val result = call(controller.postNotification(unknownId), fakePOSTRequest)
 
       status(result) shouldBe Status.NOT_FOUND
     }
@@ -120,8 +122,10 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON)
         .withBody(invalidNotificationRequest)
 
-      val result = controller.postNotification(knownId)(fakePOSTRequest)
-
+      val result = call(controller.postNotification(knownId), fakePOSTRequest)
+      contentAsString(
+        result
+      ) shouldBe "{\"statusCode\":400,\"message\":\"Json validation error List((obj.companies[0],List(JsonValidationError(List(error.expected.jsobject),ArraySeq()))))\"}"
       status(result) shouldBe Status.BAD_REQUEST
     }
   }

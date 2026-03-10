@@ -27,19 +27,28 @@ class NotificationController @Inject() (cc: ControllerComponents) extends Backen
 
   private val stubbedSaoSubscriptionId    = "123"
   private val stubbedNotificationResponse = NotificationResponse(
-      "NOT0123456789",
-      "2026-03-01T12:00:14Z"
-    )
+    "NOT0123456789",
+    "2026-03-01T12:00:14Z"
+  )
 
-  def postNotification(saoSubscriptionId: String): Action[JsValue] = Action(parse.json) { implicit request =>
-    request.body.validate[NotificationRequest] match {
-      case JsSuccess(_, _) =>
-        if saoSubscriptionId == stubbedSaoSubscriptionId then {
-          Ok(Json.toJson(stubbedNotificationResponse))
-        } else {
-          NotFound
-        }
-      case JsError(e) => BadRequest(e.mkString)
+//  def postNotification(saoSubscriptionId: String): Action[JsValue] = Action(parse.json) { implicit request =>
+//    request.body.validate[NotificationRequest] match {
+//      case JsSuccess(_, _) =>
+//        if saoSubscriptionId == stubbedSaoSubscriptionId then {
+//          Ok(Json.toJson(stubbedNotificationResponse))
+//        } else {
+//          NotFound
+//        }
+//      case JsError(e) => BadRequest(e.mkString)
+//    }
+//  }
+
+  def postNotification(saoSubscriptionId: String): Action[NotificationRequest] =
+    Action(parse.json[NotificationRequest]) { implicit request =>
+      if saoSubscriptionId == stubbedSaoSubscriptionId then {
+        Ok(Json.toJson(stubbedNotificationResponse))
+      } else {
+        NotFound
+      }
     }
-  }
 }
