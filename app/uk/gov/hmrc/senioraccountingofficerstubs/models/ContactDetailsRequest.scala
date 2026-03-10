@@ -18,12 +18,12 @@ package uk.gov.hmrc.senioraccountingofficerstubs.models
 
 import play.api.libs.json.{Json, OFormat}
 
-case class ContactDetails(
-    saoSubscriptionId: String,
-    name: String,
-    email: String
-)
 
-object ContactDetails {
-  implicit val format: OFormat[ContactDetails] = Json.format[ContactDetails]
+case class ContactDetailsRequest(
+                                  name: String,
+                                  email: String
+                                )
+
+object ContactDetailsRequest {
+  implicit val format: OFormat[ContactDetailsRequest] = Json.format[ContactDetailsRequest]
 }
