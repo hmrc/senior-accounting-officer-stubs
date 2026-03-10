@@ -1,0 +1,4 @@
+name: local
+variables:
+  - name: base64Password
+    value: Q2xpZW50SWQ6Q2xpZW50U2VjcmV0
