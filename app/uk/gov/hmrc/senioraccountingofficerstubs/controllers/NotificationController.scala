@@ -19,7 +19,8 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 import play.api.libs.json.*
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.senioraccountingofficerstubs.models.{NotificationRequest, NotificationResponse}
+import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
+import uk.gov.hmrc.senioraccountingofficerstubs.models.NotificationResponse
 
 import javax.inject.Inject
 
@@ -31,15 +32,15 @@ class NotificationController @Inject() (cc: ControllerComponents) extends Backen
       "2026-03-01T12:00:14Z"
     )
 
-  def postNotification(saoSubscriptionId: String): Action[JsValue] = Action(parse.json) { implicit request =>
-    request.body.validate[NotificationRequest] match {
-      case JsSuccess(_, _) =>
-        if saoSubscriptionId == stubbedSaoSubscriptionId then {
-          Ok(Json.toJson(stubbedNotificationResponse))
-        } else {
-          NotFound
-        }
-      case JsError(e) => BadRequest(e.mkString)
+  def postNotification(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText) { implicit request =>
+    JsonErrorHandling.parseJson(request.body) match {
+      case Right(json) =>
+        val errors = JsonErrorHandling.Validators.validateNotification(json)
+        if errors.nonEmpty then JsonErrorHandling.badRequest(errors)
+        else if saoSubscriptionId == stubbedSaoSubscriptionId then Ok(Json.toJson(stubbedNotificationResponse))
+        else NotFound
+      case Left(errorResult) =>
+        errorResult
     }
   }
 }

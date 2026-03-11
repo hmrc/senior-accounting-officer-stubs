@@ -22,13 +22,11 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.{MimeTypes, Status}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.*
-import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.senioraccountingofficerstubs.models.NotificationResponse
+import play.api.test.FakeRequest
 
 class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
-  private val controller = app.injector.instanceOf[NotificationController]
-
+  private val authHeader                = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
   private val knownId                   = "123"
   private val unknownId                 = "567"
   def validNotificationRequest: JsValue = Json.parse(
@@ -88,16 +86,14 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
   "POST /notification/:saoSubscriptionId" should {
     "return 200 and notification payload for a known saoSubscriptionId" in {
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
-        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON)
-        .withBody(validNotificationRequest)
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody(validNotificationRequest.toString())
 
-      val result = controller.postNotification(knownId)(fakePOSTRequest)
+      val result = route(app, fakePOSTRequest).get
 
-      val testNotificationResponse = Json.toJson(
-        NotificationResponse(
-          "NOT0123456789",
-          "2026-03-01T12:00:14Z"
-        )
+      val testNotificationResponse = Json.obj(
+        "id"        -> "NOT0123456789",
+        "timestamp" -> "2026-03-01T12:00:14Z"
       )
 
       status(result) shouldBe Status.OK
@@ -107,22 +103,41 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
 
     "return a 404 for an unknown saoSubscriptionId" in {
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$unknownId")
-        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON)
-        .withBody(validNotificationRequest)
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody(validNotificationRequest.toString())
 
-      val result = controller.postNotification(unknownId)(fakePOSTRequest)
+      val result = route(app, fakePOSTRequest).get
 
       status(result) shouldBe Status.NOT_FOUND
     }
 
-    "return a 400 for a request with invalid Json" in {
+    "return a structured 400 for a request with invalid JSON shape" in {
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
-        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON)
-        .withBody(invalidNotificationRequest)
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody(invalidNotificationRequest.toString())
 
-      val result = controller.postNotification(knownId)(fakePOSTRequest)
+      val result = route(app, fakePOSTRequest).get
 
       status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj(
+          "path"   -> "companies[0]",
+          "reason" -> "INVALID_DATA_TYPE"
+        )
+      )
+    }
+
+    "return a structured 400 for malformed JSON syntax" in {
+      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody("""{"companies":["Test"]""")
+
+      val result = route(app, fakePOSTRequest).get
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj("reason" -> "MALFORMED_REQUEST")
+      )
     }
   }
 }

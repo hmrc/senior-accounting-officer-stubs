@@ -19,15 +19,15 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.http.Status
+import play.api.http.{MimeTypes, Status}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 
 class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
+  private val authHeader     = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
   private val fakeGETRequest = FakeRequest("GET", "/contact-details")
-  private val fakePUTRequest = FakeRequest("PUT", "/contact-details")
   private val controller     = app.injector.instanceOf[ContactDetailsController]
 
   private val knownId   = "123"
@@ -52,16 +52,63 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
   }
 
   "PUT /contact-details/:saoSubscriptionId" should {
-    "return 204 for a known saoSubscriptionId" in {
-      val result = controller.putContactDetails(knownId)(fakePUTRequest)
+    "return 204 for a known saoSubscriptionId with a valid payload" in {
+      val request = FakeRequest("PUT", s"/contact-details/$knownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody("""[{"name":"Jane Doe","email":"jane.doe@example.com"}]""")
+
+      val result = route(app, request).get
 
       status(result) shouldBe Status.NO_CONTENT
     }
 
     "return a 404 for an unknown saoSubscriptionId" in {
-      val result = controller.putContactDetails(unknownId)(fakePUTRequest)
+      val request = FakeRequest("PUT", s"/contact-details/$unknownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody("""[{"name":"Jane Doe","email":"jane.doe@example.com"}]""")
+
+      val result = route(app, request).get
+
       status(result) shouldBe Status.NOT_FOUND
     }
-  }
 
+    "return a structured 400 when the request payload is not an array" in {
+      val request = FakeRequest("PUT", s"/contact-details/$knownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody("""{"name":"Jane Doe"}""")
+
+      val result = route(app, request).get
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj("path" -> "body", "reason" -> "INVALID_DATA_TYPE")
+      )
+    }
+
+    "return a structured 400 when a required field is missing" in {
+      val request = FakeRequest("PUT", s"/contact-details/$knownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody("""[{"email":"jane.doe@example.com"}]""")
+
+      val result = route(app, request).get
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj("path" -> "[0].name", "reason" -> "MISSING_REQUIRED_FIELD")
+      )
+    }
+
+    "return a structured 400 when the JSON syntax is malformed" in {
+      val request = FakeRequest("PUT", s"/contact-details/$knownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody("""[{"name":"Jane Doe"}""")
+
+      val result = route(app, request).get
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj("reason" -> "MALFORMED_REQUEST")
+      )
+    }
+  }
 }
