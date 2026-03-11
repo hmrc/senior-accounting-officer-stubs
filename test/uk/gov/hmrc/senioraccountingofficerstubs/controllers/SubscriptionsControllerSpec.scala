@@ -26,12 +26,12 @@ import play.api.test.Helpers.*
 
 class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
-  private val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
+  private val authHeader   = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
   private val validPayload = Json.obj(
-    "safeId" -> "XE000123456789",
+    "safeId"  -> "XE000123456789",
     "company" -> Json.obj(
-      "companyName" -> "Acme Manufacturing Ltd",
-      "uniqueTaxReference" -> "1234567890",
+      "companyName"               -> "Acme Manufacturing Ltd",
+      "uniqueTaxReference"        -> "1234567890",
       "companyRegistrationNumber" -> "OC123456"
     ),
     "contacts" -> Json.arr(
@@ -59,9 +59,9 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
-        Json.obj("path" -> "body.company", "reason" -> "MISSING_REQUIRED_FIELD"),
+        Json.obj("path" -> "body.company", "reason"  -> "MISSING_REQUIRED_FIELD"),
         Json.obj("path" -> "body.contacts", "reason" -> "MISSING_REQUIRED_FIELD"),
-        Json.obj("path" -> "body.safeId", "reason" -> "MISSING_REQUIRED_FIELD")
+        Json.obj("path" -> "body.safeId", "reason"   -> "MISSING_REQUIRED_FIELD")
       )
     }
 
@@ -85,17 +85,19 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
       val request = FakeRequest("PUT", "/subscriptions")
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody(
-          Json.obj(
-            "safeId" -> "bad safe id",
-            "company" -> Json.obj(
-              "companyName" -> "Acme Manufacturing Ltd",
-              "uniqueTaxReference" -> "ABC",
-              "companyRegistrationNumber" -> "BAD"
-            ),
-            "contacts" -> Json.arr(
-              Json.obj("name" -> "", "email" -> "not-an-email")
+          Json
+            .obj(
+              "safeId"  -> "bad safe id",
+              "company" -> Json.obj(
+                "companyName"               -> "Acme Manufacturing Ltd",
+                "uniqueTaxReference"        -> "ABC",
+                "companyRegistrationNumber" -> "BAD"
+              ),
+              "contacts" -> Json.arr(
+                Json.obj("name" -> "", "email" -> "not-an-email")
+              )
             )
-          ).toString()
+            .toString()
         )
 
       val result = route(app, request).get
@@ -103,10 +105,10 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj("path" -> "body.company.companyRegistrationNumber", "reason" -> "INVALID_FORMAT"),
-        Json.obj("path" -> "body.company.uniqueTaxReference", "reason" -> "INVALID_FORMAT"),
-        Json.obj("path" -> "body.contacts[0].email", "reason" -> "INVALID_FORMAT"),
-        Json.obj("path" -> "body.contacts[0].name", "reason" -> "CANNOT_BE_EMPTY"),
-        Json.obj("path" -> "body.safeId", "reason" -> "INVALID_FORMAT")
+        Json.obj("path" -> "body.company.uniqueTaxReference", "reason"        -> "INVALID_FORMAT"),
+        Json.obj("path" -> "body.contacts[0].email", "reason"                 -> "INVALID_FORMAT"),
+        Json.obj("path" -> "body.contacts[0].name", "reason"                  -> "CANNOT_BE_EMPTY"),
+        Json.obj("path" -> "body.safeId", "reason"                            -> "INVALID_FORMAT")
       )
     }
 

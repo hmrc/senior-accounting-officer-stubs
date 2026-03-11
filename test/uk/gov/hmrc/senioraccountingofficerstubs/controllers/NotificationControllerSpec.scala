@@ -21,8 +21,8 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.{MimeTypes, Status}
 import play.api.libs.json.{JsValue, Json}
-import play.api.test.Helpers.*
 import play.api.test.FakeRequest
+import play.api.test.Helpers.*
 
 class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 

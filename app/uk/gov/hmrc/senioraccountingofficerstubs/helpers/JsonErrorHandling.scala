@@ -17,8 +17,9 @@
 package uk.gov.hmrc.senioraccountingofficerstubs.helpers
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.networknt.schema.*
+import com.networknt.schema.keyword.KeywordType
 import com.networknt.schema.path.PathType
-import com.networknt.schema.{Error, InputFormat, Schema, SchemaRegistry, SchemaRegistryConfig, SpecificationVersion}
 import play.api.libs.json.{JsArray, JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
@@ -80,30 +81,31 @@ object JsonErrorHandling {
       Json.parse(json.toString()).as[JsonNode]
 
     private def toApiError(error: Error, rootPrefix: Option[String]): ApiError = {
-      val reason = error.getKeyword match {
-        case "required"             => "MISSING_REQUIRED_FIELD"
-        case "type"                 => "INVALID_DATA_TYPE"
-        case "additionalProperties" => "INVALID_DATA_TYPE"
-        case "pattern"              => "INVALID_FORMAT"
-        case "format"               => "INVALID_FORMAT"
-        case "enum"                 => "INVALID_ENUM_VALUE"
-        case "minItems"             => "ARRAY_MIN_ITEMS_NOT_MET"
-        case "maxItems"             => "LENGTH_OUT_OF_BOUNDS"
-        case "maxLength"            => "LENGTH_OUT_OF_BOUNDS"
-        case "minLength" if isEmptyString(error) => "CANNOT_BE_EMPTY"
-        case "minLength"            => "LENGTH_OUT_OF_BOUNDS"
-        case _                      => "INVALID_DATA_TYPE"
+      val keyword = KeywordType.fromValue(error.getKeyword)
+      val reason  = keyword match {
+        case KeywordType.REQUIRED                           => "MISSING_REQUIRED_FIELD"
+        case KeywordType.TYPE                               => "INVALID_DATA_TYPE"
+        case KeywordType.ADDITIONAL_PROPERTIES              => "INVALID_DATA_TYPE"
+        case KeywordType.PATTERN                            => "INVALID_FORMAT"
+        case KeywordType.FORMAT                             => "INVALID_FORMAT"
+        case KeywordType.ENUM                               => "INVALID_ENUM_VALUE"
+        case KeywordType.MIN_ITEMS                          => "ARRAY_MIN_ITEMS_NOT_MET"
+        case KeywordType.MAX_ITEMS                          => "LENGTH_OUT_OF_BOUNDS"
+        case KeywordType.MAX_LENGTH                         => "LENGTH_OUT_OF_BOUNDS"
+        case KeywordType.MIN_LENGTH if isEmptyString(error) => "CANNOT_BE_EMPTY"
+        case KeywordType.MIN_LENGTH                         => "LENGTH_OUT_OF_BOUNDS"
+        case _                                              => "INVALID_DATA_TYPE"
       }
       ApiError(pathFor(error, rootPrefix), reason)
     }
 
     private def pathFor(error: Error, rootPrefix: Option[String]): Option[String] = {
       val basePath = applyRootPrefix(normalizePath(error.getInstanceLocation.toString), rootPrefix)
-      error.getKeyword match {
-        case "required" =>
+      KeywordType.fromValue(error.getKeyword) match {
+        case KeywordType.REQUIRED =>
           val property = Option(error.getProperty)
           Some(property.fold(basePath)(appendPath(basePath, _)))
-        case "additionalProperties" =>
+        case KeywordType.ADDITIONAL_PROPERTIES =>
           val property = Option(error.getProperty)
           Some(property.fold(basePath)(appendPath(basePath, _)))
         case _ if basePath.isEmpty =>
@@ -120,7 +122,7 @@ object JsonErrorHandling {
       rootPrefix match {
         case Some(prefix) if path.isEmpty => prefix
         case Some(prefix)                 => s"$prefix.$path"
-        case None                        => path
+        case None                         => path
       }
 
     private def appendPath(base: String, child: String): String =
@@ -129,8 +131,8 @@ object JsonErrorHandling {
     private def isEmptyString(error: Error): Boolean =
       Option(error.getInstanceNode).exists(node => node.isTextual && node.textValue().isEmpty)
 
-    private lazy val notificationSchema = loadSchema("schemas/notification-request-schema.yaml")
-    private lazy val subscriptionSchema = loadSchema("schemas/subscription-request-schema.yaml")
+    private lazy val notificationSchema   = loadSchema("schemas/notification-request-schema.yaml")
+    private lazy val subscriptionSchema   = loadSchema("schemas/subscription-request-schema.yaml")
     private lazy val contactDetailsSchema = loadSchema("schemas/contact-details-request-schema.yaml")
 
     private def loadSchema(path: String): Schema = {
