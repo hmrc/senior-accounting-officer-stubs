@@ -5,10 +5,27 @@ info:
 
 http:
   method: PUT
-  url: "{{baseUrl}}/contact-details/123"
+  url: "{{baseUrl}}/subscriptions"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      {
+        "safeId": "XE000123456789",
+        "company": {
+          "companyName": "Acme Manufacturing Ltd",
+          "uniqueTaxReference": "1234567890",
+          "companyRegistrationNumber": "OC123456"
+        },
+        "contacts": [
+          {
+            "name": "Jane Doe",
+            "email": "jane.doe@example.com"
+          }
+        ]
+      }
   auth: inherit
 
 settings:
