@@ -1,7 +1,7 @@
 info:
-  name: put contact details
+  name: put subscription
   type: http
-  seq: 4
+  seq: 5
 
 http:
   method: PUT
@@ -9,14 +9,6 @@ http:
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
-  body:
-    type: json
-    data: |-
-      {
-        "saoSubscriptionId": "123",
-        "name": "Jane Doe",
-        "email": "jane.doe@acme.example"
-      }
   auth: inherit
 
 settings:

@@ -1,5 +1,5 @@
 info:
-  name: notification
+  name: post notification
   type: http
   seq: 2
 
