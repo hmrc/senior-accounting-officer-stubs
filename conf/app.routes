@@ -1,6 +1,8 @@
 # microservice specific routes
 
 GET         /contact-details/:saoSubscriptionId        uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.getContactDetails(saoSubscriptionId: String)
+PUT         /contact-details/:saoSubscriptionId        uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.putContactDetails(saoSubscriptionId: String)
+
 PUT         /subscriptions                             uk.gov.hmrc.senioraccountingofficerstubs.controllers.SubscriptionsController.putSubscription
 
 POST        /notification/:saoSubscriptionId           uk.gov.hmrc.senioraccountingofficerstubs.controllers.NotificationController.postNotification(saoSubscriptionId: String)
