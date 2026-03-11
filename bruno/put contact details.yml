@@ -6,6 +6,18 @@ info:
 http:
   method: PUT
   url: "{{baseUrl}}/contact-details/123"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      [
+        {
+          "name": "Jane Doe a dear",
+          "email": "jane.doead@acme.example"
+        }
+      ]
   auth: inherit
 
 settings:
