@@ -19,6 +19,7 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 
 import javax.inject.Inject
 
@@ -39,13 +40,16 @@ class ContactDetailsController @Inject() (cc: ControllerComponents) extends Back
     }
   }
 
-  def putContactDetails(saoSubscriptionId: String): Action[AnyContent] = Action { implicit request =>
-    if saoSubscriptionId == stubbedSaoSubscriptionId then {
-      NoContent
-    } else {
-      NotFound
+  def putContactDetails(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText) { implicit request =>
+    JsonErrorHandling.parseJson(request.body) match {
+      case Right(json) =>
+        val errors = JsonErrorHandling.Validators.validateContactDetails(json)
+        if errors.nonEmpty then JsonErrorHandling.badRequest(errors)
+        else if saoSubscriptionId == stubbedSaoSubscriptionId then NoContent
+        else NotFound
+      case Left(errorResult) =>
+        errorResult
     }
-
   }
 
 }

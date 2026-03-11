@@ -26,34 +26,103 @@ import play.api.test.Helpers.*
 
 class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
-  private val controller = app.injector.instanceOf[SubscriptionsController]
+  private val authHeader   = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
+  private val validPayload = Json.obj(
+    "safeId"  -> "XE000123456789",
+    "company" -> Json.obj(
+      "companyName"               -> "Acme Manufacturing Ltd",
+      "uniqueTaxReference"        -> "1234567890",
+      "companyRegistrationNumber" -> "OC123456"
+    ),
+    "contacts" -> Json.arr(
+      Json.obj("name" -> "Jane Doe", "email" -> "jane.doe@example.com")
+    )
+  )
 
   "PUT /subscriptions" should {
     "return 200 for a valid request payload" in {
       val request = FakeRequest("PUT", "/subscriptions")
-        .withJsonBody(Json.obj("subscription" -> Json.obj("name" -> "Test Data Ltd")))
+        .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
+        .withTextBody(validPayload.toString())
 
-      val result = controller.putSubscription(request)
+      val result = route(app, request).get
 
       status(result) shouldBe Status.OK
     }
 
     "return 400 when the request payload is an empty object" in {
       val request = FakeRequest("PUT", "/subscriptions")
-        .withJsonBody(Json.obj())
+        .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
+        .withTextBody(Json.obj().toString())
 
-      val result = controller.putSubscription(request)
+      val result = route(app, request).get
 
       status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj("path" -> "company", "reason"  -> "MISSING_REQUIRED_FIELD"),
+        Json.obj("path" -> "contacts", "reason" -> "MISSING_REQUIRED_FIELD"),
+        Json.obj("path" -> "safeId", "reason"   -> "MISSING_REQUIRED_FIELD")
+      )
     }
 
     "return 400 when the request payload is not a JSON object" in {
       val request = FakeRequest("PUT", "/subscriptions")
-        .withJsonBody(Json.arr("invalid"))
+        .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
+        .withTextBody(Json.arr("invalid").toString())
 
-      val result = controller.putSubscription(request)
+      val result = route(app, request).get
 
       status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj(
+          "path"   -> "body",
+          "reason" -> "INVALID_DATA_TYPE"
+        )
+      )
+    }
+
+    "return 400 when a field fails contract validation" in {
+      val request = FakeRequest("PUT", "/subscriptions")
+        .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
+        .withTextBody(
+          Json
+            .obj(
+              "safeId"  -> "bad safe id",
+              "company" -> Json.obj(
+                "companyName"               -> "Acme Manufacturing Ltd",
+                "uniqueTaxReference"        -> "ABC",
+                "companyRegistrationNumber" -> "BAD"
+              ),
+              "contacts" -> Json.arr(
+                Json.obj("name" -> "", "email" -> "not-an-email")
+              )
+            )
+            .toString()
+        )
+
+      val result = route(app, request).get
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj("path" -> "company.companyRegistrationNumber", "reason" -> "INVALID_FORMAT"),
+        Json.obj("path" -> "company.uniqueTaxReference", "reason"        -> "INVALID_FORMAT"),
+        Json.obj("path" -> "contacts[0].email", "reason"                 -> "INVALID_FORMAT"),
+        Json.obj("path" -> "contacts[0].name", "reason"                  -> "CANNOT_BE_EMPTY"),
+        Json.obj("path" -> "safeId", "reason"                            -> "INVALID_FORMAT")
+      )
+    }
+
+    "return 400 when the request payload is malformed JSON" in {
+      val request = FakeRequest("PUT", "/subscriptions")
+        .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
+        .withTextBody("""{"subscription":""")
+
+      val result = route(app, request).get
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj("reason" -> "MALFORMED_REQUEST")
+      )
     }
   }
 }

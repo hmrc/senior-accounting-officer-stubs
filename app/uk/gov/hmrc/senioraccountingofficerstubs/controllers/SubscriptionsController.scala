@@ -16,18 +16,21 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
-import play.api.libs.json.JsObject
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 
 import javax.inject.Inject
 
 class SubscriptionsController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
-  def putSubscription: Action[AnyContent] = Action { implicit request =>
-    request.body.asJson match {
-      case Some(body: JsObject) if body.value.nonEmpty => Ok
-      case _                                           => BadRequest
+  def putSubscription: Action[String] = Action(parse.tolerantText) { implicit request =>
+    JsonErrorHandling.parseJson(request.body) match {
+      case Right(json) =>
+        val errors = JsonErrorHandling.Validators.validateSubscription(json)
+        if errors.nonEmpty then JsonErrorHandling.badRequest(errors) else Ok
+      case Left(errorResult) =>
+        errorResult
     }
   }
 }
