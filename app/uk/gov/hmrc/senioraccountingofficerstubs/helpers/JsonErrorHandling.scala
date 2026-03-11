@@ -64,7 +64,7 @@ object JsonErrorHandling {
       validate(notificationSchema, json, rootPrefix = None)
 
     def validateSubscription(json: JsValue): Seq[ApiError] =
-      validate(subscriptionSchema, json, rootPrefix = Some("body"))
+      validate(subscriptionSchema, json, rootPrefix = None)
 
     def validateContactDetails(json: JsValue): Seq[ApiError] =
       validate(contactDetailsSchema, json, rootPrefix = None)
@@ -126,7 +126,7 @@ object JsonErrorHandling {
       }
 
     private def appendPath(base: String, child: String): String =
-      if base.isEmpty then s"body.$child" else s"$base.$child"
+      if base.isEmpty then child else s"$base.$child"
 
     private def isEmptyString(error: Error): Boolean =
       Option(error.getInstanceNode).exists(node => node.isTextual && node.textValue().isEmpty)

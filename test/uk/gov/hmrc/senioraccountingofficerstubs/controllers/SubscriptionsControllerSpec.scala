@@ -59,9 +59,9 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
-        Json.obj("path" -> "body.company", "reason"  -> "MISSING_REQUIRED_FIELD"),
-        Json.obj("path" -> "body.contacts", "reason" -> "MISSING_REQUIRED_FIELD"),
-        Json.obj("path" -> "body.safeId", "reason"   -> "MISSING_REQUIRED_FIELD")
+        Json.obj("path" -> "company", "reason"  -> "MISSING_REQUIRED_FIELD"),
+        Json.obj("path" -> "contacts", "reason" -> "MISSING_REQUIRED_FIELD"),
+        Json.obj("path" -> "safeId", "reason"   -> "MISSING_REQUIRED_FIELD")
       )
     }
 
@@ -104,11 +104,11 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
-        Json.obj("path" -> "body.company.companyRegistrationNumber", "reason" -> "INVALID_FORMAT"),
-        Json.obj("path" -> "body.company.uniqueTaxReference", "reason"        -> "INVALID_FORMAT"),
-        Json.obj("path" -> "body.contacts[0].email", "reason"                 -> "INVALID_FORMAT"),
-        Json.obj("path" -> "body.contacts[0].name", "reason"                  -> "CANNOT_BE_EMPTY"),
-        Json.obj("path" -> "body.safeId", "reason"                            -> "INVALID_FORMAT")
+        Json.obj("path" -> "company.companyRegistrationNumber", "reason" -> "INVALID_FORMAT"),
+        Json.obj("path" -> "company.uniqueTaxReference", "reason"        -> "INVALID_FORMAT"),
+        Json.obj("path" -> "contacts[0].email", "reason"                 -> "INVALID_FORMAT"),
+        Json.obj("path" -> "contacts[0].name", "reason"                  -> "CANNOT_BE_EMPTY"),
+        Json.obj("path" -> "safeId", "reason"                            -> "INVALID_FORMAT")
       )
     }
 
