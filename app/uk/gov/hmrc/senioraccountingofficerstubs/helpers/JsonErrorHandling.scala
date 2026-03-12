@@ -69,6 +69,9 @@ object JsonErrorHandling {
     def validateContactDetails(json: JsValue): Seq[ApiError] =
       validate(contactDetailsSchema, json, rootPrefix = None)
 
+    def validateCertificate(json: JsValue): Seq[ApiError] =
+      validate(certificateSchema, json, rootPrefix = None)
+
     private def validate(schema: Schema, json: JsValue, rootPrefix: Option[String]): Seq[ApiError] =
       schema
         .validate(toJackson(json))
@@ -134,6 +137,7 @@ object JsonErrorHandling {
     private lazy val notificationSchema   = loadSchema("schemas/notification-request-schema.yaml")
     private lazy val subscriptionSchema   = loadSchema("schemas/subscription-request-schema.yaml")
     private lazy val contactDetailsSchema = loadSchema("schemas/contact-details-request-schema.yaml")
+    private lazy val certificateSchema    = loadSchema("schemas/certificate-request-schema.yaml")
 
     private def loadSchema(path: String): Schema = {
       val resource = Option(getClass.getClassLoader.getResourceAsStream(path))
