@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: http://localhost:10061/notification/123
+  url: "{{baseUrl}}/notification/123"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
