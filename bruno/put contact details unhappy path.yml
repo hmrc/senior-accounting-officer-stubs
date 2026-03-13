@@ -1,23 +1,22 @@
 info:
-  name: put contact details
+  name: put contact details unhappy path
   type: http
-  seq: 4
+  seq: 8
 
 http:
   method: PUT
-  url: "{{baseUrl}}/contact-details/123"
+  url: "{{baseUrl}}/contact-details"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
   body:
     type: json
     data: |-
-      [
-        {
-          "name": "Jane Doe",
-          "email": "jane.doe@acme.com"
-        }
-      ]
+      {
+        "saoSubscriptionId": "123",
+        "name": "Jane Doe",
+        "email": "jane.doe@acme.example"
+      }
   auth: inherit
 
 settings:
