@@ -5,18 +5,19 @@ info:
 
 http:
   method: PUT
-  url: "{{baseUrl}}/contact-details"
+  url: "{{baseUrl}}/contact-details/456"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
   body:
     type: json
     data: |-
-      {
-        "saoSubscriptionId": "123",
-        "name": "Jane Doe",
-        "email": "jane.doe@acme.example"
-      }
+      [
+        {
+          "name": "Jane Doe",
+          "email": "jane.doe@acme.com"
+        }
+      ]
   auth: inherit
 
 settings:
