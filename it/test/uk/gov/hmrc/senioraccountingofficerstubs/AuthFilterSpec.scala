@@ -43,7 +43,7 @@ class AuthFilterSpec
     GuiceApplicationBuilder()
       .build()
 
-  "Auth filter - Contact-details" should {
+  "Auth filter - GET Contact-details" should {
     "respond with 401 status when no authorisation header is provided" in {
       val response =
         wsClient
@@ -81,6 +81,47 @@ class AuthFilterSpec
           .futureValue
 
       response.status shouldBe 200
+    }
+  }
+
+  "Auth filter - PUT Contact-details" should {
+    "respond with 401 status when no authorisation header is provided" in {
+      val response =
+        wsClient
+          .url(s"$baseUrl/contact-details/$knownSubscriptionId")
+          .put(Json.obj("name" -> "Firstname Lastname", "email" -> "test@example.com"))
+          .futureValue
+
+      response.status shouldBe 401
+    }
+
+    "respond with 401 status when an invalid authorisation header is provided" in {
+      val response =
+        wsClient
+          .url(s"$baseUrl/contact-details/$knownSubscriptionId")
+          .withHttpHeaders(("Authorization", "testHeader"))
+          .put(Json.obj("name" -> "Firstname Lastname", "email" -> "test@example.com"))
+          .futureValue
+
+      response.status shouldBe 401
+    }
+
+    "respond with 200 status when an authorisation header is provided" in {
+
+      val base64String       = "Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
+      val decodedAuth        = java.util.Base64.getDecoder.decode(base64String)
+      val stringAuth: String = new String(decodedAuth)
+
+      stringAuth shouldBe s"${appConfig.clientId}:${appConfig.clientSecret}"
+
+      val response =
+        wsClient
+          .url(s"$baseUrl/contact-details/$knownSubscriptionId")
+          .withHttpHeaders(("Authorization", s"Basic $base64String"))
+          .put(Json.obj("name" -> "Firstname Lastname", "email" -> "test@example.com"))
+          .futureValue
+
+      response.status shouldBe 204
     }
   }
 
