@@ -12,11 +12,12 @@ http:
   body:
     type: json
     data: |-
-      {
-        "saoSubscriptionId": "123",
-        "name": "Jane Doe",
-        "email": "jane.doe@acme.example"
-      }
+      [
+        {
+          "name": "Jane Doe",
+          "email": "jane.doe@acme.com"
+        }
+      ]
   auth: inherit
 
 settings:
