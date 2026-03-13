@@ -17,22 +17,20 @@
 package uk.gov.hmrc.senioraccountingofficerstubs.filters
 
 import org.apache.pekko.stream.Materializer
-import play.api.mvc.Filter
-import play.api.mvc.RequestHeader
-import play.api.mvc.Result
 import play.api.mvc.Results.Unauthorized
+import play.api.mvc.{Filter, RequestHeader, Result}
 import uk.gov.hmrc.senioraccountingofficerstubs.config.AppConfig
-
-import scala.concurrent.Future
 
 import java.util.Base64
 import javax.inject.Inject
+import scala.concurrent.Future
 
 class AuthFilter @Inject() (appConfig: AppConfig)(using m: Materializer) extends Filter {
 
   override implicit def mat: Materializer = m
 
   override def apply(nextFilter: RequestHeader => Future[Result])(requestHeader: RequestHeader): Future[Result] = {
+
     if isHealthCheck(requestHeader.path) then {
       nextFilter(requestHeader)
     } else {
