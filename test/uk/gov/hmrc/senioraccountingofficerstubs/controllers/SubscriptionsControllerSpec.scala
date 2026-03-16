@@ -45,7 +45,12 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody(validPayload.toString())
 
-      val result = route(app, request).get
+      val maybeResult = route(app, request)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       status(result) shouldBe Status.OK
     }
@@ -55,7 +60,12 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody(Json.obj().toString())
 
-      val result = route(app, request).get
+      val maybeResult = route(app, request)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -70,7 +80,12 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody(Json.arr("invalid").toString())
 
-      val result = route(app, request).get
+      val maybeResult = route(app, request)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -100,7 +115,12 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
             .toString()
         )
 
-      val result = route(app, request).get
+      val maybeResult = route(app, request)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -117,7 +137,12 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody("""{"subscription":""")
 
-      val result = route(app, request).get
+      val maybeResult = route(app, request)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(

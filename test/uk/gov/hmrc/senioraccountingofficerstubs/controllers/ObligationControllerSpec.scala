@@ -21,20 +21,24 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.libs.json.JsArray
+import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import play.api.test.{FakeRequest, Helpers}
 
 class ObligationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
-
-  private val fakeGETRequest = FakeRequest("GET", "/obligation")
-  private val controller     = app.injector.instanceOf[ObligationController]
 
   private val knownId   = "123"
   private val unknownId = "567"
 
   "GET /obligation/:saoSubscriptionId" should {
     "return 200 and obligation for a known saoSubscriptionId" in {
-      val result = controller.getObligation(knownId)(fakeGETRequest)
+      val request     = FakeRequest("GET", s"/obligation/$knownId")
+      val maybeResult = route(app, request)
+
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       status(result) shouldBe Status.OK
       val json = contentAsJson(result)
@@ -65,7 +69,15 @@ class ObligationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAp
     }
 
     "return a 404 for an unknown saoSubscriptionId" in {
-      val result = controller.getObligation(unknownId)(fakeGETRequest)
+      val request     = FakeRequest("GET", s"/obligation/$unknownId")
+      val maybeResult = route(app, request)
+
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
+
       status(result) shouldBe Status.NOT_FOUND
     }
   }

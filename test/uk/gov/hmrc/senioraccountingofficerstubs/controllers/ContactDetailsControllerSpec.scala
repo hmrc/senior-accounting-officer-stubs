@@ -57,7 +57,12 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody("""[{"name":"Jane Doe","email":"jane.doe@example.com"}]""")
 
-      val result = route(app, request).get
+      val maybeResult = route(app, request)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       status(result) shouldBe Status.NO_CONTENT
     }
@@ -67,7 +72,12 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody("""[{"name":"Jane Doe","email":"jane.doe@example.com"}]""")
 
-      val result = route(app, request).get
+      val maybeResult = route(app, request)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       status(result) shouldBe Status.NOT_FOUND
     }
@@ -77,7 +87,12 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody("""{"name":"Jane Doe"}""")
 
-      val result = route(app, request).get
+      val maybeResult = route(app, request)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -90,7 +105,12 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody("""[{"email":"jane.doe@example.com"}]""")
 
-      val result = route(app, request).get
+      val maybeResult = route(app, request)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -103,7 +123,12 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody("""[{"name":"Jane Doe"}""")
 
-      val result = route(app, request).get
+      val maybeResult = route(app, request)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
