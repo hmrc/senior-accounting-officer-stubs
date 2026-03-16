@@ -13,6 +13,15 @@ http:
     type: json
     data: |-
       {
+        "declaration": {
+          "seniorAccountingOfficer": {
+            "name": "Firstname Lastname",
+            "email": "Firstname.Lastname@example.com"
+          },
+          "proxy": {
+            "name": "Firstname Lastname"
+          }
+        },
         "companies": [
           {
             "companyName": "Example Ltd",
@@ -20,6 +29,11 @@ http:
             "companyReferenceNumber": "AB123456",
             "companyType": "LTD",
             "financialYearEndDate": "2024-12-31",
+            "qualifiedRegimes": [
+              "CORPORATION",
+              "VALUE_ADDED"
+            ],
+            "qualificationStatement": "All relevant corporation and VAT obligations have been delayed due to grievance.",
             "seniorAccountingOfficers": [
               {
                 "name": "Firstname Lastname",
@@ -29,7 +43,7 @@ http:
               },
               {
                 "name": "Secondpersonname Theirlastname",
-                "email": "nonemptyemail@companyname.com",
+                "email": "non.empty.email@companyname.com",
                 "startDate": "2024-12-01",
                 "endDate": "2025-12-31"
               }
@@ -41,12 +55,17 @@ http:
             "companyReferenceNumber": "CD654321",
             "companyType": "PLC",
             "financialYearEndDate": "2024-06-30",
+            "isDormant": true,
+            "isInAdministration": false,
+            "qualifiedRegimes": [
+              "PAY_AS_YOU_EARN",
+              "PETROLEUM_REVENUE"
+            ],
             "seniorAccountingOfficers": [
               {
-                "name": "Firstname Lastname",
-                "email": "Firstname.Lastname@example.com",
-                "startDate": "2024-04-01",
-                "endDate": "2025-03-31"
+                "name": "Another Officer",
+                "startDate": "2024-05-01",
+                "endDate": "2025-04-30"
               }
             ]
           }

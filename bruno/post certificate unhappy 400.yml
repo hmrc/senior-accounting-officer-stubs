@@ -12,7 +12,7 @@ http:
   body:
     type: json
     data: |-
-      {
+      {@@@@@
         "declaration": {
           "seniorAccountingOfficer": {
             "name": "Firstname Lastname",
