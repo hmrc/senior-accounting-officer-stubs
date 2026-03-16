@@ -1,11 +1,11 @@
 info:
-  name: put contact details
+  name: put contact details (400) Invalid body
   type: http
-  seq: 4
+  seq: 7
 
 http:
   method: PUT
-  url: "{{baseUrl}}/contact-details/123"
+  url: "{{baseUrl}}/contact-details/456"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
@@ -13,7 +13,7 @@ http:
     type: json
     data: |-
       [
-        {
+        {@@@
           "name": "Jane Doe",
           "email": "jane.doe@acme.com"
         }

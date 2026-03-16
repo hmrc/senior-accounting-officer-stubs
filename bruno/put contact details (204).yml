@@ -1,14 +1,24 @@
 info:
-  name: get contact details
+  name: put contact details (204)
   type: http
-  seq: 3
+  seq: 5
 
 http:
-  method: GET
+  method: PUT
   url: "{{baseUrl}}/contact-details/123"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      [
+        {
+          "name": "Jane Doe",
+          "email": "jane.doe@acme.com"
+        }
+      ]
+  auth: inherit
 
 settings:
   encodeUrl: true
