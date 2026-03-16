@@ -1,11 +1,11 @@
 info:
-  name: post certificate
+  name: post certificate (404) Unhappy path
   type: http
-  seq: 10
+  seq: 11
 
 http:
   method: POST
-  url: "{{baseUrl}}/certificate/123"
+  url: "{{baseUrl}}/certificate/456"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}

@@ -1,18 +1,18 @@
 info:
-  name: post certificate unhappy path
+  name: post certificate (400) Invalid body
   type: http
-  seq: 11
+  seq: 12
 
 http:
   method: POST
-  url: "{{baseUrl}}/certificate/456"
+  url: "{{baseUrl}}/certificate/123"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
   body:
     type: json
     data: |-
-      {
+      {@@@@@
         "declaration": {
           "seniorAccountingOfficer": {
             "name": "Firstname Lastname",
