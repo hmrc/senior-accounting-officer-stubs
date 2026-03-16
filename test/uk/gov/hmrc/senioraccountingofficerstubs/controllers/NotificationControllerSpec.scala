@@ -89,7 +89,12 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(validNotificationRequest.toString())
 
-      val result = route(app, fakePOSTRequest).get
+      val maybeResult = route(app, fakePOSTRequest)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       val testNotificationResponse = Json.obj(
         "id"        -> "NOT0123456789",
@@ -106,7 +111,12 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(validNotificationRequest.toString())
 
-      val result = route(app, fakePOSTRequest).get
+      val maybeResult = route(app, fakePOSTRequest)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       status(result) shouldBe Status.NOT_FOUND
     }
@@ -116,7 +126,12 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(invalidNotificationRequest.toString())
 
-      val result = route(app, fakePOSTRequest).get
+      val maybeResult = route(app, fakePOSTRequest)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -132,7 +147,12 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody("""{"companies":["Test"]""")
 
-      val result = route(app, fakePOSTRequest).get
+      val maybeResult = route(app, fakePOSTRequest)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None        => fail("Expected route to be defined")
+      }
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(

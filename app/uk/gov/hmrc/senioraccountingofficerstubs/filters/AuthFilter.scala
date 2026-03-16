@@ -21,9 +21,10 @@ import play.api.mvc.Results.Unauthorized
 import play.api.mvc.{Filter, RequestHeader, Result}
 import uk.gov.hmrc.senioraccountingofficerstubs.config.AppConfig
 
+import scala.concurrent.Future
+
 import java.util.Base64
 import javax.inject.Inject
-import scala.concurrent.Future
 
 class AuthFilter @Inject() (appConfig: AppConfig)(using m: Materializer) extends Filter {
 
