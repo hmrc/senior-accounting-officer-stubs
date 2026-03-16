@@ -71,6 +71,7 @@ class AuthFilterSpec
       val decodedAuth        = java.util.Base64.getDecoder.decode(base64String)
       val stringAuth: String = new String(decodedAuth)
 
+      
       stringAuth shouldBe s"${appConfig.clientId}:${appConfig.clientSecret}"
 
       val response =
@@ -118,7 +119,14 @@ class AuthFilterSpec
         wsClient
           .url(s"$baseUrl/contact-details/$knownSubscriptionId")
           .withHttpHeaders(("Authorization", s"Basic $base64String"))
-          .put(Json.obj("name" -> "Firstname Lastname", "email" -> "test@example.com"))
+          .put(
+            Json.arr(
+              Json.obj(
+                "name"  -> "Firstname Lastname",
+                "email" -> "test@example.com"
+              )
+            )
+          )
           .futureValue
 
       response.status shouldBe 204
@@ -159,7 +167,21 @@ class AuthFilterSpec
         wsClient
           .url(s"$baseUrl/subscriptions")
           .withHttpHeaders(("Authorization", s"Basic $base64String"))
-          .put(Json.obj("subscription" -> Json.obj("name" -> "Test Data Ltd")))
+          .put(Json.obj(
+            "safeId" -> "XE000123456789",
+            "company" -> Json.obj(
+              "companyName" -> "Acme Manufacturing Ltd",
+              "uniqueTaxReference" -> "1234567890",
+              "companyRegistrationNumber" -> "OC123456"
+            ),
+            "contacts" -> Json.arr(
+              Json.obj(
+                "name" -> "Jane Doe",
+                "email" -> "jane.doe@example.com"
+              )
+            )
+          )
+          )
           .futureValue
 
       response.status shouldBe 200
