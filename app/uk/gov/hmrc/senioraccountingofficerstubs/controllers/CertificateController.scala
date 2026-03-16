@@ -39,7 +39,7 @@ class CertificateController @Inject() (cc: ControllerComponents) extends Backend
         if errors.nonEmpty then JsonErrorHandling.badRequest(errors)
         else if saoSubscriptionId == stubbedSaoSubscriptionId then Ok(Json.toJson(stubbedCertificateResponse))
         else NotFound
-      case Left(_) => BadRequest
+      case Left(errorResult) => errorResult
     }
   }
 }
