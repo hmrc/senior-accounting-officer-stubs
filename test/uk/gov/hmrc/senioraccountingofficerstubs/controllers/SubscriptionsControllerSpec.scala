@@ -26,6 +26,7 @@ import play.api.test.Helpers.*
 
 class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
+  private val knownId      = "123"
   private val authHeader   = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
   private val validPayload = Json.obj(
     "safeId"  -> "XE000123456789",
@@ -41,7 +42,7 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
 
   "PUT /subscriptions" should {
     "return 200 for a valid request payload" in {
-      val request = FakeRequest("PUT", "/subscriptions")
+      val request = FakeRequest("PUT", s"/subscriptions/$knownId")
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody(validPayload.toString())
 
@@ -52,11 +53,19 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
         case None        => fail("Expected route to be defined")
       }
 
+      val testSubscriptionResponse = Json.obj(
+        "saoSubscriptionId" -> "123",
+        "timestamp"         -> "2026-03-01T12:00:14Z"
+      )
+
       status(result) shouldBe Status.OK
+
+      contentAsJson(result) shouldBe testSubscriptionResponse
+
     }
 
     "return 400 when the request payload is an empty object" in {
-      val request = FakeRequest("PUT", "/subscriptions")
+      val request = FakeRequest("PUT", s"/subscriptions/$knownId")
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody(Json.obj().toString())
 
@@ -76,7 +85,7 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
     }
 
     "return 400 when the request payload is not a JSON object" in {
-      val request = FakeRequest("PUT", "/subscriptions")
+      val request = FakeRequest("PUT", s"/subscriptions/$knownId")
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody(Json.arr("invalid").toString())
 
@@ -97,7 +106,7 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
     }
 
     "return 400 when a field fails contract validation" in {
-      val request = FakeRequest("PUT", "/subscriptions")
+      val request = FakeRequest("PUT", s"/subscriptions/$knownId")
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody(
           Json
@@ -133,7 +142,7 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
     }
 
     "return 400 when the request payload is malformed JSON" in {
-      val request = FakeRequest("PUT", "/subscriptions")
+      val request = FakeRequest("PUT", s"/subscriptions/$knownId")
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody("""{"subscription":""")
 

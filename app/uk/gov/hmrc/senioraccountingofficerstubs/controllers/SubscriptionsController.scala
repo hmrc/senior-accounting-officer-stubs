@@ -16,19 +16,29 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
+import play.api.libs.json.Json
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
+import uk.gov.hmrc.senioraccountingofficerstubs.models.SubscriptionResponse
 
 import javax.inject.Inject
 
 class SubscriptionsController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
-  def putSubscription: Action[String] = Action(parse.tolerantText) { implicit request =>
+  private val stubbedSaoSubscriptionId    = "123"
+  private val stubbedSubscriptionResponse = SubscriptionResponse(
+    "123",
+    "2026-03-01T12:00:14Z"
+  )
+
+  def putSubscription(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText) { implicit request =>
     JsonErrorHandling.parseJson(request.body) match {
       case Right(json) =>
         val errors = JsonErrorHandling.Validators.validateSubscription(json)
-        if errors.nonEmpty then JsonErrorHandling.badRequest(errors) else Ok
+        if errors.nonEmpty then JsonErrorHandling.badRequest(errors)
+        else if saoSubscriptionId == stubbedSaoSubscriptionId then Ok(Json.toJson(stubbedSubscriptionResponse))
+        else NotFound
       case Left(errorResult) =>
         errorResult
     }
