@@ -1,7 +1,7 @@
 info:
-  name: put subscription
+  name: put subscription (400) Invalid body
   type: http
-  seq: 14
+  seq: 13
 
 http:
   method: PUT
@@ -12,7 +12,7 @@ http:
   body:
     type: json
     data: |-
-      {
+      {@@@
         "safeId": "XE000123456789",
         "company": {
           "companyName": "Acme Manufacturing Ltd",
