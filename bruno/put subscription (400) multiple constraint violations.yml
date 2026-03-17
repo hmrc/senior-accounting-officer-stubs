@@ -1,0 +1,37 @@
+info:
+  name: put subscription (400) multiple constraint violations
+  type: http
+  seq: 18
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/subscriptions"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      {
+        //"safeId": "XE000123456789",
+        "company": {
+          "companyName": "Acme Manufacturing Ltd",
+          "uniqueTaxReference": "12345678901212121212121212",
+          "CompanyRegistrationNumber": "OC123456"
+        },
+        "contacts": [
+          {
+            "name": "",
+            "email": "jane.doe.example.com"
+          },
+          {
+          }
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
