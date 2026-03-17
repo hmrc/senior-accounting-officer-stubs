@@ -1,11 +1,11 @@
 info:
-  name: post notification
+  name: post notification (404) Invalid Id
   type: http
-  seq: 1
+  seq: 2
 
 http:
   method: POST
-  url: "{{baseUrl}}/notification/123"
+  url: "{{baseUrl}}/notification/456"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}

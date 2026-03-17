@@ -1,11 +1,11 @@
 info:
-  name: post notification unhappy path
+  name: post notification (200)
   type: http
-  seq: 2
+  seq: 1
 
 http:
   method: POST
-  url: "{{baseUrl}}/notification/456"
+  url: "{{baseUrl}}/notification/123"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}

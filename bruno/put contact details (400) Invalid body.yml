@@ -1,7 +1,7 @@
 info:
   name: put contact details (400) Invalid body
   type: http
-  seq: 7
+  seq: 8
 
 http:
   method: PUT
