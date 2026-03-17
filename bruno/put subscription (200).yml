@@ -1,5 +1,5 @@
 info:
-  name: put subscription
+  name: put subscription (200)
   type: http
   seq: 5
 
