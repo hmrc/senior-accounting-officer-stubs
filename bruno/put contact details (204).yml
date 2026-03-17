@@ -1,0 +1,31 @@
+info:
+  name: put contact details (204)
+  type: http
+  seq: 6
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/contact-details/123"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      [
+        {
+          "name": "Jane Doe",
+          "email": "jane.doe@acme.com"
+        }, 
+          {
+          "name": "John Smith",
+          "email": "john.smith@acme.com"
+        }
+      ]
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

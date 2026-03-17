@@ -27,7 +27,6 @@ class ContactDetailsController @Inject() (cc: ControllerComponents) extends Back
 
   private val stubbedSaoSubscriptionId     = "123"
   private val stubbedContactDetailsPayload = Json.obj(
-    "saoSubscriptionId" -> stubbedSaoSubscriptionId,
     "name"              -> "Jane Doe",
     "email"             -> "jane.doe@acme.example"
   )

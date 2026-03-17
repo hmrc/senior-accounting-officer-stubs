@@ -1,7 +1,7 @@
 info:
   name: get obligation unhappy path
   type: http
-  seq: 2
+  seq: 13
 
 http:
   method: GET

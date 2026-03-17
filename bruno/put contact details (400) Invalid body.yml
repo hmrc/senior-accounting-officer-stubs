@@ -1,5 +1,5 @@
 info:
-  name: put contact details unhappy path
+  name: put contact details (400) Invalid body
   type: http
   seq: 8
 
@@ -13,7 +13,7 @@ http:
     type: json
     data: |-
       [
-        {
+        {@@@
           "name": "Jane Doe",
           "email": "jane.doe@acme.com"
         }
