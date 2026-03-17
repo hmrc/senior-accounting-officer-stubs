@@ -1,7 +1,7 @@
 info:
   name: post certificate (400) Invalid body
   type: http
-  seq: 12
+  seq: 13
 
 http:
   method: POST
