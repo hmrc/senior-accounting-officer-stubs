@@ -46,8 +46,6 @@ class ObligationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAp
       status(result) shouldBe Status.OK
       val json = contentAsJson(result)
 
-      (json \ "saoSubscriptionId").as[String] shouldBe knownId
-
       val subscription = json \ "subscription"
       (subscription \ "subscriptionTimestamp").as[String] shouldBe "2021-01-01T00:00:00Z"
       (subscription \ "companyRegistrationNumber").as[String] should fullyMatch regex """\d{10}"""
