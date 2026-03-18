@@ -1,11 +1,11 @@
 info:
-  name: put subscription (200)
+  name: put subscription (404) Invalid Id
   type: http
-  seq: 17
+  seq: 20
 
 http:
   method: PUT
-  url: "{{baseUrl}}/subscriptions/123"
+  url: "{{baseUrl}}/subscriptions/456"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}

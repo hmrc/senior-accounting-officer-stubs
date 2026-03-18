@@ -5,7 +5,7 @@ info:
 
 http:
   method: PUT
-  url: "{{baseUrl}}/subscriptions"
+  url: "{{baseUrl}}/subscriptions/123"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
