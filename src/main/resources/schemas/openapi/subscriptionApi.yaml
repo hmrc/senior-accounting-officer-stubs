@@ -75,6 +75,8 @@ paths:
                   summary: Payload contains an unknown field or wrong type
                   value:
                     - reason: "MALFORMED_REQUEST"
+        "404":
+          description: Subscription not found
         "422":
           description: Semantically incorrect input
           content:
