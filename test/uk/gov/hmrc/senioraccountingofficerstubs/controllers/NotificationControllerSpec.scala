@@ -296,74 +296,142 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       )
     }
 
-    //TODO - can't reach this! It is giving a 200 when additional paths are added...
-//    "return a structured 400 for constraint violation with invalid data type" in {
-//
-//      val notificationRequestInvalidDataType = Json.parse(
-//        """
-//          |{
-//          |"companies": [
-//          |     {
-//          |     "companyName": "Example Ltd",
-//          |     "uniqueTaxReference": "1234567890",
-//          |     "companyReferenceNumber": "AB123456",
-//          |     "companyType": "LTD",
-//          |     "financialYearEndDate": "2024-12-31",
-//          |     "seniorAccountingOfficers": [
-//          |         {
-//          |         "name": "Firstname Lastname",
-//          |         "email": "Firstname.Lastname@example.com",
-//          |         "startDate": "2024-04-01",
-//          |         "endDate": "2025-03-31"
-//          |         },
-//          |         {
-//          |         "name": "Secondpersonname Theirlastname",
-//          |         "email": "nonemptyemail@companyname.com",
-//          |         "startDate": "2024-12-01",
-//          |         "endDate": "2025-12-31"
-//          |         }
-//          |       ]
-//          |      },
-//          |       {
-//          |         "companyName": "Example PLC",
-//          |         "uniqueTaxReference": "0987654321",
-//          |         "companyReferenceNumber": "CD654321",
-//          |         "companyType": "PLC",
-//          |         "financialYearEndDate": "2024-06-30",
-//          |         "seniorAccountingOfficers": [
-//          |         {
-//          |            "name": "Firstname Lastname",
-//          |            "email": "Firstname.Lastname@example.com",
-//          |            "startDate": "2024-04-01",
-//          |            "endDate": "2025-03-31"
-//          |         }
-//          |       ]
-//          |       }
-//          |   ],
-//          |"additionalInformation": "non-empty string"
-//          |}
-//          |""".stripMargin
-//      )
-//
-//      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
-//        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-//        .withTextBody(notificationRequestInvalidDataType.toString())
-//
-//      val maybeResult = route(app, fakePOSTRequest)
-//      maybeResult shouldBe defined
-//      val result = maybeResult match {
-//        case Some(value) => value
-//        case None => fail("Expected route to be defined")
-//      }
-//
-//      status(result) shouldBe Status.BAD_REQUEST
-//      contentAsJson(result) shouldBe Json.arr(
-//        Json.obj(
-//          "path" -> "companies[0].companyName",
-//          "reason" -> "INVALID_DATA_TYPE"
-//        )
-//      )
-//    }
+    "return a structured 400 for constraint violation with invalid data type" in {
+
+      val notificationRequestInvalidDataType = Json.parse(
+        """
+          |{
+          |"companies": [
+          |     {
+          |     "companyName": 123,
+          |     "uniqueTaxReference": "1234567890",
+          |     "companyReferenceNumber": "AB123456",
+          |     "companyType": "LTD",
+          |     "financialYearEndDate": "2024-12-31",
+          |     "seniorAccountingOfficers": [
+          |         {
+          |         "name": "Firstname Lastname",
+          |         "email": "Firstname.Lastname@example.com",
+          |         "startDate": "2024-04-01",
+          |         "endDate": "2025-03-31"
+          |         },
+          |         {
+          |         "name": "Secondpersonname Theirlastname",
+          |         "email": "nonemptyemail@companyname.com",
+          |         "startDate": "2024-12-01",
+          |         "endDate": "2025-12-31"
+          |         }
+          |       ]
+          |      },
+          |       {
+          |         "companyName": "Example PLC",
+          |         "uniqueTaxReference": "0987654321",
+          |         "companyReferenceNumber": "CD654321",
+          |         "companyType": "PLC",
+          |         "financialYearEndDate": "2024-06-30",
+          |         "seniorAccountingOfficers": [
+          |         {
+          |            "name": "Firstname Lastname",
+          |            "email": "Firstname.Lastname@example.com",
+          |            "startDate": "2024-04-01",
+          |            "endDate": "2025-03-31"
+          |         }
+          |       ]
+          |       }
+          |   ],
+          |"additionalInformation": "non-empty string"
+          |}
+          |""".stripMargin
+      )
+
+      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody(notificationRequestInvalidDataType.toString())
+
+      val maybeResult = route(app, fakePOSTRequest)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None => fail("Expected route to be defined")
+      }
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj(
+          "path" -> "companies[0].companyName",
+          "reason" -> "INVALID_DATA_TYPE"
+        )
+      )
+    }
+
+    "return a structured 400 for constraint violation with invalid data type when there is an additional json property" in {
+
+      val notificationRequestExtraProperty = Json.parse(
+        """
+          |{
+          |"extraProperty": "I shouldn't be here",
+          |"companies": [
+          |     {
+          |     "companyName": "Test name",
+          |     "uniqueTaxReference": "1234567890",
+          |     "companyReferenceNumber": "AB123456",
+          |     "companyType": "LTD",
+          |     "financialYearEndDate": "2024-12-31",
+          |     "seniorAccountingOfficers": [
+          |         {
+          |         "name": "Firstname Lastname",
+          |         "email": "Firstname.Lastname@example.com",
+          |         "startDate": "2024-04-01",
+          |         "endDate": "2025-03-31"
+          |         },
+          |         {
+          |         "name": "Secondpersonname Theirlastname",
+          |         "email": "nonemptyemail@companyname.com",
+          |         "startDate": "2024-12-01",
+          |         "endDate": "2025-12-31"
+          |         }
+          |       ]
+          |      },
+          |       {
+          |         "companyName": "Example PLC",
+          |         "uniqueTaxReference": "0987654321",
+          |         "companyReferenceNumber": "CD654321",
+          |         "companyType": "PLC",
+          |         "financialYearEndDate": "2024-06-30",
+          |         "seniorAccountingOfficers": [
+          |         {
+          |            "name": "Firstname Lastname",
+          |            "email": "Firstname.Lastname@example.com",
+          |            "startDate": "2024-04-01",
+          |            "endDate": "2025-03-31"
+          |         }
+          |       ]
+          |       }
+          |   ],
+          |"additionalInformation": "non-empty string"
+          |}
+          |""".stripMargin
+      )
+
+      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody(notificationRequestExtraProperty.toString())
+
+      val maybeResult = route(app, fakePOSTRequest)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None => fail("Expected route to be defined")
+      }
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj(
+          "path" -> "extraProperty",
+          "reason" -> "INVALID_DATA_TYPE"
+        )
+      )
+    }
 
     "return a structured 400 for constraint violation with array min items not met" in {
 
@@ -622,7 +690,6 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         )
       )
     }
-
 
   }
 }
