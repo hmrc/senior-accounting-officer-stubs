@@ -159,5 +159,470 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         Json.obj("reason" -> "MALFORMED_REQUEST")
       )
     }
+
+    "return a structured 400 for constraint violation with invalid format" in {
+
+      val notificationRequestInvalidFormat = Json.parse(
+        """
+          |{
+          |"companies": [
+          |     {
+          |     "companyName": "Test Name",
+          |     "uniqueTaxReference": "1234567890",
+          |     "companyReferenceNumber": "AB123456",
+          |     "companyType": "LTD",
+          |     "financialYearEndDate": "2024-12-31",
+          |     "seniorAccountingOfficers": [
+          |         {
+          |         "name": "Firstname Lastname",
+          |         "email": "Firstname.Lastname example.com",
+          |         "startDate": "2024-04-01",
+          |         "endDate": "2025-03-31"
+          |         },
+          |         {
+          |         "name": "Secondpersonname Theirlastname",
+          |         "email": "nonemptyemail@companyname.com",
+          |         "startDate": "2024-12-01",
+          |         "endDate": "2025-12-31"
+          |         }
+          |       ]
+          |      },
+          |       {
+          |         "companyName": "Example PLC",
+          |         "uniqueTaxReference": "0987654321",
+          |         "companyReferenceNumber": "CD654321",
+          |         "companyType": "PLC",
+          |         "financialYearEndDate": "2024-06-30",
+          |         "seniorAccountingOfficers": [
+          |         {
+          |            "name": "Firstname Lastname",
+          |            "email": "Firstname.Lastname@example.com",
+          |            "startDate": "2024-04-01",
+          |            "endDate": "2025-03-31"
+          |         }
+          |       ]
+          |       }
+          |   ],
+          |"additionalInformation": "non-empty string"
+          |}
+          |""".stripMargin
+      )
+
+      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody(notificationRequestInvalidFormat.toString())
+
+      val maybeResult = route(app, fakePOSTRequest)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None => fail("Expected route to be defined")
+      }
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj(
+          "path" -> "companies[0].seniorAccountingOfficers[0].email",
+          "reason" -> "INVALID_FORMAT"
+        )
+      )
+    }
+
+    "return a structured 400 for constraint violation with cannot be empty" in {
+
+      val notificationRequestCannotBeEmpty = Json.parse(
+        """
+          |{
+          |"companies": [
+          |     {
+          |     "companyName": "",
+          |     "uniqueTaxReference": "1234567890",
+          |     "companyReferenceNumber": "AB123456",
+          |     "companyType": "LTD",
+          |     "financialYearEndDate": "2024-12-31",
+          |     "seniorAccountingOfficers": [
+          |         {
+          |         "name": "Firstname Lastname",
+          |         "email": "Firstname.Lastname@example.com",
+          |         "startDate": "2024-04-01",
+          |         "endDate": "2025-03-31"
+          |         },
+          |         {
+          |         "name": "Secondpersonname Theirlastname",
+          |         "email": "nonemptyemail@companyname.com",
+          |         "startDate": "2024-12-01",
+          |         "endDate": "2025-12-31"
+          |         }
+          |       ]
+          |      },
+          |       {
+          |         "companyName": "Example PLC",
+          |         "uniqueTaxReference": "0987654321",
+          |         "companyReferenceNumber": "CD654321",
+          |         "companyType": "PLC",
+          |         "financialYearEndDate": "2024-06-30",
+          |         "seniorAccountingOfficers": [
+          |         {
+          |            "name": "Firstname Lastname",
+          |            "email": "Firstname.Lastname@example.com",
+          |            "startDate": "2024-04-01",
+          |            "endDate": "2025-03-31"
+          |         }
+          |       ]
+          |       }
+          |   ],
+          |"additionalInformation": "non-empty string"
+          |}
+          |""".stripMargin
+      )
+
+      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody(notificationRequestCannotBeEmpty.toString())
+
+      val maybeResult = route(app, fakePOSTRequest)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None => fail("Expected route to be defined")
+      }
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj(
+          "path" -> "companies[0].companyName",
+          "reason" -> "CANNOT_BE_EMPTY"
+        )
+      )
+    }
+
+    //TODO - can't reach this! It is giving a 200 when additional paths are added...
+//    "return a structured 400 for constraint violation with invalid data type" in {
+//
+//      val notificationRequestInvalidDataType = Json.parse(
+//        """
+//          |{
+//          |"companies": [
+//          |     {
+//          |     "companyName": "Example Ltd",
+//          |     "uniqueTaxReference": "1234567890",
+//          |     "companyReferenceNumber": "AB123456",
+//          |     "companyType": "LTD",
+//          |     "financialYearEndDate": "2024-12-31",
+//          |     "seniorAccountingOfficers": [
+//          |         {
+//          |         "name": "Firstname Lastname",
+//          |         "email": "Firstname.Lastname@example.com",
+//          |         "startDate": "2024-04-01",
+//          |         "endDate": "2025-03-31"
+//          |         },
+//          |         {
+//          |         "name": "Secondpersonname Theirlastname",
+//          |         "email": "nonemptyemail@companyname.com",
+//          |         "startDate": "2024-12-01",
+//          |         "endDate": "2025-12-31"
+//          |         }
+//          |       ]
+//          |      },
+//          |       {
+//          |         "companyName": "Example PLC",
+//          |         "uniqueTaxReference": "0987654321",
+//          |         "companyReferenceNumber": "CD654321",
+//          |         "companyType": "PLC",
+//          |         "financialYearEndDate": "2024-06-30",
+//          |         "seniorAccountingOfficers": [
+//          |         {
+//          |            "name": "Firstname Lastname",
+//          |            "email": "Firstname.Lastname@example.com",
+//          |            "startDate": "2024-04-01",
+//          |            "endDate": "2025-03-31"
+//          |         }
+//          |       ]
+//          |       }
+//          |   ],
+//          |"additionalInformation": "non-empty string"
+//          |}
+//          |""".stripMargin
+//      )
+//
+//      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
+//        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+//        .withTextBody(notificationRequestInvalidDataType.toString())
+//
+//      val maybeResult = route(app, fakePOSTRequest)
+//      maybeResult shouldBe defined
+//      val result = maybeResult match {
+//        case Some(value) => value
+//        case None => fail("Expected route to be defined")
+//      }
+//
+//      status(result) shouldBe Status.BAD_REQUEST
+//      contentAsJson(result) shouldBe Json.arr(
+//        Json.obj(
+//          "path" -> "companies[0].companyName",
+//          "reason" -> "INVALID_DATA_TYPE"
+//        )
+//      )
+//    }
+
+    "return a structured 400 for constraint violation with array min items not met" in {
+
+      val notificationRequestArrayMinItemsNotMet = Json.parse(
+        """
+          |{
+          |"companies": [
+          |     {
+          |     "companyName": "Test Name",
+          |     "uniqueTaxReference": "1234567890",
+          |     "companyReferenceNumber": "AB123456",
+          |     "companyType": "LTD",
+          |     "financialYearEndDate": "2024-12-31",
+          |     "seniorAccountingOfficers": []
+          |      },
+          |       {
+          |         "companyName": "Example PLC",
+          |         "uniqueTaxReference": "0987654321",
+          |         "companyReferenceNumber": "CD654321",
+          |         "companyType": "PLC",
+          |         "financialYearEndDate": "2024-06-30",
+          |         "seniorAccountingOfficers": [
+          |         {
+          |            "name": "Firstname Lastname",
+          |            "email": "Firstname.Lastname@example.com",
+          |            "startDate": "2024-04-01",
+          |            "endDate": "2025-03-31"
+          |         }
+          |       ]
+          |       }
+          |   ],
+          |"additionalInformation": "non-empty string"
+          |}
+          |""".stripMargin
+      )
+
+      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody(notificationRequestArrayMinItemsNotMet.toString())
+
+      val maybeResult = route(app, fakePOSTRequest)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None => fail("Expected route to be defined")
+      }
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj(
+          "path" -> "companies[0].seniorAccountingOfficers",
+          "reason" -> "ARRAY_MIN_ITEMS_NOT_MET"
+        )
+      )
+    }
+
+    "return a structured 400 for constraint violation with length out of bounds" in {
+
+      val notificationRequestLengthOutOfBounds = Json.parse(
+        """
+          |{
+          |"companies": [
+          |     {
+          |     "companyName": "Test Name",
+          |     "uniqueTaxReference": "1234567890",
+          |     "companyReferenceNumber": "AB123456",
+          |     "companyType": "LTD",
+          |     "financialYearEndDate": "2024-12-31",
+          |     "seniorAccountingOfficers": [
+          |         {
+          |         "name": "Firstname Lastname",
+          |         "email": "Firstname.Lastname@example.com",
+          |         "startDate": "2024-04-01",
+          |         "endDate": "2025-03-31"
+          |         },
+          |         {
+          |         "name": "Secondpersonname Theirlastname",
+          |         "email": "nonemptyemail@companyname.com",
+          |         "startDate": "2024-12-01",
+          |         "endDate": "2025-12-31"
+          |         }
+          |       ]
+          |      },
+          |       {
+          |         "companyName": "Example PLC",
+          |         "uniqueTaxReference": "0987654321",
+          |         "companyReferenceNumber": "CD654321",
+          |         "companyType": "PLC",
+          |         "financialYearEndDate": "2024-06-30",
+          |         "seniorAccountingOfficers": [
+          |         {
+          |            "name": "Firstname Lastname",
+          |            "email": "Firstname.Lastname@example.com",
+          |            "startDate": "2024-04-01",
+          |            "endDate": "2025-03-31"
+          |         }
+          |       ]
+          |       }
+          |   ],
+          |"additionalInformation": "non-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty string"
+          |}
+          |""".stripMargin
+      )
+
+      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody(notificationRequestLengthOutOfBounds.toString())
+
+      val maybeResult = route(app, fakePOSTRequest)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None => fail("Expected route to be defined")
+      }
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj(
+          "path" -> "additionalInformation",
+          "reason" -> "LENGTH_OUT_OF_BOUNDS"
+        )
+      )
+    }
+
+    "return a structured 400 for constraint violation with invalid enum" in {
+
+      val notificationRequestInvalidEnum = Json.parse(
+        """
+          |{
+          |"companies": [
+          |     {
+          |     "companyName": "Test Name",
+          |     "uniqueTaxReference": "1234567890",
+          |     "companyReferenceNumber": "AB123456",
+          |     "companyType": "LTDX",
+          |     "financialYearEndDate": "2024-12-31",
+          |     "seniorAccountingOfficers": [
+          |         {
+          |         "name": "Firstname Lastname",
+          |         "email": "Firstname.Lastname@example.com",
+          |         "startDate": "2024-04-01",
+          |         "endDate": "2025-03-31"
+          |         },
+          |         {
+          |         "name": "Secondpersonname Theirlastname",
+          |         "email": "nonemptyemail@companyname.com",
+          |         "startDate": "2024-12-01",
+          |         "endDate": "2025-12-31"
+          |         }
+          |       ]
+          |      },
+          |       {
+          |         "companyName": "Example PLC",
+          |         "uniqueTaxReference": "0987654321",
+          |         "companyReferenceNumber": "CD654321",
+          |         "companyType": "PLC",
+          |         "financialYearEndDate": "2024-06-30",
+          |         "seniorAccountingOfficers": [
+          |         {
+          |            "name": "Firstname Lastname",
+          |            "email": "Firstname.Lastname@example.com",
+          |            "startDate": "2024-04-01",
+          |            "endDate": "2025-03-31"
+          |         }
+          |       ]
+          |       }
+          |   ],
+          |   "additionalInformation": "non-empty string"
+          |}
+          |""".stripMargin
+      )
+
+      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody(notificationRequestInvalidEnum.toString())
+
+      val maybeResult = route(app, fakePOSTRequest)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None => fail("Expected route to be defined")
+      }
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj(
+          "path" -> "companies[0].companyType",
+          "reason" -> "INVALID_ENUM_VALUE"
+        )
+      )
+    }
+
+    "return a structured 400 for constraint violation with missing required field" in {
+
+      val notificationRequestMissingRequiredField = Json.parse(
+        """
+          |{
+          |"companies": [
+          |     {
+          |     "uniqueTaxReference": "1234567890",
+          |     "companyReferenceNumber": "AB123456",
+          |     "companyType": "LTD",
+          |     "financialYearEndDate": "2024-12-31",
+          |     "seniorAccountingOfficers": [
+          |         {
+          |         "name": "Firstname Lastname",
+          |         "email": "Firstname.Lastname@example.com",
+          |         "startDate": "2024-04-01",
+          |         "endDate": "2025-03-31"
+          |         },
+          |         {
+          |         "name": "Secondpersonname Theirlastname",
+          |         "email": "nonemptyemail@companyname.com",
+          |         "startDate": "2024-12-01",
+          |         "endDate": "2025-12-31"
+          |         }
+          |       ]
+          |      },
+          |       {
+          |         "companyName": "Example PLC",
+          |         "uniqueTaxReference": "0987654321",
+          |         "companyReferenceNumber": "CD654321",
+          |         "companyType": "PLC",
+          |         "financialYearEndDate": "2024-06-30",
+          |         "seniorAccountingOfficers": [
+          |         {
+          |            "name": "Firstname Lastname",
+          |            "email": "Firstname.Lastname@example.com",
+          |            "startDate": "2024-04-01",
+          |            "endDate": "2025-03-31"
+          |         }
+          |       ]
+          |       }
+          |   ],
+          |   "additionalInformation": "non-empty string"
+          |}
+          |""".stripMargin
+      )
+
+      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
+        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+        .withTextBody(notificationRequestMissingRequiredField.toString())
+
+      val maybeResult = route(app, fakePOSTRequest)
+      maybeResult shouldBe defined
+      val result = maybeResult match {
+        case Some(value) => value
+        case None => fail("Expected route to be defined")
+      }
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
+        Json.obj(
+          "path" -> "companies[0].companyName",
+          "reason" -> "MISSING_REQUIRED_FIELD"
+        )
+      )
+    }
+
+
   }
 }
