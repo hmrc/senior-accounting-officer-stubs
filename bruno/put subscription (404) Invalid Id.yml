@@ -1,5 +1,5 @@
 info:
-  name: put subscription (404)
+  name: put subscription (404) Invalid Id
   type: http
   seq: 20
 
