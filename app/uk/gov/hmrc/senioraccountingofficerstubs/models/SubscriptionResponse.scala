@@ -20,7 +20,7 @@ import play.api.libs.json.{Json, OFormat}
 
 case class SubscriptionResponse(
     saoSubscriptionId: String,
-    timestamp: String
+    subscriptionTimestamp: String
 )
 
 object SubscriptionResponse {
