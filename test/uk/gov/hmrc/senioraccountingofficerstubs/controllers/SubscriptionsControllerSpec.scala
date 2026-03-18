@@ -54,8 +54,8 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
       }
 
       val testSubscriptionResponse = Json.obj(
-        "saoSubscriptionId" -> "123",
-        "timestamp"         -> "2026-03-01T12:00:14Z"
+        "saoSubscriptionId"     -> "123",
+        "subscriptionTimestamp" -> "2026-03-01T12:00:14Z"
       )
 
       status(result) shouldBe Status.OK
