@@ -81,13 +81,20 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       case None        => fail("Expected route to be defined")
     }
 
+  private def fakeNotificationPOSTRequest(id: String, payload: JsValue) =
+    FakeRequest("POST", s"/notification/$id")
+    .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+    .withTextBody(payload.toString())
+
+  private def assertValidationError(id: String, payload: JsValue, expectedError: play.api.libs.json.JsValue): Unit = {
+    val result = routeResult(fakeNotificationPOSTRequest(id, payload))
+    status(result) shouldBe Status.BAD_REQUEST
+    contentAsJson(result) shouldBe Json.arr(expectedError)
+  }
+
   "POST /notification/:saoSubscriptionId" should {
     "return 200 and notification payload for a known saoSubscriptionId" in {
-      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
-        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-        .withTextBody(validNotificationRequest.toString())
-
-      val result = routeResult(fakePOSTRequest)
+      val result = routeResult(fakeNotificationPOSTRequest(knownId,validNotificationRequest))
 
       val testNotificationResponse = Json.obj(
         "id"        -> "NOT0123456789",
@@ -99,30 +106,19 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     }
 
     "return a 404 for an unknown saoSubscriptionId" in {
-      val fakePOSTRequest = FakeRequest("POST", s"/notification/$unknownId")
-        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-        .withTextBody(validNotificationRequest.toString())
-
-      val result = routeResult(fakePOSTRequest)
-
+      val result = routeResult(fakeNotificationPOSTRequest(unknownId,validNotificationRequest))
       status(result) shouldBe Status.NOT_FOUND
     }
 
     "return a structured 400 for a request with invalid JSON shape" in {
-
       val invalidNotificationRequest: JsValue = Json.obj(
         "companies"             -> Json.arr("Test"),
         "additionalInformation" -> "non-empty string"
       )
 
-      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
-        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-        .withTextBody(invalidNotificationRequest.toString())
-
-      val result = routeResult(fakePOSTRequest)
-
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
+      assertValidationError(
+        knownId,
+        invalidNotificationRequest,
         Json.obj(
           "path"   -> "companies[0]",
           "reason" -> "INVALID_DATA_TYPE"
@@ -153,14 +149,9 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
           )
       )
 
-      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
-        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-        .withTextBody(notificationRequestInvalidFormat.toString)
-
-      val result = routeResult(fakePOSTRequest)
-
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
+      assertValidationError(
+        knownId,
+        notificationRequestInvalidFormat,
         Json.obj(
           "path"   -> "companies[0].seniorAccountingOfficers[0].email",
           "reason" -> "INVALID_FORMAT"
@@ -169,7 +160,6 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     }
 
     "return a structured 400 for constraint violation with cannot be empty" in {
-
       val notificationRequestCannotBeEmpty = Json.parse(
         validNotificationRequest
           .toString()
@@ -179,14 +169,9 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
           )
       )
 
-      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
-        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-        .withTextBody(notificationRequestCannotBeEmpty.toString())
-
-      val result = routeResult(fakePOSTRequest)
-
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
+      assertValidationError(
+        knownId,
+        notificationRequestCannotBeEmpty,
         Json.obj(
           "path"   -> "companies[0].companyName",
           "reason" -> "CANNOT_BE_EMPTY"
@@ -195,7 +180,6 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     }
 
     "return a structured 400 for constraint violation with invalid data type when int is present instead of string" in {
-
       val companies    = (validNotificationRequest \ "companies").as[JsArray].value
       val firstCompany = companies.head.as[JsObject] ++ Json.obj(
         "uniqueTaxReference" -> 123
@@ -206,14 +190,9 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
           "companies" -> JsArray(companies.updated(0, firstCompany))
         )
 
-      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
-        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-        .withTextBody(notificationRequestInvalidDataType.toString())
-
-      val result = routeResult(fakePOSTRequest)
-
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
+      assertValidationError(
+        knownId,
+        notificationRequestInvalidDataType,
         Json.obj(
           "path"   -> "companies[0].uniqueTaxReference",
           "reason" -> "INVALID_DATA_TYPE"
@@ -222,18 +201,12 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     }
 
     "return a structured 400 for constraint violation with invalid data type when there is an additional json property" in {
-
       val additionalProperty: JsObject     = Json.obj("extraProperty" -> "I shouldn't be here")
       val notificationRequestExtraProperty = validNotificationRequest.as[JsObject] ++ additionalProperty
 
-      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
-        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-        .withTextBody(notificationRequestExtraProperty.toString())
-
-      val result = routeResult(fakePOSTRequest)
-
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
+      assertValidationError(
+        knownId,
+        notificationRequestExtraProperty,
         Json.obj(
           "path"   -> "extraProperty",
           "reason" -> "INVALID_DATA_TYPE"
@@ -242,20 +215,14 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     }
 
     "return a structured 400 for constraint violation with array min items not met" in {
-
       val notificationRequestArrayMinItemsNotMet: JsValue = Json.obj(
         "companies"             -> Json.arr(),
         "additionalInformation" -> "non-empty string"
       )
 
-      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
-        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-        .withTextBody(notificationRequestArrayMinItemsNotMet.toString())
-
-      val result = routeResult(fakePOSTRequest)
-
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
+      assertValidationError(
+        knownId,
+        notificationRequestArrayMinItemsNotMet,
         Json.obj(
           "path"   -> "companies",
           "reason" -> "ARRAY_MIN_ITEMS_NOT_MET"
@@ -264,7 +231,6 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     }
 
     "return a structured 400 for constraint violation with length out of bounds" in {
-
       val notificationRequestLengthOutOfBounds = Json.parse(
         validNotificationRequest
           .toString()
@@ -274,14 +240,9 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
           )
       )
 
-      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
-        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-        .withTextBody(notificationRequestLengthOutOfBounds.toString())
-
-      val result = routeResult(fakePOSTRequest)
-
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
+      assertValidationError(
+        knownId,
+        notificationRequestLengthOutOfBounds,
         Json.obj(
           "path"   -> "additionalInformation",
           "reason" -> "LENGTH_OUT_OF_BOUNDS"
@@ -290,7 +251,6 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     }
 
     "return a structured 400 for constraint violation with invalid enum" in {
-
       val notificationRequestInvalidEnum = Json.parse(
         validNotificationRequest
           .toString()
@@ -300,14 +260,9 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
           )
       )
 
-      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
-        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-        .withTextBody(notificationRequestInvalidEnum.toString())
-
-      val result = routeResult(fakePOSTRequest)
-
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
+      assertValidationError(
+        knownId,
+        notificationRequestInvalidEnum,
         Json.obj(
           "path"   -> "companies[0].companyType",
           "reason" -> "INVALID_ENUM_VALUE"
@@ -316,17 +271,11 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     }
 
     "return a structured 400 for constraint violation with missing required field" in {
-
       val notificationRequestMissingRequiredField = validNotificationRequest.as[JsObject] - "companies"
 
-      val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
-        .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-        .withTextBody(notificationRequestMissingRequiredField.toString())
-
-      val result = routeResult(fakePOSTRequest)
-
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
+      assertValidationError(
+        knownId,
+        notificationRequestMissingRequiredField,
         Json.obj(
           "path"   -> "companies",
           "reason" -> "MISSING_REQUIRED_FIELD"
