@@ -72,53 +72,6 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     "additionalInformation" -> "non-empty string"
   )
 
-
-  //  def validNotificationRequest: JsValue = Json.parse(
-//    """
-//      |{
-//      |"companies": [
-//      |     {
-//      |     "companyName": "Example Ltd",
-//      |     "uniqueTaxReference": "1234567890",
-//      |     "companyReferenceNumber": "AB123456",
-//      |     "companyType": "LTD",
-//      |     "financialYearEndDate": "2024-12-31",
-//      |     "seniorAccountingOfficers": [
-//      |         {
-//      |         "name": "Firstname Lastname",
-//      |         "email": "Firstname.Lastname@example.com",
-//      |         "startDate": "2024-04-01",
-//      |         "endDate": "2025-03-31"
-//      |         },
-//      |         {
-//      |         "name": "Secondpersonname Theirlastname",
-//      |         "email": "nonemptyemail@companyname.com",
-//      |         "startDate": "2024-12-01",
-//      |         "endDate": "2025-12-31"
-//      |         }
-//      |       ]
-//      |      },
-//      |       {
-//      |         "companyName": "Example PLC",
-//      |         "uniqueTaxReference": "0987654321",
-//      |         "companyReferenceNumber": "CD654321",
-//      |         "companyType": "PLC",
-//      |         "financialYearEndDate": "2024-06-30",
-//      |         "seniorAccountingOfficers": [
-//      |         {
-//      |            "name": "Firstname Lastname",
-//      |            "email": "Firstname.Lastname@example.com",
-//      |            "startDate": "2024-04-01",
-//      |            "endDate": "2025-03-31"
-//      |         }
-//      |       ]
-//      |       }
-//      |   ],
-//      |"additionalInformation": "non-empty string"
-//      |}
-//      |""".stripMargin
-//  )
-
   def invalidNotificationRequest: JsValue = Json.parse(
     """
       |{
@@ -205,6 +158,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     }
 
     "return a structured 400 for constraint violation with invalid format" in {
+
       val notificationRequestInvalidFormat = Json.parse(
         validNotificationRequest.toString().replaceFirst(
           "Firstname\\.Lastname@example\\.com",
@@ -235,49 +189,10 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     "return a structured 400 for constraint violation with cannot be empty" in {
 
       val notificationRequestCannotBeEmpty = Json.parse(
-        """
-          |{
-          |"companies": [
-          |     {
-          |     "companyName": "",
-          |     "uniqueTaxReference": "1234567890",
-          |     "companyReferenceNumber": "AB123456",
-          |     "companyType": "LTD",
-          |     "financialYearEndDate": "2024-12-31",
-          |     "seniorAccountingOfficers": [
-          |         {
-          |         "name": "Firstname Lastname",
-          |         "email": "Firstname.Lastname@example.com",
-          |         "startDate": "2024-04-01",
-          |         "endDate": "2025-03-31"
-          |         },
-          |         {
-          |         "name": "Secondpersonname Theirlastname",
-          |         "email": "nonemptyemail@companyname.com",
-          |         "startDate": "2024-12-01",
-          |         "endDate": "2025-12-31"
-          |         }
-          |       ]
-          |      },
-          |       {
-          |         "companyName": "Example PLC",
-          |         "uniqueTaxReference": "0987654321",
-          |         "companyReferenceNumber": "CD654321",
-          |         "companyType": "PLC",
-          |         "financialYearEndDate": "2024-06-30",
-          |         "seniorAccountingOfficers": [
-          |         {
-          |            "name": "Firstname Lastname",
-          |            "email": "Firstname.Lastname@example.com",
-          |            "startDate": "2024-04-01",
-          |            "endDate": "2025-03-31"
-          |         }
-          |       ]
-          |       }
-          |   ],
-          |"additionalInformation": "non-empty string"
-          |}
-          |""".stripMargin
+        validNotificationRequest.toString().replaceFirst(
+          "Example Ltd",
+          ""
+        )
       )
 
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
@@ -348,6 +263,13 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
           |""".stripMargin
       )
 
+//      val notificationRequestInvalidDataType2 = Json.parse(
+//        validNotificationRequest.toString().replaceFirst(
+//          "Example Ltd",
+//          123
+//        )
+//      )
+
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(notificationRequestInvalidDataType.toString())
@@ -370,52 +292,8 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
 
     "return a structured 400 for constraint violation with invalid data type when there is an additional json property" in {
 
-      val notificationRequestExtraProperty = Json.parse(
-        """
-          |{
-          |"extraProperty": "I shouldn't be here",
-          |"companies": [
-          |     {
-          |     "companyName": "Test name",
-          |     "uniqueTaxReference": "1234567890",
-          |     "companyReferenceNumber": "AB123456",
-          |     "companyType": "LTD",
-          |     "financialYearEndDate": "2024-12-31",
-          |     "seniorAccountingOfficers": [
-          |         {
-          |         "name": "Firstname Lastname",
-          |         "email": "Firstname.Lastname@example.com",
-          |         "startDate": "2024-04-01",
-          |         "endDate": "2025-03-31"
-          |         },
-          |         {
-          |         "name": "Secondpersonname Theirlastname",
-          |         "email": "nonemptyemail@companyname.com",
-          |         "startDate": "2024-12-01",
-          |         "endDate": "2025-12-31"
-          |         }
-          |       ]
-          |      },
-          |       {
-          |         "companyName": "Example PLC",
-          |         "uniqueTaxReference": "0987654321",
-          |         "companyReferenceNumber": "CD654321",
-          |         "companyType": "PLC",
-          |         "financialYearEndDate": "2024-06-30",
-          |         "seniorAccountingOfficers": [
-          |         {
-          |            "name": "Firstname Lastname",
-          |            "email": "Firstname.Lastname@example.com",
-          |            "startDate": "2024-04-01",
-          |            "endDate": "2025-03-31"
-          |         }
-          |       ]
-          |       }
-          |   ],
-          |"additionalInformation": "non-empty string"
-          |}
-          |""".stripMargin
-      )
+      val additionalProperty: JsObject = Json.obj("extraProperty" -> "I shouldn't be here")
+      val notificationRequestExtraProperty = validNotificationRequest.as[JsObject] ++ additionalProperty
 
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
@@ -439,37 +317,9 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
 
     "return a structured 400 for constraint violation with array min items not met" in {
 
-      val notificationRequestArrayMinItemsNotMet = Json.parse(
-        """
-          |{
-          |"companies": [
-          |     {
-          |     "companyName": "Test Name",
-          |     "uniqueTaxReference": "1234567890",
-          |     "companyReferenceNumber": "AB123456",
-          |     "companyType": "LTD",
-          |     "financialYearEndDate": "2024-12-31",
-          |     "seniorAccountingOfficers": []
-          |      },
-          |       {
-          |         "companyName": "Example PLC",
-          |         "uniqueTaxReference": "0987654321",
-          |         "companyReferenceNumber": "CD654321",
-          |         "companyType": "PLC",
-          |         "financialYearEndDate": "2024-06-30",
-          |         "seniorAccountingOfficers": [
-          |         {
-          |            "name": "Firstname Lastname",
-          |            "email": "Firstname.Lastname@example.com",
-          |            "startDate": "2024-04-01",
-          |            "endDate": "2025-03-31"
-          |         }
-          |       ]
-          |       }
-          |   ],
-          |"additionalInformation": "non-empty string"
-          |}
-          |""".stripMargin
+      val notificationRequestArrayMinItemsNotMet: JsValue = Json.obj(
+        "companies" -> Json.arr(),
+        "additionalInformation" -> "non-empty string"
       )
 
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
@@ -486,7 +336,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
-          "path" -> "companies[0].seniorAccountingOfficers",
+          "path" -> "companies",
           "reason" -> "ARRAY_MIN_ITEMS_NOT_MET"
         )
       )
@@ -494,52 +344,11 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
 
     "return a structured 400 for constraint violation with length out of bounds" in {
 
-      val longString = "non-empty string " * 300
-
       val notificationRequestLengthOutOfBounds = Json.parse(
-        s"""
-          |{
-          |"companies": [
-          |     {
-          |     "companyName": "Test Name",
-          |     "uniqueTaxReference": "1234567890",
-          |     "companyReferenceNumber": "AB123456",
-          |     "companyType": "LTD",
-          |     "financialYearEndDate": "2024-12-31",
-          |     "seniorAccountingOfficers": [
-          |         {
-          |         "name": "Firstname Lastname",
-          |         "email": "Firstname.Lastname@example.com",
-          |         "startDate": "2024-04-01",
-          |         "endDate": "2025-03-31"
-          |         },
-          |         {
-          |         "name": "Secondpersonname Theirlastname",
-          |         "email": "nonemptyemail@companyname.com",
-          |         "startDate": "2024-12-01",
-          |         "endDate": "2025-12-31"
-          |         }
-          |       ]
-          |      },
-          |       {
-          |         "companyName": "Example PLC",
-          |         "uniqueTaxReference": "0987654321",
-          |         "companyReferenceNumber": "CD654321",
-          |         "companyType": "PLC",
-          |         "financialYearEndDate": "2024-06-30",
-          |         "seniorAccountingOfficers": [
-          |         {
-          |            "name": "Firstname Lastname",
-          |            "email": "Firstname.Lastname@example.com",
-          |            "startDate": "2024-04-01",
-          |            "endDate": "2025-03-31"
-          |         }
-          |       ]
-          |       }
-          |   ],
-          |"additionalInformation": "s$longString"
-          |}
-          |""".stripMargin
+        validNotificationRequest.toString().replaceFirst(
+          "non-empty string",
+          "non-empty string " * 300
+        )
       )
 
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
@@ -565,49 +374,10 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     "return a structured 400 for constraint violation with invalid enum" in {
 
       val notificationRequestInvalidEnum = Json.parse(
-        """
-          |{
-          |"companies": [
-          |     {
-          |     "companyName": "Test Name",
-          |     "uniqueTaxReference": "1234567890",
-          |     "companyReferenceNumber": "AB123456",
-          |     "companyType": "LTDX",
-          |     "financialYearEndDate": "2024-12-31",
-          |     "seniorAccountingOfficers": [
-          |         {
-          |         "name": "Firstname Lastname",
-          |         "email": "Firstname.Lastname@example.com",
-          |         "startDate": "2024-04-01",
-          |         "endDate": "2025-03-31"
-          |         },
-          |         {
-          |         "name": "Secondpersonname Theirlastname",
-          |         "email": "nonemptyemail@companyname.com",
-          |         "startDate": "2024-12-01",
-          |         "endDate": "2025-12-31"
-          |         }
-          |       ]
-          |      },
-          |       {
-          |         "companyName": "Example PLC",
-          |         "uniqueTaxReference": "0987654321",
-          |         "companyReferenceNumber": "CD654321",
-          |         "companyType": "PLC",
-          |         "financialYearEndDate": "2024-06-30",
-          |         "seniorAccountingOfficers": [
-          |         {
-          |            "name": "Firstname Lastname",
-          |            "email": "Firstname.Lastname@example.com",
-          |            "startDate": "2024-04-01",
-          |            "endDate": "2025-03-31"
-          |         }
-          |       ]
-          |       }
-          |   ],
-          |   "additionalInformation": "non-empty string"
-          |}
-          |""".stripMargin
+        validNotificationRequest.toString().replaceFirst(
+          "LTD",
+          "LDX"
+        )
       )
 
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
@@ -653,6 +423,5 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         )
       )
     }
-
   }
 }
