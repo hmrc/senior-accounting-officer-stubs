@@ -20,10 +20,9 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.{MimeTypes, Status}
-import play.api.libs.json.{JsObject, JsString, JsValue, Json, Reads, __}
+import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 
 class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -206,61 +205,16 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     }
 
     "return a structured 400 for constraint violation with invalid format" in {
-
-//      val notificationRequestInvalidFormat =(
-//        """
-//          |{
-//          |"companies": [
-//          |     {
-//          |     "companyName": "Test Name",
-//          |     "uniqueTaxReference": "1234567890",
-//          |     "companyReferenceNumber": "AB123456",
-//          |     "companyType": "LTD",
-//          |     "financialYearEndDate": "2024-12-31",
-//          |     "seniorAccountingOfficers": [
-//          |         {
-//          |         "name": "Firstname Lastname",
-//          |         "email": "Firstname.Lastname example.com",
-//          |         "startDate": "2024-04-01",
-//          |         "endDate": "2025-03-31"
-//          |         },
-//          |         {
-//          |         "name": "Secondpersonname Theirlastname",
-//          |         "email": "nonemptyemail@companyname.com",
-//          |         "startDate": "2024-12-01",
-//          |         "endDate": "2025-12-31"
-//          |         }
-//          |       ]
-//          |      },
-//          |       {
-//          |         "companyName": "Example PLC",
-//          |         "uniqueTaxReference": "0987654321",
-//          |         "companyReferenceNumber": "CD654321",
-//          |         "companyType": "PLC",
-//          |         "financialYearEndDate": "2024-06-30",
-//          |         "seniorAccountingOfficers": [
-//          |         {
-//          |            "name": "Firstname Lastname",
-//          |            "email": "Firstname.Lastname@example.com",
-//          |            "startDate": "2024-04-01",
-//          |            "endDate": "2025-03-31"
-//          |         }
-//          |       ]
-//          |       }
-//          |   ],
-//          |"additionalInformation": "non-empty string"
-//          |}
-//          |""".stripMargin
-//      )
-
-      val replaceEmailWithInvalid = validNotificationRequest.transform(
-        (__ \ "companies" \ 0 \ "seniorAccountingOfficers" \ 0 \ "email").json.put(JsString("Firstname.Lastname example.com"))
+      val notificationRequestInvalidFormat = Json.parse(
+        validNotificationRequest.toString().replaceFirst(
+          "Firstname\\.Lastname@example\\.com",
+          "Firstname.Lastname example.com"
+        )
       )
-      println("AGA" + replaceEmailWithInvalid)
 
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-        .withTextBody(replaceEmailWithInvalid.toString)
+        .withTextBody(notificationRequestInvalidFormat.toString)
 
       val maybeResult = route(app, fakePOSTRequest)
       maybeResult shouldBe defined
