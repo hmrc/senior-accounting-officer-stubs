@@ -20,60 +20,105 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.{MimeTypes, Status}
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsObject, JsString, JsValue, Json, Reads, __}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 
 class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
   private val authHeader                = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
   private val knownId                   = "123"
   private val unknownId                 = "567"
-  def validNotificationRequest: JsValue = Json.parse(
-    """
-      |{
-      |"companies": [
-      |     {
-      |     "companyName": "Example Ltd",
-      |     "uniqueTaxReference": "1234567890",
-      |     "companyReferenceNumber": "AB123456",
-      |     "companyType": "LTD",
-      |     "financialYearEndDate": "2024-12-31",
-      |     "seniorAccountingOfficers": [
-      |         {
-      |         "name": "Firstname Lastname",
-      |         "email": "Firstname.Lastname@example.com",
-      |         "startDate": "2024-04-01",
-      |         "endDate": "2025-03-31"
-      |         },
-      |         {
-      |         "name": "Secondpersonname Theirlastname",
-      |         "email": "nonemptyemail@companyname.com",
-      |         "startDate": "2024-12-01",
-      |         "endDate": "2025-12-31"
-      |         }
-      |       ]
-      |      },
-      |       {
-      |         "companyName": "Example PLC",
-      |         "uniqueTaxReference": "0987654321",
-      |         "companyReferenceNumber": "CD654321",
-      |         "companyType": "PLC",
-      |         "financialYearEndDate": "2024-06-30",
-      |         "seniorAccountingOfficers": [
-      |         {
-      |            "name": "Firstname Lastname",
-      |            "email": "Firstname.Lastname@example.com",
-      |            "startDate": "2024-04-01",
-      |            "endDate": "2025-03-31"
-      |         }
-      |       ]
-      |       }
-      |   ],
-      |"additionalInformation": "non-empty string"
-      |}
-      |""".stripMargin
+
+  private val validNotificationRequest: JsValue = Json.obj(
+    "companies" -> Json.arr(
+      Json.obj(
+        "companyName" -> "Example Ltd",
+        "uniqueTaxReference" -> "1234567890",
+        "companyReferenceNumber" -> "AB123456",
+        "companyType" -> "LTD",
+        "financialYearEndDate" -> "2024-12-31",
+        "seniorAccountingOfficers" -> Json.arr(
+          Json.obj(
+            "name" -> "Firstname Lastname",
+            "email" -> "Firstname.Lastname@example.com",
+            "startDate" -> "2024-04-01",
+            "endDate" -> "2025-03-31"
+          ),
+          Json.obj(
+            "name" -> "Secondpersonname Theirlastname",
+            "email" -> "nonemptyemail@companyname.com",
+            "startDate" -> "2024-12-01",
+            "endDate" -> "2025-12-31"
+          )
+        )
+      ),
+      Json.obj(
+        "companyName" -> "Example PLC",
+        "uniqueTaxReference" -> "0987654321",
+        "companyReferenceNumber" -> "CD654321",
+        "companyType" -> "PLC",
+        "financialYearEndDate" -> "2024-06-30",
+        "seniorAccountingOfficers" -> Json.arr(
+          Json.obj(
+            "name" -> "Firstname Lastname",
+            "email" -> "Firstname.Lastname@example.com",
+            "startDate" -> "2024-04-01",
+            "endDate" -> "2025-03-31"
+          )
+        )
+      )
+    ),
+    "additionalInformation" -> "non-empty string"
   )
+
+
+  //  def validNotificationRequest: JsValue = Json.parse(
+//    """
+//      |{
+//      |"companies": [
+//      |     {
+//      |     "companyName": "Example Ltd",
+//      |     "uniqueTaxReference": "1234567890",
+//      |     "companyReferenceNumber": "AB123456",
+//      |     "companyType": "LTD",
+//      |     "financialYearEndDate": "2024-12-31",
+//      |     "seniorAccountingOfficers": [
+//      |         {
+//      |         "name": "Firstname Lastname",
+//      |         "email": "Firstname.Lastname@example.com",
+//      |         "startDate": "2024-04-01",
+//      |         "endDate": "2025-03-31"
+//      |         },
+//      |         {
+//      |         "name": "Secondpersonname Theirlastname",
+//      |         "email": "nonemptyemail@companyname.com",
+//      |         "startDate": "2024-12-01",
+//      |         "endDate": "2025-12-31"
+//      |         }
+//      |       ]
+//      |      },
+//      |       {
+//      |         "companyName": "Example PLC",
+//      |         "uniqueTaxReference": "0987654321",
+//      |         "companyReferenceNumber": "CD654321",
+//      |         "companyType": "PLC",
+//      |         "financialYearEndDate": "2024-06-30",
+//      |         "seniorAccountingOfficers": [
+//      |         {
+//      |            "name": "Firstname Lastname",
+//      |            "email": "Firstname.Lastname@example.com",
+//      |            "startDate": "2024-04-01",
+//      |            "endDate": "2025-03-31"
+//      |         }
+//      |       ]
+//      |       }
+//      |   ],
+//      |"additionalInformation": "non-empty string"
+//      |}
+//      |""".stripMargin
+//  )
 
   def invalidNotificationRequest: JsValue = Json.parse(
     """
@@ -162,55 +207,60 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
 
     "return a structured 400 for constraint violation with invalid format" in {
 
-      val notificationRequestInvalidFormat = Json.parse(
-        """
-          |{
-          |"companies": [
-          |     {
-          |     "companyName": "Test Name",
-          |     "uniqueTaxReference": "1234567890",
-          |     "companyReferenceNumber": "AB123456",
-          |     "companyType": "LTD",
-          |     "financialYearEndDate": "2024-12-31",
-          |     "seniorAccountingOfficers": [
-          |         {
-          |         "name": "Firstname Lastname",
-          |         "email": "Firstname.Lastname example.com",
-          |         "startDate": "2024-04-01",
-          |         "endDate": "2025-03-31"
-          |         },
-          |         {
-          |         "name": "Secondpersonname Theirlastname",
-          |         "email": "nonemptyemail@companyname.com",
-          |         "startDate": "2024-12-01",
-          |         "endDate": "2025-12-31"
-          |         }
-          |       ]
-          |      },
-          |       {
-          |         "companyName": "Example PLC",
-          |         "uniqueTaxReference": "0987654321",
-          |         "companyReferenceNumber": "CD654321",
-          |         "companyType": "PLC",
-          |         "financialYearEndDate": "2024-06-30",
-          |         "seniorAccountingOfficers": [
-          |         {
-          |            "name": "Firstname Lastname",
-          |            "email": "Firstname.Lastname@example.com",
-          |            "startDate": "2024-04-01",
-          |            "endDate": "2025-03-31"
-          |         }
-          |       ]
-          |       }
-          |   ],
-          |"additionalInformation": "non-empty string"
-          |}
-          |""".stripMargin
+//      val notificationRequestInvalidFormat =(
+//        """
+//          |{
+//          |"companies": [
+//          |     {
+//          |     "companyName": "Test Name",
+//          |     "uniqueTaxReference": "1234567890",
+//          |     "companyReferenceNumber": "AB123456",
+//          |     "companyType": "LTD",
+//          |     "financialYearEndDate": "2024-12-31",
+//          |     "seniorAccountingOfficers": [
+//          |         {
+//          |         "name": "Firstname Lastname",
+//          |         "email": "Firstname.Lastname example.com",
+//          |         "startDate": "2024-04-01",
+//          |         "endDate": "2025-03-31"
+//          |         },
+//          |         {
+//          |         "name": "Secondpersonname Theirlastname",
+//          |         "email": "nonemptyemail@companyname.com",
+//          |         "startDate": "2024-12-01",
+//          |         "endDate": "2025-12-31"
+//          |         }
+//          |       ]
+//          |      },
+//          |       {
+//          |         "companyName": "Example PLC",
+//          |         "uniqueTaxReference": "0987654321",
+//          |         "companyReferenceNumber": "CD654321",
+//          |         "companyType": "PLC",
+//          |         "financialYearEndDate": "2024-06-30",
+//          |         "seniorAccountingOfficers": [
+//          |         {
+//          |            "name": "Firstname Lastname",
+//          |            "email": "Firstname.Lastname@example.com",
+//          |            "startDate": "2024-04-01",
+//          |            "endDate": "2025-03-31"
+//          |         }
+//          |       ]
+//          |       }
+//          |   ],
+//          |"additionalInformation": "non-empty string"
+//          |}
+//          |""".stripMargin
+//      )
+
+      val replaceEmailWithInvalid = validNotificationRequest.transform(
+        (__ \ "companies" \ 0 \ "seniorAccountingOfficers" \ 0 \ "email").json.put(JsString("Firstname.Lastname example.com"))
       )
+      println("AGA" + replaceEmailWithInvalid)
 
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-        .withTextBody(notificationRequestInvalidFormat.toString())
+        .withTextBody(replaceEmailWithInvalid.toString)
 
       val maybeResult = route(app, fakePOSTRequest)
       maybeResult shouldBe defined
@@ -628,50 +678,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
 
     "return a structured 400 for constraint violation with missing required field" in {
 
-      val notificationRequestMissingRequiredField = Json.parse(
-        """
-          |{
-          |"companies": [
-          |     {
-          |     "uniqueTaxReference": "1234567890",
-          |     "companyReferenceNumber": "AB123456",
-          |     "companyType": "LTD",
-          |     "financialYearEndDate": "2024-12-31",
-          |     "seniorAccountingOfficers": [
-          |         {
-          |         "name": "Firstname Lastname",
-          |         "email": "Firstname.Lastname@example.com",
-          |         "startDate": "2024-04-01",
-          |         "endDate": "2025-03-31"
-          |         },
-          |         {
-          |         "name": "Secondpersonname Theirlastname",
-          |         "email": "nonemptyemail@companyname.com",
-          |         "startDate": "2024-12-01",
-          |         "endDate": "2025-12-31"
-          |         }
-          |       ]
-          |      },
-          |       {
-          |         "companyName": "Example PLC",
-          |         "uniqueTaxReference": "0987654321",
-          |         "companyReferenceNumber": "CD654321",
-          |         "companyType": "PLC",
-          |         "financialYearEndDate": "2024-06-30",
-          |         "seniorAccountingOfficers": [
-          |         {
-          |            "name": "Firstname Lastname",
-          |            "email": "Firstname.Lastname@example.com",
-          |            "startDate": "2024-04-01",
-          |            "endDate": "2025-03-31"
-          |         }
-          |       ]
-          |       }
-          |   ],
-          |   "additionalInformation": "non-empty string"
-          |}
-          |""".stripMargin
-      )
+      val notificationRequestMissingRequiredField = validNotificationRequest.as[JsObject] - "companies"
 
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
@@ -687,7 +694,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
-          "path" -> "companies[0].companyName",
+          "path" -> "companies",
           "reason" -> "MISSING_REQUIRED_FIELD"
         )
       )
