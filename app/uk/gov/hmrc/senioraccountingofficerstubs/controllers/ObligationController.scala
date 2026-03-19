@@ -30,7 +30,7 @@ class ObligationController @Inject() (cc: ControllerComponents) extends BackendC
   private val stubbedSaoSubscriptionId = "123"
 
   private val stubbedObligationPayload = Json.obj(
-    "subscription"      -> Json.obj(
+    "subscription" -> Json.obj(
       "subscriptionTimestamp"     -> "2021-01-01T00:00:00Z",
       "companyRegistrationNumber" -> generateCrn,
       "uniqueTaxReference"        -> generateUtr,

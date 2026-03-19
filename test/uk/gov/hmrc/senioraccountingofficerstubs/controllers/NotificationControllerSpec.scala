@@ -20,8 +20,8 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.{MimeTypes, Status}
-import play.api.libs.json.{JsArray, JsObject, JsValue, Json}
-import play.api.mvc.{AnyContentAsEmpty, AnyContentAsText, Result}
+import play.api.libs.json.*
+import play.api.mvc.{AnyContentAsText, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 
@@ -29,45 +29,45 @@ import scala.concurrent.Future
 
 class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
-  private val authHeader                = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
-  private val knownId                   = "123"
-  private val unknownId                 = "567"
+  private val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
+  private val knownId    = "123"
+  private val unknownId  = "567"
 
   private val validNotificationRequest: JsValue = Json.obj(
     "companies" -> Json.arr(
       Json.obj(
-        "companyName" -> "Example Ltd",
-        "uniqueTaxReference" -> "1234567890",
-        "companyReferenceNumber" -> "AB123456",
-        "companyType" -> "LTD",
-        "financialYearEndDate" -> "2024-12-31",
+        "companyName"              -> "Example Ltd",
+        "uniqueTaxReference"       -> "1234567890",
+        "companyReferenceNumber"   -> "AB123456",
+        "companyType"              -> "LTD",
+        "financialYearEndDate"     -> "2024-12-31",
         "seniorAccountingOfficers" -> Json.arr(
           Json.obj(
-            "name" -> "Firstname Lastname",
-            "email" -> "Firstname.Lastname@example.com",
+            "name"      -> "Firstname Lastname",
+            "email"     -> "Firstname.Lastname@example.com",
             "startDate" -> "2024-04-01",
-            "endDate" -> "2025-03-31"
+            "endDate"   -> "2025-03-31"
           ),
           Json.obj(
-            "name" -> "Secondpersonname Theirlastname",
-            "email" -> "nonemptyemail@companyname.com",
+            "name"      -> "Secondpersonname Theirlastname",
+            "email"     -> "nonemptyemail@companyname.com",
             "startDate" -> "2024-12-01",
-            "endDate" -> "2025-12-31"
+            "endDate"   -> "2025-12-31"
           )
         )
       ),
       Json.obj(
-        "companyName" -> "Example PLC",
-        "uniqueTaxReference" -> "0987654321",
-        "companyReferenceNumber" -> "CD654321",
-        "companyType" -> "PLC",
-        "financialYearEndDate" -> "2024-06-30",
+        "companyName"              -> "Example PLC",
+        "uniqueTaxReference"       -> "0987654321",
+        "companyReferenceNumber"   -> "CD654321",
+        "companyType"              -> "PLC",
+        "financialYearEndDate"     -> "2024-06-30",
         "seniorAccountingOfficers" -> Json.arr(
           Json.obj(
-            "name" -> "Firstname Lastname",
-            "email" -> "Firstname.Lastname@example.com",
+            "name"      -> "Firstname Lastname",
+            "email"     -> "Firstname.Lastname@example.com",
             "startDate" -> "2024-04-01",
-            "endDate" -> "2025-03-31"
+            "endDate"   -> "2025-03-31"
           )
         )
       )
@@ -78,7 +78,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
   private def routeResult(request: FakeRequest[AnyContentAsText]): Future[Result] =
     route(app, request) match {
       case Some(value) => value
-      case None => fail("Expected route to be defined")
+      case None        => fail("Expected route to be defined")
     }
 
   "POST /notification/:saoSubscriptionId" should {
@@ -111,7 +111,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     "return a structured 400 for a request with invalid JSON shape" in {
 
       val invalidNotificationRequest: JsValue = Json.obj(
-        "companies" -> Json.arr("Test"),
+        "companies"             -> Json.arr("Test"),
         "additionalInformation" -> "non-empty string"
       )
 
@@ -145,10 +145,12 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
 
     "return a structured 400 for constraint violation with invalid format" in {
       val notificationRequestInvalidFormat = Json.parse(
-        validNotificationRequest.toString().replaceFirst(
-          "Firstname\\.Lastname@example\\.com",
-          "Firstname.Lastname example.com"
-        )
+        validNotificationRequest
+          .toString()
+          .replaceFirst(
+            "Firstname\\.Lastname@example\\.com",
+            "Firstname.Lastname example.com"
+          )
       )
 
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
@@ -160,7 +162,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
-          "path" -> "companies[0].seniorAccountingOfficers[0].email",
+          "path"   -> "companies[0].seniorAccountingOfficers[0].email",
           "reason" -> "INVALID_FORMAT"
         )
       )
@@ -169,10 +171,12 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     "return a structured 400 for constraint violation with cannot be empty" in {
 
       val notificationRequestCannotBeEmpty = Json.parse(
-        validNotificationRequest.toString().replaceFirst(
-          "Example Ltd",
-          ""
-        )
+        validNotificationRequest
+          .toString()
+          .replaceFirst(
+            "Example Ltd",
+            ""
+          )
       )
 
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
@@ -184,7 +188,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
-          "path" -> "companies[0].companyName",
+          "path"   -> "companies[0].companyName",
           "reason" -> "CANNOT_BE_EMPTY"
         )
       )
@@ -192,7 +196,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
 
     "return a structured 400 for constraint violation with invalid data type when int is present instead of string" in {
 
-      val companies = (validNotificationRequest \ "companies").as[JsArray].value
+      val companies    = (validNotificationRequest \ "companies").as[JsArray].value
       val firstCompany = companies.head.as[JsObject] ++ Json.obj(
         "uniqueTaxReference" -> 123
       )
@@ -211,7 +215,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
-          "path" -> "companies[0].uniqueTaxReference",
+          "path"   -> "companies[0].uniqueTaxReference",
           "reason" -> "INVALID_DATA_TYPE"
         )
       )
@@ -219,7 +223,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
 
     "return a structured 400 for constraint violation with invalid data type when there is an additional json property" in {
 
-      val additionalProperty: JsObject = Json.obj("extraProperty" -> "I shouldn't be here")
+      val additionalProperty: JsObject     = Json.obj("extraProperty" -> "I shouldn't be here")
       val notificationRequestExtraProperty = validNotificationRequest.as[JsObject] ++ additionalProperty
 
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
@@ -231,7 +235,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
-          "path" -> "extraProperty",
+          "path"   -> "extraProperty",
           "reason" -> "INVALID_DATA_TYPE"
         )
       )
@@ -240,7 +244,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     "return a structured 400 for constraint violation with array min items not met" in {
 
       val notificationRequestArrayMinItemsNotMet: JsValue = Json.obj(
-        "companies" -> Json.arr(),
+        "companies"             -> Json.arr(),
         "additionalInformation" -> "non-empty string"
       )
 
@@ -253,7 +257,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
-          "path" -> "companies",
+          "path"   -> "companies",
           "reason" -> "ARRAY_MIN_ITEMS_NOT_MET"
         )
       )
@@ -262,10 +266,12 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     "return a structured 400 for constraint violation with length out of bounds" in {
 
       val notificationRequestLengthOutOfBounds = Json.parse(
-        validNotificationRequest.toString().replaceFirst(
-          "non-empty string",
-          "non-empty string " * 300
-        )
+        validNotificationRequest
+          .toString()
+          .replaceFirst(
+            "non-empty string",
+            "non-empty string " * 300
+          )
       )
 
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
@@ -277,7 +283,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
-          "path" -> "additionalInformation",
+          "path"   -> "additionalInformation",
           "reason" -> "LENGTH_OUT_OF_BOUNDS"
         )
       )
@@ -286,10 +292,12 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     "return a structured 400 for constraint violation with invalid enum" in {
 
       val notificationRequestInvalidEnum = Json.parse(
-        validNotificationRequest.toString().replaceFirst(
-          "LTD",
-          "LDX"
-        )
+        validNotificationRequest
+          .toString()
+          .replaceFirst(
+            "LTD",
+            "LDX"
+          )
       )
 
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
@@ -301,7 +309,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
-          "path" -> "companies[0].companyType",
+          "path"   -> "companies[0].companyType",
           "reason" -> "INVALID_ENUM_VALUE"
         )
       )
@@ -320,7 +328,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
-          "path" -> "companies",
+          "path"   -> "companies",
           "reason" -> "MISSING_REQUIRED_FIELD"
         )
       )

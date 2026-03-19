@@ -39,8 +39,8 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
 
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe Json.obj(
-        "name"              -> "Jane Doe",
-        "email"             -> "jane.doe@acme.example"
+        "name"  -> "Jane Doe",
+        "email" -> "jane.doe@acme.example"
       )
     }
 
