@@ -21,8 +21,11 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.{MimeTypes, Status}
 import play.api.libs.json.{JsArray, JsObject, JsValue, Json}
+import play.api.mvc.{AnyContentAsEmpty, AnyContentAsText, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+
+import scala.concurrent.Future
 
 class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -72,13 +75,11 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     "additionalInformation" -> "non-empty string"
   )
 
-  def invalidNotificationRequest: JsValue = Json.parse(
-    """
-      |{
-      | "companies": ["Test"]
-      |}
-      |""".stripMargin
-  )
+  private def routeResult(request: FakeRequest[AnyContentAsText]): Future[Result] =
+    route(app, request) match {
+      case Some(value) => value
+      case None => fail("Expected route to be defined")
+    }
 
   "POST /notification/:saoSubscriptionId" should {
     "return 200 and notification payload for a known saoSubscriptionId" in {
@@ -86,12 +87,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(validNotificationRequest.toString())
 
-      val maybeResult = route(app, fakePOSTRequest)
-      maybeResult shouldBe defined
-      val result = maybeResult match {
-        case Some(value) => value
-        case None        => fail("Expected route to be defined")
-      }
+      val result = routeResult(fakePOSTRequest)
 
       val testNotificationResponse = Json.obj(
         "id"        -> "NOT0123456789",
@@ -99,7 +95,6 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       )
 
       status(result) shouldBe Status.OK
-
       contentAsJson(result) shouldBe testNotificationResponse
     }
 
@@ -108,27 +103,23 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(validNotificationRequest.toString())
 
-      val maybeResult = route(app, fakePOSTRequest)
-      maybeResult shouldBe defined
-      val result = maybeResult match {
-        case Some(value) => value
-        case None        => fail("Expected route to be defined")
-      }
+      val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.NOT_FOUND
     }
 
     "return a structured 400 for a request with invalid JSON shape" in {
+
+      val invalidNotificationRequest: JsValue = Json.obj(
+        "companies" -> Json.arr("Test"),
+        "additionalInformation" -> "non-empty string"
+      )
+
       val fakePOSTRequest = FakeRequest("POST", s"/notification/$knownId")
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(invalidNotificationRequest.toString())
 
-      val maybeResult = route(app, fakePOSTRequest)
-      maybeResult shouldBe defined
-      val result = maybeResult match {
-        case Some(value) => value
-        case None        => fail("Expected route to be defined")
-      }
+      val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -144,12 +135,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody("""{"companies":["Test"]""")
 
-      val maybeResult = route(app, fakePOSTRequest)
-      maybeResult shouldBe defined
-      val result = maybeResult match {
-        case Some(value) => value
-        case None        => fail("Expected route to be defined")
-      }
+      val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -169,12 +155,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(notificationRequestInvalidFormat.toString)
 
-      val maybeResult = route(app, fakePOSTRequest)
-      maybeResult shouldBe defined
-      val result = maybeResult match {
-        case Some(value) => value
-        case None => fail("Expected route to be defined")
-      }
+      val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -198,12 +179,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(notificationRequestCannotBeEmpty.toString())
 
-      val maybeResult = route(app, fakePOSTRequest)
-      maybeResult shouldBe defined
-      val result = maybeResult match {
-        case Some(value) => value
-        case None => fail("Expected route to be defined")
-      }
+      val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -214,7 +190,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       )
     }
 
-    "return a structured 400 for constraint violation with invalid data type" in {
+    "return a structured 400 for constraint violation with invalid data type when int is present instead of string" in {
 
       val companies = (validNotificationRequest \ "companies").as[JsArray].value
       val firstCompany = companies.head.as[JsObject] ++ Json.obj(
@@ -230,12 +206,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(notificationRequestInvalidDataType.toString())
 
-      val maybeResult = route(app, fakePOSTRequest)
-      maybeResult shouldBe defined
-      val result = maybeResult match {
-        case Some(value) => value
-        case None => fail("Expected route to be defined")
-      }
+      val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -255,12 +226,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(notificationRequestExtraProperty.toString())
 
-      val maybeResult = route(app, fakePOSTRequest)
-      maybeResult shouldBe defined
-      val result = maybeResult match {
-        case Some(value) => value
-        case None => fail("Expected route to be defined")
-      }
+      val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -282,12 +248,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(notificationRequestArrayMinItemsNotMet.toString())
 
-      val maybeResult = route(app, fakePOSTRequest)
-      maybeResult shouldBe defined
-      val result = maybeResult match {
-        case Some(value) => value
-        case None => fail("Expected route to be defined")
-      }
+      val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -311,12 +272,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(notificationRequestLengthOutOfBounds.toString())
 
-      val maybeResult = route(app, fakePOSTRequest)
-      maybeResult shouldBe defined
-      val result = maybeResult match {
-        case Some(value) => value
-        case None => fail("Expected route to be defined")
-      }
+      val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -340,12 +296,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(notificationRequestInvalidEnum.toString())
 
-      val maybeResult = route(app, fakePOSTRequest)
-      maybeResult shouldBe defined
-      val result = maybeResult match {
-        case Some(value) => value
-        case None => fail("Expected route to be defined")
-      }
+      val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -364,12 +315,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody(notificationRequestMissingRequiredField.toString())
 
-      val maybeResult = route(app, fakePOSTRequest)
-      maybeResult shouldBe defined
-      val result = maybeResult match {
-        case Some(value) => value
-        case None => fail("Expected route to be defined")
-      }
+      val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
