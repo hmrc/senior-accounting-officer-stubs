@@ -107,7 +107,7 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
       .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
       .withTextBody(payload.toString())
 
-  private def assertValidationError(id: String, payload: JsValue, expectedError: play.api.libs.json.JsValue): Unit = {
+  private def assertValidationError(id: String, payload: JsValue, expectedError: JsValue): Unit = {
     val result = routeResult(fakeCertificatePOSTRequest(id, payload))
     status(result) shouldBe Status.BAD_REQUEST
     contentAsJson(result) shouldBe Json.arr(expectedError)
