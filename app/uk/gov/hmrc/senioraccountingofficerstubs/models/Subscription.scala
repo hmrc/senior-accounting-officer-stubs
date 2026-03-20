@@ -24,7 +24,7 @@ final case class Subscription(
     companyRegistrationNumber: String,
     uniqueTaxReference: String,
     companyName: String,
-    contacts: List[Contact]
+    contacts: List[ContactDetails]
 )
 
 object Subscription {
