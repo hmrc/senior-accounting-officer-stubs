@@ -19,8 +19,8 @@ package uk.gov.hmrc.senioraccountingofficerstubs.models
 import play.api.libs.json.Json
 import play.api.libs.json.OFormat
 
-final case class Contact(name: String, email: String)
+final case class ContactDetails(name: String, email: String)
 
-object Contact {
-  implicit val Format: OFormat[Contact] = Json.format[Contact]
+object ContactDetails {
+  implicit val Format: OFormat[ContactDetails] = Json.format[ContactDetails]
 }
