@@ -153,7 +153,7 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
       )
     }
 
-    "return a structured 400 for malformed JSON syntax" in {
+    "return a structured 400 for constraint violation with malformed request when JSON syntax is incorrect" in {
       val fakePOSTRequest = FakeRequest("POST", s"/certificate/$knownId")
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody("""{"companies":["Test"]""")
