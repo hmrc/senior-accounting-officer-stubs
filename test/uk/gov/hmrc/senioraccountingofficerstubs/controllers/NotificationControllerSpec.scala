@@ -83,8 +83,8 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
 
   private def fakeNotificationPOSTRequest(id: String, payload: JsValue) =
     FakeRequest("POST", s"/notification/$id")
-    .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
-    .withTextBody(payload.toString())
+      .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
+      .withTextBody(payload.toString())
 
   private def assertValidationError(id: String, payload: JsValue, expectedError: play.api.libs.json.JsValue): Unit = {
     val result = routeResult(fakeNotificationPOSTRequest(id, payload))
@@ -94,7 +94,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
 
   "POST /notification/:saoSubscriptionId" should {
     "return 200 and notification payload for a known saoSubscriptionId" in {
-      val result = routeResult(fakeNotificationPOSTRequest(knownId,validNotificationRequest))
+      val result = routeResult(fakeNotificationPOSTRequest(knownId, validNotificationRequest))
 
       val testNotificationResponse = Json.obj(
         "id"        -> "NOT0123456789",
@@ -106,7 +106,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     }
 
     "return a 404 for an unknown saoSubscriptionId" in {
-      val result = routeResult(fakeNotificationPOSTRequest(unknownId,validNotificationRequest))
+      val result = routeResult(fakeNotificationPOSTRequest(unknownId, validNotificationRequest))
       status(result) shouldBe Status.NOT_FOUND
     }
 
