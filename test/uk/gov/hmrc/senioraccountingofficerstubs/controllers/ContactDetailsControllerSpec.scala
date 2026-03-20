@@ -38,7 +38,7 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
 
   private val validContactDetailsRequest: JsValue = Json.arr(
     Json.obj(
-      "name" -> "Jane Doe",
+      "name"  -> "Jane Doe",
       "email" -> "jane.doe@example.com"
     )
   )
@@ -46,7 +46,7 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
   private def routeResult(request: FakeRequest[AnyContentAsText]): Future[Result] =
     route(app, request) match {
       case Some(value) => value
-      case None => fail("Expected route to be defined")
+      case None        => fail("Expected route to be defined")
     }
 
   private def fakeContactDetailsPUTRequest(id: String, payload: JsValue) =
@@ -103,8 +103,8 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
 
     "return a structured 400 for constraint violation with invalid data type when the request payload is not an array" in {
       val invalidContactDetailsRequest: JsValue = Json.obj(
-          "name" -> "Jane Doe",
-          "email" -> "jane.doe@example.com"
+        "name"  -> "Jane Doe",
+        "email" -> "jane.doe@example.com"
       )
 
       val result = routeResult(fakeContactDetailsPUTRequest(knownId, invalidContactDetailsRequest))
@@ -130,7 +130,7 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
     "return a structured 400 for constraint violation with invalid format" in {
       val contactDetailsRequestInvalidFormat: JsValue = Json.arr(
         Json.obj(
-          "name" -> "Jane Doe",
+          "name"  -> "Jane Doe",
           "email" -> "jane.doe example.com"
         )
       )
@@ -149,7 +149,7 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
 
       val contactDetailsRequestCannotBeEmpty: JsValue = Json.arr(
         Json.obj(
-          "name" -> "",
+          "name"  -> "",
           "email" -> "jane.doe@example.com"
         )
       )
@@ -181,7 +181,7 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
     "return a structured 400 for constraint violation with length out of bounds" in {
       val contactDetailsLengthOutOfBounds: JsValue = Json.arr(
         Json.obj(
-          "name" -> "Jane Doe" * 300,
+          "name"  -> "Jane Doe" * 300,
           "email" -> "jane.doe@example.com"
         )
       )

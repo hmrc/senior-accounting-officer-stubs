@@ -29,9 +29,9 @@ import scala.concurrent.Future
 
 class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
-  private val knownId      = "123"
-  private val unknownId      = "567"
-  private val authHeader   = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
+  private val knownId                  = "123"
+  private val unknownId                = "567"
+  private val authHeader               = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
   private val validSubscriptionRequest = Json.obj(
     "safeId"  -> "XE000123456789",
     "company" -> Json.obj(
@@ -47,7 +47,7 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
   private def routeResult(request: FakeRequest[AnyContentAsText]): Future[Result] =
     route(app, request) match {
       case Some(value) => value
-      case None => fail("Expected route to be defined")
+      case None        => fail("Expected route to be defined")
     }
 
   private def fakeSubscriptionsPUTRequest(id: String, payload: JsValue) =
@@ -108,7 +108,7 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
         knownId,
         subscriptionRequestInvalidFormat,
         Json.obj(
-          "path" -> "safeId",
+          "path"   -> "safeId",
           "reason" -> "INVALID_FORMAT"
         )
       )
@@ -144,29 +144,29 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
-          "path" -> "company",
+          "path"   -> "company",
           "reason" -> "MISSING_REQUIRED_FIELD"
         ),
         Json.obj(
-          "path" -> "contacts",
+          "path"   -> "contacts",
           "reason" -> "MISSING_REQUIRED_FIELD"
         ),
         Json.obj(
-          "path" -> "safeId",
+          "path"   -> "safeId",
           "reason" -> "INVALID_DATA_TYPE"
         )
       )
     }
 
     "return a structured 400 for constraint violation with invalid data type when there is an additional json property" in {
-      val additionalProperty: JsObject = Json.obj("extraProperty" -> "I shouldn't be here")
+      val additionalProperty: JsObject     = Json.obj("extraProperty" -> "I shouldn't be here")
       val subscriptionRequestExtraProperty = validSubscriptionRequest.as[JsObject] ++ additionalProperty
 
       assertValidationError(
         knownId,
         subscriptionRequestExtraProperty,
         Json.obj(
-          "path" -> "extraProperty",
+          "path"   -> "extraProperty",
           "reason" -> "INVALID_DATA_TYPE"
         )
       )
@@ -221,16 +221,11 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
         knownId,
         subscriptionRequestMissingRequiredField,
         Json.obj(
-          "path" -> "safeId",
-          "reason"   -> "MISSING_REQUIRED_FIELD"
+          "path"   -> "safeId",
+          "reason" -> "MISSING_REQUIRED_FIELD"
         )
       )
     }
-
-
-
-
-
 
   }
 }
