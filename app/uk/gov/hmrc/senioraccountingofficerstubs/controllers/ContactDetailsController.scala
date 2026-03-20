@@ -27,8 +27,8 @@ class ContactDetailsController @Inject() (cc: ControllerComponents) extends Back
 
   private val stubbedSaoSubscriptionId     = "123"
   private val stubbedContactDetailsPayload = Json.obj(
-    "name"              -> "Jane Doe",
-    "email"             -> "jane.doe@acme.example"
+    "name"  -> "Jane Doe",
+    "email" -> "jane.doe@acme.example"
   )
 
   def getContactDetails(saoSubscriptionId: String): Action[AnyContent] = Action { implicit request =>
