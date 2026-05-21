@@ -46,3 +46,4 @@ bruno/.env*
 bruno/node_modules
 
 Thumbs.db
+!.github
