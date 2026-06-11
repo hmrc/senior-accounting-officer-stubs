@@ -12,7 +12,6 @@ properties:
       required:
         - companyName
         - uniqueTaxReference
-        - companyReferenceNumber
         - companyType
         - financialYearEndDate
         - seniorAccountingOfficers
@@ -42,8 +41,6 @@ properties:
             type: object
             required:
               - name
-              - startDate
-              - endDate
             properties:
               name:
                 type: string
