@@ -23,14 +23,10 @@ properties:
       properties:
         crn:
           type: string
-          pattern: "^([0-9]{8}|[A-Z]{2}[0-9]{6})$"
         utr:
           type: string
-          pattern: "^[0-9]{10}$"
         name:
           type: string
-          minLength: 1
-          maxLength: 160
         accPeriodEnd:
           type: string
           format: date
@@ -38,9 +34,6 @@ properties:
           type: string
         type:
           type: string
-          enum:
-            - PLC
-            - LTD
   saos:
     type: array
     items:
