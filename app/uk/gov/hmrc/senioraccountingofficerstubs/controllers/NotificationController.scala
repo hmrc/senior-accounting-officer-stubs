@@ -28,8 +28,7 @@ class NotificationController @Inject() (cc: ControllerComponents) extends Backen
 
   private val stubbedSaoSubscriptionId    = "123"
   private val stubbedNotificationResponse = NotificationResponse(
-    "NOT0123456789",
-    "2026-03-01T12:00:14Z"
+    "NOT0123456789"
   )
 
   def postNotification(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText) { implicit request =>
