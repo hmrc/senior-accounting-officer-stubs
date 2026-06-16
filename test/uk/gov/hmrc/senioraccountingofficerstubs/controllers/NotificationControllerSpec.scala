@@ -41,7 +41,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         "crn"          -> "AB123456",
         "type"         -> "LTD",
         "accPeriodEnd" -> "2024-12-31",
-        "status" -> "pass"
+        "status"       -> "pass"
       ),
       Json.obj(
         "name"         -> "Example PLC",
@@ -49,7 +49,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         "crn"          -> "CD654321",
         "type"         -> "PLC",
         "accPeriodEnd" -> "2024-06-30",
-        "status" -> "pass"
+        "status"       -> "pass"
       )
     ),
     "saos" -> Json.arr(
@@ -87,7 +87,6 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
         "notificationRef" -> "NOT0123456789"
       )
 
-      println(result)
       status(result) shouldBe Status.OK
       contentAsJson(result) shouldBe testNotificationResponse
     }
@@ -99,8 +98,8 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
 
     "return a structured 400 for a request with invalid JSON shape" in {
       val invalidNotificationRequest: JsValue = Json.obj(
-        "companies"             -> Json.arr("Test"),
-        "saos" -> Json.arr()
+        "companies" -> Json.arr("Test"),
+        "saos"      -> Json.arr()
       )
 
       assertValidationError(
