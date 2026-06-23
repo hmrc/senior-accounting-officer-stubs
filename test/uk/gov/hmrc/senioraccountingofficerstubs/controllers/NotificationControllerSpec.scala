@@ -24,8 +24,10 @@ import play.api.libs.json.*
 import play.api.mvc.{AnyContentAsText, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import uk.gov.hmrc.domain.SaUtrGenerator
 
 import scala.concurrent.Future
+import scala.util.Random
 
 class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -37,16 +39,16 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     "companies" -> Json.arr(
       Json.obj(
         "name"         -> "Example Ltd",
-        "utr"          -> "1234567890",
-        "crn"          -> "AB123456",
+        "utr"          -> generateUtr,
+        "crn"          -> generateCrn,
         "type"         -> "LTD",
         "accPeriodEnd" -> "2024-12-31",
         "status"       -> "pass"
       ),
       Json.obj(
-        "name"         -> "Example PLC",
-        "utr"          -> "0987654321",
-        "crn"          -> "CD654321",
+        "name"         -> "Example Ltd",
+        "utr"          -> generateUtr,
+        "crn"          -> generateCrn,
         "type"         -> "PLC",
         "accPeriodEnd" -> "2024-06-30",
         "status"       -> "pass"
@@ -61,6 +63,16 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       )
     )
   )
+
+  private def generateCrn = {
+    val num = Random.nextInt(1000000)
+    f"$num%010d"
+  }
+
+  private def generateUtr = {
+    val seed = Random.nextInt(1000000)
+    SaUtrGenerator(seed).nextSaUtr
+  }
 
   private def routeResult(request: FakeRequest[AnyContentAsText]): Future[Result] =
     route(app, request) match {
@@ -83,12 +95,8 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     "return 200 and notification payload for a known saoSubscriptionId" in {
       val result = routeResult(fakeNotificationPOSTRequest(knownId, validNotificationRequest))
 
-      val testNotificationResponse = Json.obj(
-        "notificationRef" -> "NOT0123456789"
-      )
-
       status(result) shouldBe Status.OK
-      contentAsJson(result) shouldBe testNotificationResponse
+      contentAsString(result) should fullyMatch regex """^\{"notificationRef":"NOT[0-9]{10}"\}$"""
     }
 
     "return a 404 for an unknown saoSubscriptionId" in {
