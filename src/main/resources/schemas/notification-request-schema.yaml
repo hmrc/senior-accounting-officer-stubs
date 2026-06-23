@@ -3,63 +3,51 @@ type: object
 additionalProperties: false
 required:
   - companies
+  - saos
 properties:
+  remarks:
+    type: string
+  staffPID:
+    type: string
   companies:
     type: array
-    minItems: 1
     items:
       type: object
       required:
-        - companyName
-        - uniqueTaxReference
-        - companyReferenceNumber
-        - companyType
-        - financialYearEndDate
-        - seniorAccountingOfficers
+        - utr
+        - name
+        - accPeriodEnd
+        - status
+        - type
       properties:
-        companyName:
+        crn:
           type: string
-          minLength: 1
-          maxLength: 160
-        uniqueTaxReference:
+        utr:
           type: string
-          pattern: "^[0-9]{10}$"
-        companyReferenceNumber:
+        name:
           type: string
-          pattern: "^([0-9]{8}|[A-Z]{2}[0-9]{6})$"
-        companyType:
-          type: string
-          enum:
-            - PLC
-            - LTD
-        financialYearEndDate:
+        accPeriodEnd:
           type: string
           format: date
-        seniorAccountingOfficers:
-          type: array
-          minItems: 1
-          items:
-            type: object
-            required:
-              - name
-              - startDate
-              - endDate
-            properties:
-              name:
-                type: string
-                minLength: 1
-              startDate:
-                type: string
-                format: date
-              endDate:
-                type: string
-                format: date
-              email:
-                type: string
-                format: email
-                minLength: 1
-                maxLength: 254
-  additionalInformation:
-    type: string
-    minLength: 1
-    maxLength: 5000
+        status:
+          type: string
+        type:
+          type: string
+  saos:
+    type: array
+    items:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        fromDate:
+          type: string
+          format: date
+        toDate:
+          type: string
+          format: date

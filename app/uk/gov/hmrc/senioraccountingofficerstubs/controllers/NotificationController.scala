@@ -22,22 +22,26 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.NotificationResponse
 
+import scala.util.Random
+
 import javax.inject.Inject
 
 class NotificationController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
-  private val stubbedSaoSubscriptionId    = "123"
-  private val stubbedNotificationResponse = NotificationResponse(
-    "NOT0123456789",
-    "2026-03-01T12:00:14Z"
-  )
+  private val stubbedSaoSubscriptionId = "123"
+
+  private def generateNotificationId = {
+    val num = Random.nextInt(10000000)
+    "NOT" + f"$num%010d"
+  }
 
   def postNotification(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText) { implicit request =>
     JsonErrorHandling.parseJson(request.body) match {
       case Right(json) =>
         val errors = JsonErrorHandling.Validators.validateNotification(json)
         if errors.nonEmpty then JsonErrorHandling.badRequest(errors)
-        else if saoSubscriptionId == stubbedSaoSubscriptionId then Ok(Json.toJson(stubbedNotificationResponse))
+        else if saoSubscriptionId == stubbedSaoSubscriptionId then
+          Ok(Json.toJson(NotificationResponse(generateNotificationId)))
         else NotFound
       case Left(errorResult) =>
         errorResult
