@@ -92,10 +92,10 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
   }
 
   "POST /subscriptions/:saoSubscriptionId/notifications" should {
-    "return 200 and notification payload for a known saoSubscriptionId" in {
+    "return 201 and notification payload for a known saoSubscriptionId" in {
       val result = routeResult(fakeNotificationPOSTRequest(knownId, validNotificationRequest))
 
-      status(result) shouldBe Status.OK
+      status(result) shouldBe Status.CREATED
       contentAsString(result) should fullyMatch regex """^\{"notificationRef":"NOT[0-9]{10}"\}$"""
     }
 
