@@ -23,21 +23,23 @@ import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.CertificateResponse
 
 import javax.inject.Inject
+import scala.util.Random
 
 class CertificateController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
   private val stubbedSaoSubscriptionId   = "123"
-  private val stubbedCertificateResponse = CertificateResponse(
-    "NOT0123456789",
-    "2026-03-01T12:00:14Z"
-  )
+  private def generateCertificateId = {
+    val num = Random.nextInt(10000000)
+    //TODO Double check if this should SAO + CRT or CRT
+    "CRT" + f"$num%010d"
+  }
 
   def postCertificate(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText) { implicit request =>
     JsonErrorHandling.parseJson(request.body) match {
       case Right(json) =>
         val errors = JsonErrorHandling.Validators.validateCertificate(json)
         if errors.nonEmpty then JsonErrorHandling.badRequest(errors)
-        else if saoSubscriptionId == stubbedSaoSubscriptionId then Ok(Json.toJson(stubbedCertificateResponse))
+        else if saoSubscriptionId == stubbedSaoSubscriptionId then Created(Json.toJson(generateCertificateId))
         else NotFound
       case Left(errorResult) => errorResult
     }

@@ -9,4 +9,4 @@ POST        /subscriptions/:saoSubscriptionId/notifications           uk.gov.hmr
 
 GET         /obligation/:saoSubscriptionId             uk.gov.hmrc.senioraccountingofficerstubs.controllers.ObligationController.getObligation(saoSubscriptionId: String)
 
-POST         /certificate/:saoSubscriptionId             uk.gov.hmrc.senioraccountingofficerstubs.controllers.CertificateController.postCertificate(saoSubscriptionId: String)
+POST        /subscriptions/:saoSubscriptionId/certificates            uk.gov.hmrc.senioraccountingofficerstubs.controllers.CertificateController.postCertificate(saoSubscriptionId: String)
