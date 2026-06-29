@@ -21,5 +21,5 @@ import play.api.libs.json.{Json, OFormat}
 final case class CertificateResponse(certificateRef: String)
 
 object CertificateResponse {
-  implicit val Format: OFormat[CertificateResponse] = Json.format[CertificateResponse]
+  implicit val CertificateResponseFormat: OFormat[CertificateResponse] = Json.format[CertificateResponse]
 }

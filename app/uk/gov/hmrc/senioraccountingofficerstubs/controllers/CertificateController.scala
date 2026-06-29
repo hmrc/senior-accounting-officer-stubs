@@ -22,15 +22,16 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.CertificateResponse
 
-import javax.inject.Inject
 import scala.util.Random
+
+import javax.inject.Inject
 
 class CertificateController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
-  private val stubbedSaoSubscriptionId   = "123"
-  private def generateCertificateId = {
+  private val stubbedSaoSubscriptionId = "123"
+  private def generateCertificateId    = {
     val num = Random.nextInt(10000000)
-    //TODO Double check if this should SAO + CRT or CRT
+    // TODO Double check if this should SAO + CRT or CRT
     "CRT" + f"$num%010d"
   }
 
@@ -39,8 +40,12 @@ class CertificateController @Inject() (cc: ControllerComponents) extends Backend
       case Right(json) =>
         val errors = JsonErrorHandling.Validators.validateCertificate(json)
         if errors.nonEmpty then JsonErrorHandling.badRequest(errors)
-        else if saoSubscriptionId == stubbedSaoSubscriptionId then Created(Json.toJson(generateCertificateId))
-        else NotFound
+        else if saoSubscriptionId == stubbedSaoSubscriptionId then
+          Created(Json.toJson(CertificateResponse(generateCertificateId)))
+        else {
+          println(json)
+          NotFound
+        }
       case Left(errorResult) => errorResult
     }
   }
