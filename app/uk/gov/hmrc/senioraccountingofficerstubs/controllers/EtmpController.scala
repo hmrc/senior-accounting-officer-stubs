@@ -39,7 +39,7 @@ class EtmpController @Inject() (cc: ControllerComponents) extends BackendControl
   }
 
   def createEtmp: Action[String] = Action(parse.tolerantText) { implicit request =>
-    if validateHeaders(request.headers) != true then BadRequest("issues with headers")
+    if validateHeaders(request.headers) != true then BadRequest("missing or invalid headers")
     else
       JsonErrorHandling.parseJson(request.body) match {
         case Right(json) =>
