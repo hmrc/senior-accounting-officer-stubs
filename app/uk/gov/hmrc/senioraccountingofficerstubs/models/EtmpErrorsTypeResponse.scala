@@ -16,6 +16,15 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.models
 
-final case class EtmpResponse(
-                             
-                             )
+final case class EtmpErrorsTypeResponse(
+    errors: Errors
+)
+
+final case class Errors(
+    processingDate: String,
+    code: Code,
+    text: String,
+    dsaoIdNumber: Option[String]
+)
+enum Code:
+  case `001`, `002`, `003`, `004`

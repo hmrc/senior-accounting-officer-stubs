@@ -25,6 +25,7 @@ import play.api.mvc.{AnyContentAsText, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.domain.SaUtrGenerator
+
 import scala.concurrent.Future
 import scala.util.Random
 
