@@ -1,7 +1,7 @@
 info:
-  name: post notification (400) multiple constraint violations
+  name: post notification (201) valid request
   type: http
-  seq: 3
+  seq: 1
 
 http:
   method: POST
@@ -17,16 +17,20 @@ http:
         "staffPID": "123",
         "companies": [
           {
-            "crn": "",
-            "name": "",
-            "accPeriodEnd": "25-03-2001",
-            "status": "1254",
+            "crn": "11223344",
+            "utr": "2233445566",
+            "name": "Example Subsidiary Ltd",
+            "accPeriodEnd": "2025-03-31",
+            "status": "COMPLIANT",
             "type": "qualified"
           }
         ],
         "saos": [
           {
-            "email": "robert.brown@example.com"
+            "name": "Robert Brown",
+            "email": "robert.brown@example.com",
+            "fromDate": "2024-04-01",
+            "toDate": "2025-03-31"
           }
         ]
       }

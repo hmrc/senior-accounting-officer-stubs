@@ -1,18 +1,18 @@
 info:
-  name: post notification (400) invalid body
+  name: post notification (404) missing subscriptionID
   type: http
-  seq: 4
+  seq: 6
 
 http:
   method: POST
-  url: "{{baseUrl}}/subscriptions/123/notifications"
+  url: "{{baseUrl}}/subscriptions/notifications"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
   body:
     type: json
     data: |-
-      {@@@
+      {
         "remarks": "abc",
         "staffPID": "123",
         "companies": [
