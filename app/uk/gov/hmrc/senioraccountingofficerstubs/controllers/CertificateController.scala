@@ -31,7 +31,6 @@ class CertificateController @Inject() (cc: ControllerComponents) extends Backend
   private val stubbedSaoSubscriptionId = "123"
   private def generateCertificateId    = {
     val num = Random.nextInt(10000000)
-    // TODO Double check if this should SAO + CRT or CRT
     "CRT" + f"$num%010d"
   }
 
