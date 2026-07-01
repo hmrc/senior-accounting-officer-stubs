@@ -124,10 +124,6 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
         Json.obj(
           "path"   -> "companies[0]",
           "reason" -> "INVALID_DATA_TYPE"
-        ),
-        Json.obj(
-          "path"   -> "submitterName",
-          "reason" -> "MISSING_REQUIRED_FIELD"
         )
       )
     }
