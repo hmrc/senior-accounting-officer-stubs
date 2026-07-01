@@ -26,7 +26,7 @@ http:
         ],
         "saos": [
           {
-            "email": "robert.brown@example.com"
+            "email": "robert.brown@      example.com"
           }
         ]
       }
