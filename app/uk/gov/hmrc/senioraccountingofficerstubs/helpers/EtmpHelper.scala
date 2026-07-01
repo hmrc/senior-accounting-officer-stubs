@@ -21,6 +21,7 @@ import play.api.mvc.Headers
 import scala.util.Try
 
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class EtmpHelper {}
@@ -53,7 +54,7 @@ object EtmpHelper {
   private def validateXOriginatingSystem(headersMap: Map[String, String]): Boolean = {
     headersMap.get("X-Originating-System") match {
       case Some("MDTP") => true
-      case _ => false
+      case _            => false
     }
   }
   private def validateCorrelationid(headersMap: Map[String, String]): Boolean = {
@@ -64,6 +65,9 @@ object EtmpHelper {
   private def validateReceiptDate(headersMap: Map[String, String]): Boolean = {
     headersMap
       .get("X-Receipt-Date")
-      .exists(datetime => Try(Instant.parse(datetime)).isSuccess)
+      .exists(datetime =>
+        Try(Instant.parse(datetime)).toOption
+          .exists(instant => instant == instant.truncatedTo(ChronoUnit.SECONDS))
+      )
   }
 }

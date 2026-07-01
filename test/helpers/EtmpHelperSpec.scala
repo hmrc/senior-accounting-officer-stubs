@@ -21,6 +21,8 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.mvc.Headers
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.EtmpHelper.validateHeaders
 
+import java.time.Instant
+
 class EtmpHelperSpec extends AnyWordSpec with Matchers {
 
   private val validRequestHeaders = Headers(
@@ -74,13 +76,15 @@ class EtmpHelperSpec extends AnyWordSpec with Matchers {
     }
 
     "return false when the X-Receipt-Date header is not found, empty or invalid" in {
-      val requestWithoutHeader     = validRequestHeaders.remove("X-Receipt-Date")
-      val requestWithEmptyHeader   = requestWithoutHeader.add("X-Receipt-Date" -> "")
-      val requestWithInvalidHeader = requestWithoutHeader.add("X-Receipt-Date" -> "abc")
+      val requestWithoutHeader      = validRequestHeaders.remove("X-Receipt-Date")
+      val requestWithEmptyHeader    = requestWithoutHeader.add("X-Receipt-Date" -> "")
+      val requestWithInvalidHeader  = requestWithoutHeader.add("X-Receipt-Date" -> "abc")
+      val requestWithInvalidHeader2 = requestWithoutHeader.add("X-Receipt-Date" -> Instant.now().toString)
 
       validateHeaders(requestWithoutHeader) shouldBe false
       validateHeaders(requestWithEmptyHeader) shouldBe false
       validateHeaders(requestWithInvalidHeader) shouldBe false
+      validateHeaders(requestWithInvalidHeader2) shouldBe false
     }
   }
 }
