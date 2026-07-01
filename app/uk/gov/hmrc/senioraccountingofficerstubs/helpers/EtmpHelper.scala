@@ -51,7 +51,10 @@ object EtmpHelper {
     }
   }
   private def validateXOriginatingSystem(headersMap: Map[String, String]): Boolean = {
-    headersMap.get("X-Originating-System").exists(value => value.length >= 1 && value.length <= 30)
+    headersMap.get("X-Originating-System") match {
+      case Some("MDTP") => true
+      case _ => false
+    }
   }
   private def validateCorrelationid(headersMap: Map[String, String]): Boolean = {
     headersMap

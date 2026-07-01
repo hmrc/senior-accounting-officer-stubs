@@ -35,7 +35,7 @@ class EtmpHelperSpec extends AnyWordSpec with Matchers {
       validateHeaders(validRequestHeaders) shouldBe true
     }
 
-    "return true when all required headers are found and there are also extra headers" in {
+    "return true when all required headers valid, and there are also extra headers" in {
       val headers = validRequestHeaders.add("extra header" -> "extra value")
       validateHeaders(headers) shouldBe true
     }
@@ -56,7 +56,7 @@ class EtmpHelperSpec extends AnyWordSpec with Matchers {
     "return false when the X-Originating-System header is not found, empty or invalid" in {
       val requestWithoutHeader     = validRequestHeaders.remove("X-Originating-System")
       val requestWithEmptyHeader   = requestWithoutHeader.add("X-Originating-System" -> "")
-      val requestWithInvalidHeader = requestWithoutHeader.add("X-Originating-System" -> "a".repeat(31))
+      val requestWithInvalidHeader = requestWithoutHeader.add("X-Originating-System" -> "invalid")
 
       validateHeaders(requestWithoutHeader) shouldBe false
       validateHeaders(requestWithEmptyHeader) shouldBe false

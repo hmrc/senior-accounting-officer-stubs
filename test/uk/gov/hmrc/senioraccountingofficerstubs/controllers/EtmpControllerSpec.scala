@@ -65,8 +65,8 @@ class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSu
 
   "POST /RESTAdapter/dsao/subscription" should {
     "return code 201, correlationid header, and an Etmp success response for an idNumber" in {
-      val request = fakeEtmpPOSTRequest(validEtmpRequest)
-      val correlationId = request.headers.get("correlationid").get
+      val request          = fakeEtmpPOSTRequest(validEtmpRequest)
+      val correlationId    = request.headers.get("correlationid").get
       val result           = routeResult(request)
       val expectedResponse =
         """^\{"success":\{"processingDate":"[0-9]{4}-([0][1-9]|[1][0-2])-([0][1-9]|[1-2][0-9]|[3][0-1])T([0-1][0-9]|[2][0-3]):[0-5][0-9]:[0-5][0-9]Z","dsaoIdNumber":"XB[0-9]{1,15}"\}}$"""

@@ -21,7 +21,7 @@ import play.api.mvc.Action
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.{EtmpHelper, JsonErrorHandling}
-import uk.gov.hmrc.senioraccountingofficerstubs.models.{EtmpSuccessResponse, Success => EtmpSuccess}
+import uk.gov.hmrc.senioraccountingofficerstubs.models.{EtmpSuccessResponse, Success as EtmpSuccess}
 
 import scala.util.Random
 
@@ -33,7 +33,8 @@ class EtmpController @Inject() (cc: ControllerComponents) extends BackendControl
   def createEtmp: Action[String] = Action(parse.tolerantText) { implicit request =>
     if EtmpHelper.validateHeaders(request.headers) then {
       val correlationId = request.headers
-        .get("correlationid").get
+        .get("correlationid")
+        .get
       JsonErrorHandling.parseJson(request.body) match {
         case Right(json) => {
           val errors = JsonErrorHandling.Validators.validateEtmp(json)
