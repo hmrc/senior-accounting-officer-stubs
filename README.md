@@ -3,22 +3,27 @@
 
 This is a placeholder README.md for a new repository
 
-## Getting Started with BRUNO
+## Running tests with BRUNO
 
-### Pre requisites:
+Users can import the collection into Bruno and, once the required environment setup is complete, run the stubs requests directly.
+
+### Pre-requisites:
 Start the needed services in a terminal session with the following command:
 
 ```bash
 sm2 --start SAO_ALL
 ```
 
-Users can import the collection into Bruno and, once the required environment setup is complete, run the stubs requests directly.
+### Running Tests in the Local environment
 
-### Running in Local environment
-
-1. Import the BRUNO test collection from Senior Accounting Officer Stubs (Collection Name: senior-accounting-officer-stubs)
-2. Execute the requests from the imported collection in Local environment
-
+* Open Bruno.
+* From the Bruno menu select Open Collection.
+* Navigate to the bruno folder in the repository.
+* Click the Open button.
+* In Bruno, select the local environment from the environment dropdown.
+* Select a request from the collection in the left-hand panel.
+* Click Send to execute the request.
+* Verify the response status and body match the expected output.
 
 ### License
 
