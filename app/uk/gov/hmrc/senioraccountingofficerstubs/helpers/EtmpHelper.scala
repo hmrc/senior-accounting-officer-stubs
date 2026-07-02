@@ -24,8 +24,6 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
-class EtmpHelper {}
-
 object EtmpHelper {
 
   private val headers = Seq("X-Transmitting-System", "X-Originating-System", "correlationid", "X-Receipt-Date")

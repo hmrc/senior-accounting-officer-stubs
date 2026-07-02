@@ -31,10 +31,10 @@ import javax.inject.Inject
 class EtmpController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
   def createEtmp: Action[String] = Action(parse.tolerantText) { implicit request =>
+    val correlationId = request.headers
+      .get("correlationid").getOrElse("")
+    if correlationId == "" then BadRequest
     if EtmpHelper.validateHeaders(request.headers) then {
-      val correlationId = request.headers
-        .get("correlationid")
-        .get
       JsonErrorHandling.parseJson(request.body) match {
         case Right(json) => {
           val errors = JsonErrorHandling.Validators.validateEtmp(json)
