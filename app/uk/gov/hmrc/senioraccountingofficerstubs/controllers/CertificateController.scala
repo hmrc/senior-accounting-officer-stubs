@@ -29,6 +29,7 @@ import javax.inject.Inject
 class CertificateController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
   private val stubbedSaoSubscriptionId = "123"
+  
   private def generateCertificateId    = {
     val num = Random.nextInt(10000000)
     "CRT" + f"$num%010d"
@@ -41,10 +42,7 @@ class CertificateController @Inject() (cc: ControllerComponents) extends Backend
         if errors.nonEmpty then JsonErrorHandling.badRequest(errors)
         else if saoSubscriptionId == stubbedSaoSubscriptionId then
           Created(Json.toJson(CertificateResponse(generateCertificateId)))
-        else {
-          println(json)
-          NotFound
-        }
+        else NotFound
       case Left(errorResult) => errorResult
     }
   }
