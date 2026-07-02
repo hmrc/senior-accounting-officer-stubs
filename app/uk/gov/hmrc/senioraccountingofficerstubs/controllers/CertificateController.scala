@@ -29,8 +29,8 @@ import javax.inject.Inject
 class CertificateController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
   private val stubbedSaoSubscriptionId = "123"
-  
-  private def generateCertificateId    = {
+
+  private def generateCertificateId = {
     val num = Random.nextInt(10000000)
     "CRT" + f"$num%010d"
   }
