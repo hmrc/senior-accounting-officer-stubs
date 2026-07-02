@@ -3,12 +3,23 @@
 
 This is a placeholder README.md for a new repository
 
-## Running tests with BRUNO
+## Running tests with Bruno
 
-Users can import the collection into Bruno and, once the required environment setup is complete, run the stubs requests directly.
+Users can import the collection into Bruno and, once the required environment setup is complete, run the protected service requests directly.
+
+### What is Bruno?
+
+Bruno is an open-source API client used for manual exploratory testing and cross-team collaboration. It allows you to create, manage and run HTTP requests against a service directly from a collection stored in a repository.
+
+### (HMRC) MDTP Recommendation
+
+Bruno is the recommended API client tool for use on the MDTP platform, as detailed in the [MDTP Handbook](https://docs.tax.service.gov.uk/mdtp-handbook/documentation/mdtp-test-approach/acceptance-testing/api-testing/index.html)
+
+"MDTP recommends the Bruno API client tool for manual exploratory testing and cross-team collaboration. Only tools that have been reviewed and approved by Platform Security are permitted for use."
 
 ### Pre-requisites:
-Start the needed services in a terminal session with the following command:
+* Download and install Bruno.
+* Start the needed services in a terminal session with the following command:
 
 ```bash
 sm2 --start SAO_ALL
@@ -24,6 +35,7 @@ sm2 --start SAO_ALL
 * Select a request from the collection in the left-hand panel.
 * Click Send to execute the request.
 * Verify the response status and body match the expected output.
+
 
 ### License
 
