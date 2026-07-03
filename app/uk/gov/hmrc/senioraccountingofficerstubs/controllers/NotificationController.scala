@@ -43,8 +43,7 @@ class NotificationController @Inject() (cc: ControllerComponents) extends Backen
         else if saoSubscriptionId == stubbedSaoSubscriptionId then
           Created(Json.toJson(NotificationResponse(generateNotificationId)))
         else NotFound
-      case Left(errorResult) =>
-        errorResult
+      case Left(errorResult) => errorResult
     }
   }
 }
