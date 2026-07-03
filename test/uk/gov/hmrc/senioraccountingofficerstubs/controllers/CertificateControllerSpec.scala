@@ -113,7 +113,6 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
-
         Json.obj(
           "path"   -> "companies[0]",
           "reason" -> "INVALID_DATA_TYPE"
@@ -125,7 +124,7 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
         Json.obj(
           "path"   -> "saoName",
           "reason" -> "MISSING_REQUIRED_FIELD"
-        ),
+        )
       )
     }
 
