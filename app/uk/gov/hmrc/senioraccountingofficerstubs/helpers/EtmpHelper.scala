@@ -26,7 +26,12 @@ import java.util.UUID
 
 object EtmpHelper {
 
-  private val headers = Seq("X-Transmitting-System", "X-Originating-System", "correlationid", "X-Receipt-Date")
+  private val TransmittingSystem = "X-Transmitting-System"
+  private val OriginatingSystem = "X-Originating-System"
+  private val CorrelationId = "correlationid"
+  private val ReceiptDate = "X-Receipt-Date"
+  private val headers = Seq(TransmittingSystem, OriginatingSystem, CorrelationId, ReceiptDate)
+  
 
   def validateHeaders(requestHeaders: Headers): Either[String, String] = {
     val headersMap = headers.foldLeft(Map.empty[String, String]) { (map, header) =>
@@ -38,34 +43,34 @@ object EtmpHelper {
 
     for {
       transmittingSystem <- headersMap
-        .get("X-Transmitting-System")
-        .toRight("missing X-Transmitting-System header")
+        .get(TransmittingSystem)
+        .toRight(s"missing $TransmittingSystem header")
       _ <- {
         if transmittingSystem == "HIP" then Right(transmittingSystem)
-        else Left("invalid X-Transmitting-System header")
+        else Left(s"invalid $TransmittingSystem header")
       }
 
       originatingSystem <- headersMap
-        .get("X-Originating-System")
-        .toRight("missing X-Originating-System header")
+        .get(OriginatingSystem)
+        .toRight(s"missing $OriginatingSystem header")
       _ <- {
         if originatingSystem == "MDTP" then Right(originatingSystem)
-        else Left("invalid X-Originating-System header")
+        else Left(s"invalid $OriginatingSystem header")
       }
 
       receiptDate <- headersMap
-        .get("X-Receipt-Date")
-        .toRight("missing X-Receipt-Date header")
-      instant <- Try(Instant.parse(receiptDate)).toEither.left.map(_ => "invalid X-Receipt-Date header")
+        .get(ReceiptDate)
+        .toRight(s"missing $ReceiptDate header")
+      instant <- Try(Instant.parse(receiptDate)).toEither.left.map(_ => s"invalid $ReceiptDate header")
       _       <- {
         if instant.truncatedTo(ChronoUnit.SECONDS).toString == receiptDate then Right(receiptDate)
-        else Left("invalid X-Receipt-Date format")
+        else Left(s"invalid $ReceiptDate format")
       }
 
       correlationId <- headersMap
-        .get("correlationid")
-        .toRight("missing correlationid header")
-        .flatMap(id => Try(UUID.fromString(id)).toEither.left.map(_ => "invalid correlationid header").map(_ => id))
+        .get(CorrelationId)
+        .toRight(s"missing $CorrelationId header")
+        .flatMap(id => Try(UUID.fromString(id)).toEither.left.map(_ => s"invalid $CorrelationId header").map(_ => id))
 
     } yield (correlationId)
   }
