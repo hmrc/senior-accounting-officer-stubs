@@ -21,11 +21,14 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.{MimeTypes, Status}
 import play.api.libs.json.{JsArray, JsObject}
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{AnyContentAsText, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import uk.gov.hmrc.domain.SaUtrGenerator
 
 import scala.concurrent.Future
+import scala.util.Random
 
 class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -33,68 +36,41 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
   private val knownId    = "123"
   private val unknownId  = "567"
 
-  import play.api.libs.json.{JsValue, Json}
-
   private val validCertificateRequest: JsValue = Json.obj(
-    "declaration" -> Json.obj(
-      "seniorAccountingOfficer" -> Json.obj(
-        "name"  -> "Firstname Lastname",
-        "email" -> "Firstname.Lastname@example.com"
-      ),
-      "proxy" -> Json.obj(
-        "name" -> "Firstname Lastname"
-      )
-    ),
-    "companies" -> Json.arr(
+    "submitterName" -> "Jane Smith",
+    "saoName"       -> "Jane Smith",
+    "saoEmail"      -> "Firstname.Lastname@example.com",
+    "companies"     -> Json.arr(
       Json.obj(
-        "companyName"            -> "Example Ltd",
-        "uniqueTaxReference"     -> "1234567890",
-        "companyReferenceNumber" -> "AB123456",
-        "companyType"            -> "LTD",
-        "financialYearEndDate"   -> "2024-12-31",
-        "qualifiedRegimes"       -> Json.arr(
-          "CORPORATION",
-          "VALUE_ADDED"
-        ),
-        "qualificationStatement" -> "All relevant corporation and VAT obligations have been delayed due to grievance.",
-        "seniorAccountingOfficers" -> Json.arr(
-          Json.obj(
-            "name"      -> "Firstname Lastname",
-            "email"     -> "Firstname.Lastname@example.com",
-            "startDate" -> "2024-04-01",
-            "endDate"   -> "2025-03-31"
-          ),
-          Json.obj(
-            "name"      -> "Secondpersonname Theirlastname",
-            "email"     -> "non.empty.email@companyname.com",
-            "startDate" -> "2024-12-01",
-            "endDate"   -> "2025-12-31"
-          )
-        )
-      ),
-      Json.obj(
-        "companyName"            -> "Example PLC",
-        "uniqueTaxReference"     -> "0987654321",
-        "companyReferenceNumber" -> "CD654321",
-        "companyType"            -> "PLC",
-        "financialYearEndDate"   -> "2024-06-30",
-        "isDormant"              -> true,
-        "isInAdministration"     -> false,
-        "qualifiedRegimes"       -> Json.arr(
-          "PAY_AS_YOU_EARN",
-          "PETROLEUM_REVENUE"
-        ),
-        "seniorAccountingOfficers" -> Json.arr(
-          Json.obj(
-            "name"      -> "Another Officer",
-            "startDate" -> "2024-05-01",
-            "endDate"   -> "2025-04-30"
-          )
-        )
+        "crn"                            -> generateCrn,
+        "utr"                            -> generateUtr,
+        "name"                           -> "Example Subsidiary Ltd",
+        "accPeriodEnd"                   -> "2025-03-31",
+        "status"                         -> "COMPLIANT",
+        "type"                           -> "LTD",
+        "isCorporationTaxQualified"      -> true,
+        "isVatQualified"                 -> true,
+        "isPayeQualified"                -> true,
+        "isInsurancePremiumTaxQualified" -> false,
+        "isStampDutyLandTaxQualified"    -> false,
+        "isStampDutyReserveTaxQualified" -> false,
+        "isPetroleumRevenueTaxQualified" -> false,
+        "isCustomsDutiesQualified"       -> false,
+        "isExciseDutiesQualified"        -> false,
+        "isBankLevyQualified"            -> false
       )
-    ),
-    "additionalInformation" -> "non-empty string"
+    )
   )
+
+  private def generateCrn = {
+    val num = Random.nextInt(1000000)
+    f"$num%010d"
+  }
+
+  private def generateUtr = {
+    val seed = Random.nextInt(1000000)
+    SaUtrGenerator(seed).nextSaUtr
+  }
 
   private def routeResult(request: FakeRequest[AnyContentAsText]): Future[Result] =
     route(app, request) match {
@@ -103,7 +79,7 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
     }
 
   private def fakeCertificatePOSTRequest(id: String, payload: JsValue) =
-    FakeRequest("POST", s"/certificate/$id")
+    FakeRequest("POST", s"/subscriptions/$id/certificates")
       .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
       .withTextBody(payload.toString())
 
@@ -113,17 +89,12 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
     contentAsJson(result) shouldBe Json.arr(expectedError)
   }
 
-  "POST /certificate/:saoSubscriptionId" should {
-    "return 200 and certificate payload for a known saoSubscriptionId" in {
+  "POST /subscriptions/:saoSubscriptionId/certificates" should {
+    "return 201 and certificate payload for a known saoSubscriptionId" in {
       val result = routeResult(fakeCertificatePOSTRequest(knownId, validCertificateRequest))
 
-      val testCertificateResponse = Json.obj(
-        "id"        -> "NOT0123456789",
-        "timestamp" -> "2026-03-01T12:00:14Z"
-      )
-
-      status(result) shouldBe Status.OK
-      contentAsJson(result) shouldBe testCertificateResponse
+      status(result) shouldBe Status.CREATED
+      contentAsString(result) should fullyMatch regex """^\{"certificateRef":"CRT[0-9]{10}"\}$"""
     }
 
     "return a 404 for an unknown saoSubscriptionId" in {
@@ -147,14 +118,18 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
           "reason" -> "INVALID_DATA_TYPE"
         ),
         Json.obj(
-          "path"   -> "declaration",
+          "path"   -> "saoEmail",
+          "reason" -> "MISSING_REQUIRED_FIELD"
+        ),
+        Json.obj(
+          "path"   -> "saoName",
           "reason" -> "MISSING_REQUIRED_FIELD"
         )
       )
     }
 
     "return a structured 400 for constraint violation with malformed request when JSON syntax is incorrect" in {
-      val fakePOSTRequest = FakeRequest("POST", s"/certificate/$knownId")
+      val fakePOSTRequest = FakeRequest("POST", s"/subscriptions/$knownId/certificates")
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody("""{"companies":["Test"]""")
 
@@ -180,125 +155,8 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
         knownId,
         certificateRequestInvalidFormat,
         Json.obj(
-          "path"   -> "declaration.seniorAccountingOfficer.email",
+          "path"   -> "saoEmail",
           "reason" -> "INVALID_FORMAT"
-        )
-      )
-    }
-
-    "return a structured 400 for constraint violation with cannot be empty" in {
-      val certificateRequestCannotBeEmpty = Json.parse(
-        validCertificateRequest
-          .toString()
-          .replaceFirst(
-            "Example Ltd",
-            ""
-          )
-      )
-
-      assertValidationError(
-        knownId,
-        certificateRequestCannotBeEmpty,
-        Json.obj(
-          "path"   -> "companies[0].companyName",
-          "reason" -> "CANNOT_BE_EMPTY"
-        )
-      )
-    }
-
-    "return a structured 400 for constraint violation with invalid data type when int is present instead of string" in {
-      val companies    = (validCertificateRequest \ "companies").as[JsArray].value
-      val firstCompany = companies.head.as[JsObject] ++ Json.obj(
-        "uniqueTaxReference" -> 123
-      )
-
-      val certificateRequestInvalidDataType =
-        validCertificateRequest.as[JsObject] ++ Json.obj(
-          "companies" -> JsArray(companies.updated(0, firstCompany))
-        )
-
-      assertValidationError(
-        knownId,
-        certificateRequestInvalidDataType,
-        Json.obj(
-          "path"   -> "companies[0].uniqueTaxReference",
-          "reason" -> "INVALID_DATA_TYPE"
-        )
-      )
-    }
-
-    "return a structured 400 for constraint violation with invalid data type when there is an additional json property" in {
-      val additionalProperty: JsObject    = Json.obj("extraProperty" -> "I shouldn't be here")
-      val certificateRequestExtraProperty = validCertificateRequest.as[JsObject] ++ additionalProperty
-
-      assertValidationError(
-        knownId,
-        certificateRequestExtraProperty,
-        Json.obj(
-          "path"   -> "extraProperty",
-          "reason" -> "INVALID_DATA_TYPE"
-        )
-      )
-    }
-
-    "return a structured 400 for constraint violation with array min items not met" in {
-      val certificateRequestArrayMinItemsNotMet: JsValue = Json.obj(
-        "declaration" -> Json.obj(
-          "seniorAccountingOfficer" -> Json.obj(
-            "name"  -> "Firstname Lastname",
-            "email" -> "Firstname.Lastname@example.com"
-          )
-        ),
-        "companies"             -> Json.arr(),
-        "additionalInformation" -> "non-empty string"
-      )
-
-      assertValidationError(
-        knownId,
-        certificateRequestArrayMinItemsNotMet,
-        Json.obj(
-          "path"   -> "companies",
-          "reason" -> "ARRAY_MIN_ITEMS_NOT_MET"
-        )
-      )
-    }
-
-    "return a structured 400 for constraint violation with length out of bounds" in {
-      val certificateRequestLengthOutOfBounds = Json.parse(
-        validCertificateRequest
-          .toString()
-          .replaceFirst(
-            "non-empty string",
-            "non-empty string " * 300
-          )
-      )
-
-      assertValidationError(
-        knownId,
-        certificateRequestLengthOutOfBounds,
-        Json.obj(
-          "path"   -> "additionalInformation",
-          "reason" -> "LENGTH_OUT_OF_BOUNDS"
-        )
-      )
-    }
-
-    "return a structured 400 for constraint violation with invalid enum" in {
-      val certificateRequestInvalidEnum = Json.parse(
-        validCertificateRequest
-          .toString()
-          .replaceFirst(
-            "LTD",
-            "LDX"
-          )
-      )
-
-      assertValidationError(
-        knownId,
-        certificateRequestInvalidEnum,
-        Json.obj(
-          "path"   -> "companies[0].companyType",
-          "reason" -> "INVALID_ENUM_VALUE"
         )
       )
     }

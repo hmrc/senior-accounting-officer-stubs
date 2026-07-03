@@ -18,8 +18,8 @@ package uk.gov.hmrc.senioraccountingofficerstubs.models
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class CertificateResponse(id: String, timestamp: String)
+final case class CertificateResponse(certificateRef: String)
 
 object CertificateResponse {
-  implicit val Format: OFormat[CertificateResponse] = Json.format[CertificateResponse]
+  given OFormat[CertificateResponse] = Json.format[CertificateResponse]
 }
