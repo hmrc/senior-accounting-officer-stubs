@@ -20,7 +20,8 @@ import play.api.libs.json.Json
 import play.api.mvc.Action
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.senioraccountingofficerstubs.helpers.{EtmpHelper, JsonErrorHandling}
+import uk.gov.hmrc.senioraccountingofficerstubs.helpers.EtmpHelper
+import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.{EtmpSuccessResponse, Success as EtmpSuccess}
 
 import scala.util.Random
@@ -31,24 +32,29 @@ import javax.inject.Inject
 class EtmpController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
 
   def createEtmp: Action[String] = Action(parse.tolerantText) { implicit request =>
-    val correlationId = request.headers
-      .get("correlationid").getOrElse("")
-    if correlationId == "" then BadRequest
-    if EtmpHelper.validateHeaders(request.headers) then {
-      JsonErrorHandling.parseJson(request.body) match {
-        case Right(json) => {
-          val errors = JsonErrorHandling.Validators.validateEtmp(json)
-          if errors.nonEmpty then JsonErrorHandling.badRequest(errors)
-          else {
-            val etmpSuccess =
-              EtmpSuccess(Instant.now().truncatedTo(ChronoUnit.SECONDS).toString, f"XB${Random.nextInt(1000000)}%013d")
-            val response = EtmpSuccessResponse(etmpSuccess)
-            Created(Json.toJson(response)).withHeaders("correlationid" -> correlationId)
+    EtmpHelper
+      .validateHeaders(request.headers)
+      .fold(
+        header_err => BadRequest(header_err),
+        correlationId => {
+          JsonErrorHandling.parseJson(request.body) match {
+            case Right(json) => {
+              val errors = JsonErrorHandling.Validators.validateEtmp(json)
+              if errors.nonEmpty then JsonErrorHandling.badRequest(errors)
+              else {
+                val etmpSuccess =
+                  EtmpSuccess(
+                    Instant.now().truncatedTo(ChronoUnit.SECONDS).toString,
+                    f"XB${Random.nextInt(1000000)}%013d"
+                  )
+                val response = EtmpSuccessResponse(etmpSuccess)
+                Created(Json.toJson(response)).withHeaders("X-Correlation-Id" -> correlationId)
+              }
+            }
+            case Left(errorResult) => errorResult
           }
         }
-        case Left(errorResult) => errorResult
-      }
-    } else BadRequest("missing or invalid headers")
+      )
   }
 
 }

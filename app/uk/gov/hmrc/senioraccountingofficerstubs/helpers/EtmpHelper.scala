@@ -28,7 +28,7 @@ object EtmpHelper {
 
   private val headers = Seq("X-Transmitting-System", "X-Originating-System", "correlationid", "X-Receipt-Date")
 
-  def validateHeaders(requestHeaders: Headers): Boolean = {
+  def validateHeaders(requestHeaders: Headers): Either[String, String] = {
     val headersMap = headers.foldLeft(Map.empty[String, String]) { (map, header) =>
       requestHeaders.get(header) match {
         case Some(headerVal) => map + (header -> headerVal)
@@ -36,36 +36,37 @@ object EtmpHelper {
       }
     }
 
-    headersMap.size == headers.size &&
-    validateXTransmittingSystem(headersMap) &&
-    validateXOriginatingSystem(headersMap) &&
-    validateCorrelationid(headersMap) &&
-    validateReceiptDate(headersMap)
-  }
+    for {
+      transmittingSystem <- headersMap
+        .get("X-Transmitting-System")
+        .toRight("missing X-Transmitting-System header")
+      _ <- {
+        if transmittingSystem == "HIP" then Right(transmittingSystem)
+        else Left("invalid X-Transmitting-System header")
+      }
 
-  private def validateXTransmittingSystem(headersMap: Map[String, String]): Boolean = {
-    headersMap.get("X-Transmitting-System") match {
-      case Some("HIP") => true
-      case _           => false
-    }
-  }
-  private def validateXOriginatingSystem(headersMap: Map[String, String]): Boolean = {
-    headersMap.get("X-Originating-System") match {
-      case Some("MDTP") => true
-      case _            => false
-    }
-  }
-  private def validateCorrelationid(headersMap: Map[String, String]): Boolean = {
-    headersMap
-      .get("correlationid")
-      .exists(correlationId => Try(UUID.fromString(correlationId)).isSuccess)
-  }
-  private def validateReceiptDate(headersMap: Map[String, String]): Boolean = {
-    headersMap
-      .get("X-Receipt-Date")
-      .exists(datetime =>
-        Try(Instant.parse(datetime)).toOption
-          .exists(instant => instant == instant.truncatedTo(ChronoUnit.SECONDS))
-      )
+      originatingSystem <- headersMap
+        .get("X-Originating-System")
+        .toRight("missing X-Originating-System header")
+      _ <- {
+        if originatingSystem == "MDTP" then Right(originatingSystem)
+        else Left("invalid X-Originating-System header")
+      }
+
+      receiptDate <- headersMap
+        .get("X-Receipt-Date")
+        .toRight("missing X-Receipt-Date header")
+      instant <- Try(Instant.parse(receiptDate)).toEither.left.map(_ => "invalid X-Receipt-Date header")
+      _       <- {
+        if instant.truncatedTo(ChronoUnit.SECONDS).toString == receiptDate then Right(receiptDate)
+        else Left("invalid X-Receipt-Date format")
+      }
+
+      correlationId <- headersMap
+        .get("correlationid")
+        .toRight("missing correlationid header")
+        .flatMap(id => Try(UUID.fromString(id)).toEither.left.map(_ => "invalid correlationid header").map(_ => id))
+
+    } yield (correlationId)
   }
 }

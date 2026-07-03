@@ -34,45 +34,42 @@ class EtmpHelperSpec extends AnyWordSpec with Matchers {
 
   "validateHeaders" should {
     "return true when all required headers are found, and they are all valid" in {
-      validateHeaders(validRequestHeaders) shouldBe true
+      validateHeaders(validRequestHeaders) shouldBe Right("f0bd1f32-de51-45cc-9b18-0520d6e3ab1a")
     }
 
     "return true when all required headers valid, and there are also extra headers" in {
       val headers = validRequestHeaders.add("extra header" -> "extra value")
-      validateHeaders(headers) shouldBe true
+      validateHeaders(headers) shouldBe Right("f0bd1f32-de51-45cc-9b18-0520d6e3ab1a")
     }
 
-    "return false when none of the required headers found" in {
-      validateHeaders(Headers()) shouldBe false
-    }
-    "return false when the X-Transmitting-System header is not found, empty or invalid" in {
+    "return error messages when the X-Transmitting-System header is not found, empty or invalid" in {
       val requestWithoutHeader     = validRequestHeaders.remove("X-Transmitting-System")
       val requestWithEmptyHeader   = requestWithoutHeader.add("X-Transmitting-System" -> "")
       val requestWithInvalidHeader = requestWithoutHeader.add("X-Transmitting-System" -> "Test")
 
-      validateHeaders(requestWithoutHeader) shouldBe false
-      validateHeaders(requestWithEmptyHeader) shouldBe false
-      validateHeaders(requestWithInvalidHeader) shouldBe false
+      validateHeaders(requestWithoutHeader) shouldBe Left("missing X-Transmitting-System header")
+      validateHeaders(requestWithEmptyHeader) shouldBe Left("invalid X-Transmitting-System header")
+      validateHeaders(requestWithInvalidHeader) shouldBe Left("invalid X-Transmitting-System header")
     }
 
-    "return false when the X-Originating-System header is not found, empty or invalid" in {
+    "return header error messages when the X-Originating-System header is not found, empty or invalid" in {
       val requestWithoutHeader     = validRequestHeaders.remove("X-Originating-System")
       val requestWithEmptyHeader   = requestWithoutHeader.add("X-Originating-System" -> "")
       val requestWithInvalidHeader = requestWithoutHeader.add("X-Originating-System" -> "invalid")
 
-      validateHeaders(requestWithoutHeader) shouldBe false
-      validateHeaders(requestWithEmptyHeader) shouldBe false
-      validateHeaders(requestWithInvalidHeader) shouldBe false
+      validateHeaders(requestWithoutHeader) shouldBe Left("missing X-Originating-System header")
+      validateHeaders(requestWithEmptyHeader) shouldBe Left("invalid X-Originating-System header")
+      validateHeaders(requestWithInvalidHeader) shouldBe Left("invalid X-Originating-System header")
     }
 
-    "return false when the correlationid header is not found, empty or invalid" in {
+    "return header errors messages when the correlationid header is not found, empty or invalid" in {
       val requestWithoutHeader     = validRequestHeaders.remove("correlationid")
       val requestWithEmptyHeader   = requestWithoutHeader.add("correlationid" -> "")
       val requestWithInvalidHeader = requestWithoutHeader.add("correlationid" -> "12341")
 
-      validateHeaders(requestWithoutHeader) shouldBe false
-      validateHeaders(requestWithEmptyHeader) shouldBe false
-      validateHeaders(requestWithInvalidHeader) shouldBe false
+      validateHeaders(requestWithoutHeader) shouldBe Left("missing correlationid header")
+      validateHeaders(requestWithEmptyHeader) shouldBe Left("invalid correlationid header")
+      validateHeaders(requestWithInvalidHeader) shouldBe Left("invalid correlationid header")
     }
 
     "return false when the X-Receipt-Date header is not found, empty or invalid" in {
@@ -81,10 +78,10 @@ class EtmpHelperSpec extends AnyWordSpec with Matchers {
       val requestWithInvalidHeader  = requestWithoutHeader.add("X-Receipt-Date" -> "abc")
       val requestWithInvalidHeader2 = requestWithoutHeader.add("X-Receipt-Date" -> Instant.now().toString)
 
-      validateHeaders(requestWithoutHeader) shouldBe false
-      validateHeaders(requestWithEmptyHeader) shouldBe false
-      validateHeaders(requestWithInvalidHeader) shouldBe false
-      validateHeaders(requestWithInvalidHeader2) shouldBe false
+      validateHeaders(requestWithoutHeader) shouldBe Left("missing X-Receipt-Date header")
+      validateHeaders(requestWithEmptyHeader) shouldBe Left("invalid X-Receipt-Date header")
+      validateHeaders(requestWithInvalidHeader) shouldBe Left("invalid X-Receipt-Date header")
+      validateHeaders(requestWithInvalidHeader2) shouldBe Left("invalid X-Receipt-Date format")
     }
   }
 }

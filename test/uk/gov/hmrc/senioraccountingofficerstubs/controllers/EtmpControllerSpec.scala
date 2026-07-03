@@ -33,8 +33,7 @@ import java.util.UUID
 
 class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
-  private val authHeader                 = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
-  private val missingOrInvalidHeadersMsg = "missing or invalid headers"
+  private val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
 
   private val validEtmpRequest: JsValue = Json.obj(
     "idType"   -> "UTR",
@@ -73,7 +72,7 @@ class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSu
 
       status(result) shouldBe Status.CREATED
       contentAsString(result) should fullyMatch regex expectedResponse
-      header("correlationid", result) shouldBe Some(correlationId)
+      header("X-Correlation-Id", result) shouldBe Some(correlationId)
     }
 
     "return code 400 for a request without a required header, correlationid" in {
@@ -90,7 +89,7 @@ class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSu
       val result = routeResult(requestWithoutCorrelationId)
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsString(result) shouldBe missingOrInvalidHeadersMsg
+      contentAsString(result) shouldBe "missing correlationid header"
     }
 
     "return code 400 for a request where a required header is invalid" in {
@@ -107,7 +106,7 @@ class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSu
 
       val result = routeResult(requestWithInvalidHeader)
       status(result) shouldBe BAD_REQUEST
-      contentAsString(result) shouldBe missingOrInvalidHeadersMsg
+      contentAsString(result) shouldBe "invalid X-Transmitting-System header"
     }
 
     "return a structured 400 for a request with invalid enum for idType" in {
