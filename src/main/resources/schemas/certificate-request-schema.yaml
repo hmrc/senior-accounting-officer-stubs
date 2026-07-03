@@ -2,15 +2,15 @@ $schema: "https://json-schema.org/draft/2020-12/schema"
 type: object
 additionalProperties: false
 required:
-  - SAOName
-  - SAOEmail
+  - saoName
+  - saoEmail
   - companies
 properties:
   submitterName:
     type: string
-  SAOName:
+  saoName:
     type: string
-  SAOEmail:
+  saoEmail:
     type: string
     format: email
   staffPID:
