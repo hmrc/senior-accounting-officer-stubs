@@ -1,0 +1,15 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+type: object
+additionalProperties: false
+required:
+  - idType
+  - idNumber
+properties:
+  idType:
+    type: string
+    additionalProperties: false
+    enum:
+      - "UTR"
+  idNumber:
+    type: string
+    pattern: "^[0-9]{10}$"
