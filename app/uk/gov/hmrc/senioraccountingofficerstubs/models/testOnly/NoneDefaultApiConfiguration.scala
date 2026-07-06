@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.config
+package uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly
 
-import com.google.inject.AbstractModule
+import play.api.libs.json.*
 
-import java.time.{Clock, ZoneOffset}
+final case class NoneDefaultApiConfiguration(status: Int, defaultBodyOverride: Option[String] = None)
 
-class Module extends AbstractModule {
-
-  override def configure(): Unit = {
-
-    bind(classOf[AppConfig]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemDefaultZone.withZone(ZoneOffset.UTC))
-  }
+object NoneDefaultApiConfiguration {
+  given OFormat[NoneDefaultApiConfiguration] = Json.format[NoneDefaultApiConfiguration]
 }

@@ -23,9 +23,10 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class AppConfig @Inject() (config: Configuration) {
 
-  val appName: String = config.get[String]("appName")
+  def appName: String = config.get[String]("appName")
 
-  val clientId: String     = config.get[String]("hip.clientId")
-  val clientSecret: String = config.get[String]("hip.clientSecret")
+  def clientId: String     = config.get[String]("hip.clientId")
+  def clientSecret: String = config.get[String]("hip.clientSecret")
 
+  def cacheTtl: Long = config.get[Int]("mongodb.timeToLiveInSeconds")
 }

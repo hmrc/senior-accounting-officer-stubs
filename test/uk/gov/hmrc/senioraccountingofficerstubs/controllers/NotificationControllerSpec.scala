@@ -16,24 +16,40 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.*
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.Application
 import play.api.http.{MimeTypes, Status}
+import play.api.inject.*
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.*
 import play.api.mvc.{AnyContentAsText, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.domain.SaUtrGenerator
+import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.{
+  NoneDefaultApiConfiguration,
+  PostSignupStubConfiguration
+}
+import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 
 import scala.concurrent.Future
 import scala.util.Random
 
-class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
+class NotificationControllerSpec
+    extends AnyWordSpec
+    with Matchers
+    with GuiceOneAppPerSuite
+    with BeforeAndAfterEach
+    with MockitoSugar {
 
-  private val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
-  private val knownId    = "123"
-  private val unknownId  = "567"
+  private val authHeader         = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
+  private val testSubscriptionId = "123"
 
   private val validNotificationRequest: JsValue = Json.obj(
     "companies" -> Json.arr(
@@ -91,17 +107,64 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     contentAsJson(result) shouldBe Json.arr(expectedError)
   }
 
+  private val mockRepository = mock[PostSignupConfigRepository]
+
+  override lazy val app: Application = GuiceApplicationBuilder()
+    .overrides(bind[PostSignupConfigRepository].toInstance(mockRepository))
+    .build()
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockRepository)
+    when(mockRepository.get(any())).thenReturn(Future.successful(None))
+  }
+
   "POST /subscriptions/:saoSubscriptionId/notifications" should {
-    "return 201 and notification payload for a known saoSubscriptionId" in {
-      val result = routeResult(fakeNotificationPOSTRequest(knownId, validNotificationRequest))
+    "return 201 and notification payload when PostSignupConfigRepository does not return a config for this endpoint" in {
+      val result = routeResult(fakeNotificationPOSTRequest(testSubscriptionId, validNotificationRequest))
 
       status(result) shouldBe Status.CREATED
       contentAsString(result) should fullyMatch regex """^\{"notificationRef":"NOT[0-9]{10}"\}$"""
     }
 
-    "return a 404 for an unknown saoSubscriptionId" in {
-      val result = routeResult(fakeNotificationPOSTRequest(unknownId, validNotificationRequest))
-      status(result) shouldBe Status.NOT_FOUND
+    "return the configured status code and the default body when PostSignupConfigRepository returns a status only config for this endpoint" in {
+      val testConfiguredStatus = Status.NOT_FOUND
+      when(mockRepository.get(meq(testSubscriptionId))).thenReturn(
+        Future.successful(
+          Some(
+            PostSignupStubConfiguration(
+              subscriptionId = testSubscriptionId,
+              postNotification = Some(NoneDefaultApiConfiguration(status = testConfiguredStatus))
+            )
+          )
+        )
+      )
+
+      val result = routeResult(fakeNotificationPOSTRequest(testSubscriptionId, validNotificationRequest))
+      status(result) shouldBe testConfiguredStatus
+      contentAsString(result) should fullyMatch regex """^\{"notificationRef":"NOT[0-9]{10}"\}$"""
+    }
+
+    "return the configured status code and the configured body when PostSignupConfigRepository returns a config that has both for this endpoint" in {
+      val testConfiguredStatus = Status.IM_A_TEAPOT
+
+      val testConfigBody = "result"
+      when(mockRepository.get(meq(testSubscriptionId))).thenReturn(
+        Future.successful(
+          Some(
+            PostSignupStubConfiguration(
+              subscriptionId = testSubscriptionId,
+              postNotification = Some(
+                NoneDefaultApiConfiguration(status = testConfiguredStatus, defaultBodyOverride = Some(testConfigBody))
+              )
+            )
+          )
+        )
+      )
+
+      val result = routeResult(fakeNotificationPOSTRequest(testSubscriptionId, validNotificationRequest))
+      status(result) shouldBe testConfiguredStatus
+      contentAsString(result) shouldBe testConfigBody
     }
 
     "return a structured 400 for a request with invalid JSON shape" in {
@@ -111,7 +174,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       )
 
       assertValidationError(
-        knownId,
+        testSubscriptionId,
         invalidNotificationRequest,
         Json.obj(
           "path"   -> "companies[0]",
@@ -121,7 +184,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
     }
 
     "return a structured 400 for malformed JSON syntax" in {
-      val fakePOSTRequest = FakeRequest("POST", s"/subscriptions/$knownId/notifications")
+      val fakePOSTRequest = FakeRequest("POST", s"/subscriptions/$testSubscriptionId/notifications")
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody("""{"companies":["Test"]""")
 
@@ -144,7 +207,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       )
 
       assertValidationError(
-        knownId,
+        testSubscriptionId,
         notificationRequestInvalidFormat,
         Json.obj(
           "path"   -> "saos[0].email",
@@ -157,7 +220,7 @@ class NotificationControllerSpec extends AnyWordSpec with Matchers with GuiceOne
       val notificationRequestMissingRequiredField = validNotificationRequest.as[JsObject] - "companies"
 
       assertValidationError(
-        knownId,
+        testSubscriptionId,
         notificationRequestMissingRequiredField,
         Json.obj(
           "path"   -> "companies",
