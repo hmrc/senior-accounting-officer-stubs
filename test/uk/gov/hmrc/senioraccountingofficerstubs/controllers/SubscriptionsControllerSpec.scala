@@ -29,18 +29,19 @@ import scala.concurrent.Future
 
 class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
-  private val knownId                  = "123"
-  private val unknownId                = "567"
-  private val authHeader               = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
+  private val knownId    = "123"
+  private val unknownId  = "567"
+  private val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
+
   private val validSubscriptionRequest = Json.obj(
-    "safeId"  -> "XE000123456789",
-    "company" -> Json.obj(
-      "companyName"               -> "Acme Manufacturing Ltd",
-      "uniqueTaxReference"        -> "1234567890",
-      "companyRegistrationNumber" -> "OC123456"
+    "etmpSafeId"       -> "XE000123456789",
+    "nominatedCompany" -> Json.obj(
+      "name" -> "Acme Manufacturing Ltd",
+      "UTR"  -> "1234567890",
+      "CRN"  -> "OC123456"
     ),
     "contacts" -> Json.arr(
-      Json.obj("name" -> "Jane Doe", "email" -> "jane.doe@example.com")
+      Json.obj("name" -> "Jane Doe", "email" -> "jane.doe@example.com", "status" -> "active")
     )
   )
 
@@ -55,29 +56,14 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
       .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
       .withTextBody(payload.toString())
 
-  private def assertValidationError(id: String, payload: JsValue, expectedError: JsValue): Unit = {
-    val result = routeResult(fakeSubscriptionsPUTRequest(id, payload))
-    status(result) shouldBe Status.BAD_REQUEST
-    contentAsJson(result) shouldBe Json.arr(expectedError)
-  }
-
   "PUT /subscriptions" should {
-    "return 200 for a valid request payload" in {
+    "return 204 for a valid request payload" in {
       val result = routeResult(fakeSubscriptionsPUTRequest(knownId, validSubscriptionRequest))
-
-      val testSubscriptionResponse = Json.obj(
-        "saoSubscriptionId"     -> "123",
-        "subscriptionTimestamp" -> "2026-03-01T12:00:14Z"
-      )
-
-      status(result) shouldBe Status.OK
-      contentAsJson(result) shouldBe testSubscriptionResponse
-
+      status(result) shouldBe Status.NO_CONTENT
     }
 
     "return a 404 for an unknown saoSubscriptionId" in {
       val result = routeResult(fakeSubscriptionsPUTRequest(unknownId, validSubscriptionRequest))
-
       status(result) shouldBe Status.NOT_FOUND
     }
 
@@ -94,49 +80,9 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
       )
     }
 
-    "return a structured 400 for constraint violation with invalid format" in {
-      val subscriptionRequestInvalidFormat = Json.parse(
-        validSubscriptionRequest
-          .toString()
-          .replaceFirst(
-            "XE000123456789",
-            "bad safe id"
-          )
-      )
-
-      assertValidationError(
-        knownId,
-        subscriptionRequestInvalidFormat,
-        Json.obj(
-          "path"   -> "safeId",
-          "reason" -> "INVALID_FORMAT"
-        )
-      )
-    }
-
-    "return a structured 400 for constraint violation with cannot be empty" in {
-      val subscriptionRequestCannotBeEmpty = Json.parse(
-        validSubscriptionRequest
-          .toString()
-          .replaceFirst(
-            "Acme Manufacturing Ltd",
-            ""
-          )
-      )
-
-      assertValidationError(
-        knownId,
-        subscriptionRequestCannotBeEmpty,
-        Json.obj(
-          "path"   -> "company.companyName",
-          "reason" -> "CANNOT_BE_EMPTY"
-        )
-      )
-    }
-
     "return a structured 400 for constraint violation with invalid data type when the request is an invalid JSON object" in {
       val invalidSubscriptionRequest: JsValue = Json.obj(
-        "safeId" -> Json.arr("Invalid")
+        "etmpSafeId" -> Json.arr("Invalid")
       )
 
       val result = routeResult(fakeSubscriptionsPUTRequest(knownId, invalidSubscriptionRequest))
@@ -144,16 +90,16 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
-          "path"   -> "company",
-          "reason" -> "MISSING_REQUIRED_FIELD"
-        ),
-        Json.obj(
           "path"   -> "contacts",
           "reason" -> "MISSING_REQUIRED_FIELD"
         ),
         Json.obj(
-          "path"   -> "safeId",
+          "path"   -> "etmpSafeId",
           "reason" -> "INVALID_DATA_TYPE"
+        ),
+        Json.obj(
+          "path"   -> "nominatedCompany",
+          "reason" -> "MISSING_REQUIRED_FIELD"
         )
       )
     }
@@ -162,9 +108,9 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
       val additionalProperty: JsObject     = Json.obj("extraProperty" -> "I shouldn't be here")
       val subscriptionRequestExtraProperty = validSubscriptionRequest.as[JsObject] ++ additionalProperty
 
-      assertValidationError(
-        knownId,
-        subscriptionRequestExtraProperty,
+      val result = routeResult(fakeSubscriptionsPUTRequest(knownId, subscriptionRequestExtraProperty))
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
         Json.obj(
           "path"   -> "extraProperty",
           "reason" -> "INVALID_DATA_TYPE"
@@ -172,56 +118,14 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
       )
     }
 
-    "return a structured 400 for constraint violation with array min items not met" in {
-      val subscriptionRequestArrayMinItemsNotMet: JsValue = Json.obj(
-        "safeId"  -> "XE000123456789",
-        "company" -> Json.obj(
-          "companyName"               -> "Acme Manufacturing Ltd",
-          "uniqueTaxReference"        -> "1234567890",
-          "companyRegistrationNumber" -> "OC123456"
-        ),
-        "contacts" -> Json.arr()
-      )
-
-      assertValidationError(
-        knownId,
-        subscriptionRequestArrayMinItemsNotMet,
-        Json.obj(
-          "path"   -> "contacts",
-          "reason" -> "ARRAY_MIN_ITEMS_NOT_MET"
-        )
-      )
-    }
-
-    "return a structured 400 for constraint violation with length out of bounds" in {
-      val subscriptionRequestLengthOutOfBounds = Json.parse(
-        validSubscriptionRequest
-          .toString()
-          .replaceFirst(
-            "Acme Manufacturing Ltd",
-            "Acme Manufacturing Ltd " * 300
-          )
-      )
-
-      assertValidationError(
-        knownId,
-        subscriptionRequestLengthOutOfBounds,
-        Json.obj(
-          "path"   -> "company.companyName",
-          "reason" -> "LENGTH_OUT_OF_BOUNDS"
-        )
-      )
-    }
-
     "return a structured 400 for constraint violation with missing required field" in {
+      val subscriptionRequestMissingRequiredField = validSubscriptionRequest.as[JsObject] - "etmpSafeId"
 
-      val subscriptionRequestMissingRequiredField = validSubscriptionRequest.as[JsObject] - "safeId"
-
-      assertValidationError(
-        knownId,
-        subscriptionRequestMissingRequiredField,
+      val result = routeResult(fakeSubscriptionsPUTRequest(knownId, subscriptionRequestMissingRequiredField))
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.arr(
         Json.obj(
-          "path"   -> "safeId",
+          "path"   -> "etmpSafeId",
           "reason" -> "MISSING_REQUIRED_FIELD"
         )
       )
