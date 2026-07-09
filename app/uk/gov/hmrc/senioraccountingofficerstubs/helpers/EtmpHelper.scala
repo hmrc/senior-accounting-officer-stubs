@@ -27,11 +27,10 @@ import java.util.UUID
 object EtmpHelper {
 
   private val TransmittingSystem = "X-Transmitting-System"
-  private val OriginatingSystem = "X-Originating-System"
-  private val CorrelationId = "correlationid"
-  private val ReceiptDate = "X-Receipt-Date"
-  private val headers = Seq(TransmittingSystem, OriginatingSystem, CorrelationId, ReceiptDate)
-  
+  private val OriginatingSystem  = "X-Originating-System"
+  private val CorrelationId      = "correlationid"
+  private val ReceiptDate        = "X-Receipt-Date"
+  private val headers            = Seq(TransmittingSystem, OriginatingSystem, CorrelationId, ReceiptDate)
 
   def validateHeaders(requestHeaders: Headers): Either[String, String] = {
     val headersMap = headers.foldLeft(Map.empty[String, String]) { (map, header) =>
