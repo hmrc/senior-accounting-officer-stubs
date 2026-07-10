@@ -19,6 +19,8 @@ package uk.gov.hmrc.senioraccountingofficerstubs.filters
 import org.apache.pekko.stream.Materializer
 import play.api.mvc.Results.Unauthorized
 import play.api.mvc.{Filter, RequestHeader, Result}
+import play.api.routing.Router
+import play.api.routing.Router.RequestImplicits.WithHandlerDef
 import uk.gov.hmrc.senioraccountingofficerstubs.config.AppConfig
 
 import scala.concurrent.Future
@@ -31,8 +33,7 @@ class AuthFilter @Inject() (appConfig: AppConfig)(using m: Materializer) extends
   override implicit def mat: Materializer = m
 
   override def apply(nextFilter: RequestHeader => Future[Result])(requestHeader: RequestHeader): Future[Result] = {
-
-    if isHealthCheck(requestHeader.path) then {
+    if isHealthCheck(requestHeader.path) || requestHeader.hasRouteModifier("noauth") then {
       nextFilter(requestHeader)
     } else {
       val authorisationHeader = requestHeader.headers.get("Authorization")

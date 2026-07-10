@@ -11,3 +11,8 @@
 
 # Add all the application routes to the prod.routes file
 ->         /                          prod.Routes
+
++ noauth
+POST /test-only/signup/config       uk.gov.hmrc.senioraccountingofficerstubs.controllers.testOnly.ConfigureSignupController.onSubmit()
++ noauth
+POST /test-only/post-signup/config  uk.gov.hmrc.senioraccountingofficerstubs.controllers.testOnly.ConfigurePostSignupController.onSubmit()

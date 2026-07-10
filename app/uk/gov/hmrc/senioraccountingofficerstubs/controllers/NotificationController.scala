@@ -21,29 +21,43 @@ import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.NotificationResponse
+import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
 import javax.inject.Inject
 
-class NotificationController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
-
-  private val stubbedSaoSubscriptionId = "123"
+class NotificationController @Inject() (cc: ControllerComponents, repository: PostSignupConfigRepository)(using
+    ExecutionContext
+) extends BackendController(cc) {
 
   private def generateNotificationId = {
     val num = Random.nextInt(10000000)
     "NOT" + f"$num%010d"
   }
 
-  def postNotification(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText) { implicit request =>
-    JsonErrorHandling.parseJson(request.body) match {
-      case Right(json) =>
-        val errors = JsonErrorHandling.Validators.validateNotification(json)
-        if errors.nonEmpty then JsonErrorHandling.badRequest(errors)
-        else if saoSubscriptionId == stubbedSaoSubscriptionId then
-          Created(Json.toJson(NotificationResponse(generateNotificationId)))
-        else NotFound
-      case Left(errorResult) => errorResult
-    }
+  def postNotification(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText).async {
+    implicit request =>
+      JsonErrorHandling.parseJson(request.body) match {
+        case Right(json) =>
+          val errors = JsonErrorHandling.Validators.validateNotification(json)
+
+          if errors.nonEmpty then Future.successful(JsonErrorHandling.badRequest(errors))
+          else
+            repository.get(saoSubscriptionId).map {
+              case Some(config) =>
+                val status: Int  = config.postNotification.map(_.status).fold(201)(identity)
+                val body: String = config.postNotification
+                  .flatMap(_.defaultBodyOverride)
+                  .fold(
+                    Json.toJson(NotificationResponse(generateNotificationId)).toString
+                  )(identity)
+                Status(status)(body).as(JSON)
+              case _ =>
+                Created(Json.toJson(NotificationResponse(generateNotificationId)))
+            }
+        case Left(errorResult) => Future.successful(errorResult)
+      }
   }
 }

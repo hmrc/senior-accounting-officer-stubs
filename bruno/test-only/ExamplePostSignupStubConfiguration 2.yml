@@ -1,0 +1,41 @@
+info:
+  name: ExamplePostSignupStubConfiguration 2
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/post-signup/config"
+  body:
+    type: json
+    data: |-
+      {
+        "subscriptionId": "123",
+        "getSubscriptionAndPostRetrieveCustomerId": {
+          "api": "PostRetrieveCustomerId",
+          "getSubscription": {
+            "crn": "0123456789",
+            "utr": "0123456789",
+            "contacts": [
+              {
+                "name": "test person 1",
+                "email": "test@test.com"
+              }
+            ]
+          },
+          "status": 500
+        },
+        "postNotification": {
+          "status": 404
+        },
+        "postCertificate": {
+          "status": 404
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

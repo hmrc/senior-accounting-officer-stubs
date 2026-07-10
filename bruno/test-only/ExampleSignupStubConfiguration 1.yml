@@ -1,0 +1,27 @@
+info:
+  name: ExampleSignupStubConfiguration 1
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/signup/config"
+  body:
+    type: json
+    data: |-
+      {
+        "safeId": "123",
+        "postEtmpSubscription": {
+          "status": 500
+        },
+        "putDpsSubscription": {
+          "status": 400
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
