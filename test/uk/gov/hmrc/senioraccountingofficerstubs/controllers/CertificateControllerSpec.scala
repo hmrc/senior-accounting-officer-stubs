@@ -38,8 +38,8 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
 
   private val validCertificateRequest: JsValue = Json.obj(
     "submitterName" -> "Jane Smith",
-    "saoName"       -> "Jane Smith",
-    "saoEmail"      -> "Firstname.Lastname@example.com",
+    "SAOName"       -> "Jane Smith",
+    "SAOEmail"      -> "Firstname.Lastname@example.com",
     "companies"     -> Json.arr(
       Json.obj(
         "crn"                            -> generateCrn,
@@ -114,16 +114,16 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
+          "path"   -> "SAOEmail",
+          "reason" -> "MISSING_REQUIRED_FIELD"
+        ),
+        Json.obj(
+          "path"   -> "SAOName",
+          "reason" -> "MISSING_REQUIRED_FIELD"
+        ),
+        Json.obj(
           "path"   -> "companies[0]",
           "reason" -> "INVALID_DATA_TYPE"
-        ),
-        Json.obj(
-          "path"   -> "saoEmail",
-          "reason" -> "MISSING_REQUIRED_FIELD"
-        ),
-        Json.obj(
-          "path"   -> "saoName",
-          "reason" -> "MISSING_REQUIRED_FIELD"
         )
       )
     }
@@ -155,7 +155,7 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
         knownId,
         certificateRequestInvalidFormat,
         Json.obj(
-          "path"   -> "saoEmail",
+          "path"   -> "SAOEmail",
           "reason" -> "INVALID_FORMAT"
         )
       )
