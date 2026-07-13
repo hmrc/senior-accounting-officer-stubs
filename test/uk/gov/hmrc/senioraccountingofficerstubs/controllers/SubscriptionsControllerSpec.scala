@@ -16,6 +16,9 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
+import play.api.inject.*
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -24,17 +27,30 @@ import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc.{AnyContentAsText, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import org.mockito.Mockito.*
 
 import scala.concurrent.Future
+import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
+import org.scalatestplus.mockito.MockitoSugar
+import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.SignupStubConfiguration
+import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.NoneDefaultApiConfiguration
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.Application
+import org.scalatest.BeforeAndAfterEach
 
-class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
+class SubscriptionsControllerSpec
+    extends AnyWordSpec
+    with Matchers
+    with GuiceOneAppPerSuite
+    with MockitoSugar
+    with BeforeAndAfterEach {
 
   private val knownId    = "123"
   private val unknownId  = "567"
   private val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
 
   private val validSubscriptionRequest = Json.obj(
-    "etmpSafeId"       -> "XE000123456789",
+    "etmpSafeId"       -> knownId,
     "nominatedCompany" -> Json.obj(
       "name" -> "Acme Manufacturing Ltd",
       "UTR"  -> "1234567890",
@@ -56,14 +72,37 @@ class SubscriptionsControllerSpec extends AnyWordSpec with Matchers with GuiceOn
       .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
       .withTextBody(payload.toString())
 
+  val mockRepository = mock[SignupConfigRepository]
+
+  override lazy val app: Application = GuiceApplicationBuilder()
+    .overrides(bind[SignupConfigRepository].toInstance(mockRepository))
+    .build()
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockRepository)
+    when(mockRepository.get(any())).thenReturn(Future.successful(None))
+  }
+
   "PUT /subscriptions" should {
     "return 204 for a valid request payload" in {
       val result = routeResult(fakeSubscriptionsPUTRequest(knownId, validSubscriptionRequest))
       status(result) shouldBe Status.NO_CONTENT
     }
 
-    "return a 404 for an unknown saoSubscriptionId" in {
-      val result = routeResult(fakeSubscriptionsPUTRequest(unknownId, validSubscriptionRequest))
+    "return a 404 for a configured safeId" in {
+      when(mockRepository.get(meq(knownId)))
+        .thenReturn(
+          Future.successful(
+            Some(
+              SignupStubConfiguration(
+                safeId = knownId,
+                putDpsSubscription = Some(NoneDefaultApiConfiguration(status = Status.NOT_FOUND))
+              )
+            )
+          )
+        )
+      val result = routeResult(fakeSubscriptionsPUTRequest(knownId, validSubscriptionRequest))
       status(result) shouldBe Status.NOT_FOUND
     }
 

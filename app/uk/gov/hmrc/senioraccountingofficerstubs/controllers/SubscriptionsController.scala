@@ -24,6 +24,7 @@ import javax.inject.Inject
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
+import uk.gov.hmrc.senioraccountingofficerstubs.models.subscription.Subscription
 
 class SubscriptionsController @Inject() (cc: ControllerComponents, repository: SignupConfigRepository)(using
     ExecutionContext
@@ -37,7 +38,8 @@ class SubscriptionsController @Inject() (cc: ControllerComponents, repository: S
           if errors.nonEmpty
           then Future.successful(JsonErrorHandling.badRequest(errors))
           else
-            repository.get(saoSubscriptionId).map {
+            val subscription = json.as[Subscription]
+            repository.get(subscription.etmpSafeId).map {
               case Some(config) => {
                 config.putDpsSubscription
                   .map(config => Status(config.status)(config.defaultBodyOverride.fold("")(identity)).as(JSON))
