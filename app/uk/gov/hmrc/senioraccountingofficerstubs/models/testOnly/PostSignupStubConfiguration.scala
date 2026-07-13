@@ -19,6 +19,7 @@ package uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly
 import play.api.libs.json.*
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.play.json.Union
+import uk.gov.hmrc.senioraccountingofficerstubs.models.getsubscription.*
 
 import java.time.Instant
 
@@ -33,21 +34,16 @@ object GetSubscriptionOnlyConfig {
   given OFormat[GetSubscriptionOnlyConfig] = Json.format[GetSubscriptionOnlyConfig]
 }
 
-final case class Contact(name: String, email: String, status: String = EmailStatus.Valid)
-
 object EmailStatus {
   // opt not to make this an enum so that we can stub with unknown statuses as well
   val Valid       = "valid"
   val Unreachable = "unreachable"
 }
 
-object Contact {
-  given OFormat[Contact] = Json.format[Contact]
-}
-
 final case class GetSubscriptionConfig(
     utr: String,
     crn: Option[String] = None,
+    name: Option[String] = None,
     contacts: List[Contact] = List.empty
 )
 

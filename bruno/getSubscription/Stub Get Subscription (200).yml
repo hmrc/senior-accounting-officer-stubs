@@ -1,0 +1,53 @@
+info:
+  name: Stub Get Subscription (200)
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/post-signup/config"
+  body:
+    type: json
+    data: |-
+      {
+        "subscriptionId": "{{subscriptionID}}",
+        "getSubscriptionAndPostRetrieveCustomerId": {
+          "api": "GetSubscription",
+          "status": 200,
+          "defaultBodyOverride" : {{payload}}
+        }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const payload = JSON.stringify(`{
+          "contacts": [
+            {
+              "email": "string",
+              "id": 0,
+              "language": "string",
+              "name": "string",
+              "status": "string"
+            }
+          ],
+          "created": "2021-01-25T12:55:45.123",
+          "etmpSafeId": "string",
+          "id": "string",
+          "nominatedCompany": {
+            "crn": "string",
+            "name": "string",
+            "utr": "string"
+          },
+          "updated": "2021-01-25T12:55:45.123"
+        }`);
+
+        bru.setVar("payload", payload);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

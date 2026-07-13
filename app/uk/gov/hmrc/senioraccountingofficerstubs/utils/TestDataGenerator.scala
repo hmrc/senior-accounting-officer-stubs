@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.utils
 
-import uk.gov.hmrc.domain.{SaUtr, SaUtrGenerator}
+import uk.gov.hmrc.domain.SaUtrGenerator
 
 import scala.util.Random
 
@@ -31,8 +31,8 @@ object TestDataGenerator {
     f"$num%08d"
   }
 
-  def generateUtr: SaUtr = {
+  def generateUtr: String = {
     val seed = Random.nextInt
-    SaUtrGenerator(seed).nextSaUtr
+    SaUtrGenerator(seed).nextSaUtr.utr
   }
 }

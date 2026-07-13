@@ -1,0 +1,20 @@
+info:
+  name: Get Subscription (400) invalid correlationId
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseUrl}}/views/iv_subscriptions/{{subscriptionID}}"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+    - name: correlationId
+      value: not a valid uuid
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
