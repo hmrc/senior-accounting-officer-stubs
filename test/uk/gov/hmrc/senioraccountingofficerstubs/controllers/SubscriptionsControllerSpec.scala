@@ -16,27 +16,26 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
-import play.api.inject.*
 import org.mockito.ArgumentMatchers.{any, eq as meq}
-
+import org.mockito.Mockito.*
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.Application
 import play.api.http.{MimeTypes, Status}
+import play.api.inject.*
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc.{AnyContentAsText, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import org.mockito.Mockito.*
+import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.NoneDefaultApiConfiguration
+import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.SignupStubConfiguration
+import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
 
 import scala.concurrent.Future
-import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
-import org.scalatestplus.mockito.MockitoSugar
-import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.SignupStubConfiguration
-import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.NoneDefaultApiConfiguration
-import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.Application
-import org.scalatest.BeforeAndAfterEach
 
 class SubscriptionsControllerSpec
     extends AnyWordSpec
@@ -45,8 +44,8 @@ class SubscriptionsControllerSpec
     with MockitoSugar
     with BeforeAndAfterEach {
 
-  private val knownId    = "123"
-  private val unknownId  = "567"
+  private val knownId = "123"
+
   private val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
 
   private val validSubscriptionRequest = Json.obj(
@@ -72,7 +71,7 @@ class SubscriptionsControllerSpec
       .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
       .withTextBody(payload.toString())
 
-  val mockRepository = mock[SignupConfigRepository]
+  val mockRepository: SignupConfigRepository = mock[SignupConfigRepository]
 
   override lazy val app: Application = GuiceApplicationBuilder()
     .overrides(bind[SignupConfigRepository].toInstance(mockRepository))

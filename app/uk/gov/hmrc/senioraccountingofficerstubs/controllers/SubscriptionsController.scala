@@ -19,12 +19,13 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
+import uk.gov.hmrc.senioraccountingofficerstubs.models.subscription.Subscription
+import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
+
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 import javax.inject.Inject
-import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext
-import uk.gov.hmrc.senioraccountingofficerstubs.models.subscription.Subscription
 
 class SubscriptionsController @Inject() (cc: ControllerComponents, repository: SignupConfigRepository)(using
     ExecutionContext
