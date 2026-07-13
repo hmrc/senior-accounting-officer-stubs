@@ -31,9 +31,9 @@ import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc.{AnyContentAsText, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.NoneDefaultApiConfiguration
-import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.SignupStubConfiguration
+import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.{NoneDefaultApiConfiguration, SignupStubConfiguration}
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.{generateCrn, generateUtr}
 
 import scala.concurrent.Future
 
@@ -52,8 +52,8 @@ class PutSubscriptionsControllerSpec
     "etmpSafeId"       -> testSafeId,
     "nominatedCompany" -> Json.obj(
       "name" -> "Acme Manufacturing Ltd",
-      "UTR"  -> "1234567890",
-      "CRN"  -> "OC123456"
+      "UTR"  -> generateUtr,
+      "CRN"  -> generateCrn
     ),
     "contacts" -> Json.arr(
       Json.obj("name" -> "Jane Doe", "email" -> "jane.doe@example.com", "status" -> "active")
