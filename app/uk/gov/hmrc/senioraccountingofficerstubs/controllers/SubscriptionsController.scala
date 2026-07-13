@@ -43,8 +43,9 @@ class SubscriptionsController @Inject() (cc: ControllerComponents, repository: S
             repository.get(subscription.etmpSafeId).map {
               case Some(config) => {
                 config.putDpsSubscription
-                  .map(config => Status(config.status)(config.defaultBodyOverride.fold("")(identity)).as(JSON))
-                  .fold(NoContent)(identity)
+                  .fold(NoContent)(config =>
+                    Status(config.status)(config.defaultBodyOverride.fold("")(identity)).as(JSON)
+                  )
               }
               case _ => NoContent
             }
