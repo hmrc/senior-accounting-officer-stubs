@@ -61,16 +61,6 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
     )
   )
 
-  private def generateCrn = {
-    val num = Random.nextInt(1000000)
-    f"$num%08d"
-  }
-
-  private def generateUtr = {
-    val seed = Random.nextInt(1000000)
-    SaUtrGenerator(seed).nextSaUtr
-  }
-
   private def routeResult(request: FakeRequest[AnyContentAsText]): Future[Result] =
     route(app, request) match {
       case Some(value) => value
