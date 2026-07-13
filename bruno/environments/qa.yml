@@ -1,0 +1,6 @@
+name: qa
+variables:
+  - secret: true
+    name: base64Password
+  - name: baseUrl
+    value: https://www.qa.tax.service.gov.uk/senior-accounting-officer/test-only/protected-proxy/test-only/hip-proxy
