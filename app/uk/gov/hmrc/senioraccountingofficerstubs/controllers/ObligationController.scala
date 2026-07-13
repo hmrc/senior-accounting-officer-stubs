@@ -18,10 +18,8 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
 import play.api.libs.json.*
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.domain.SaUtrGenerator
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-
-import scala.util.Random
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.*
 
 import javax.inject.Inject
 
@@ -56,13 +54,4 @@ class ObligationController @Inject() (cc: ControllerComponents) extends BackendC
     }
   }
 
-  private def generateCrn = {
-    val num = Random.nextInt(1000000)
-    f"$num%010d"
-  }
-
-  private def generateUtr = {
-    val seed = Random.nextInt(1000000)
-    SaUtrGenerator(seed).nextSaUtr
-  }
 }
