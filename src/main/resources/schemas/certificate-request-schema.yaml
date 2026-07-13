@@ -64,7 +64,7 @@ properties:
           maxLength: 20
         type:
           type: string
-          maxLength: §0
+          maxLength: 30
         isCorporationTaxQualified:
           type: boolean
         isVatQualified:
