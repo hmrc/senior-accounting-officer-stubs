@@ -31,15 +31,14 @@ import play.api.libs.json.*
 import play.api.mvc.{AnyContentAsText, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import uk.gov.hmrc.domain.SaUtrGenerator
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.{
   NoneDefaultApiConfiguration,
   PostSignupStubConfiguration
 }
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.*
 
 import scala.concurrent.Future
-import scala.util.Random
 
 class NotificationControllerSpec
     extends AnyWordSpec
@@ -79,16 +78,6 @@ class NotificationControllerSpec
       )
     )
   )
-
-  private def generateCrn = {
-    val num = Random.nextInt(1000000)
-    f"$num%010d"
-  }
-
-  private def generateUtr = {
-    val seed = Random.nextInt(1000000)
-    SaUtrGenerator(seed).nextSaUtr
-  }
 
   private def routeResult(request: FakeRequest[AnyContentAsText]): Future[Result] =
     route(app, request) match {

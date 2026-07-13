@@ -25,10 +25,9 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{AnyContentAsText, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import uk.gov.hmrc.domain.SaUtrGenerator
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.*
 
 import scala.concurrent.Future
-import scala.util.Random
 
 class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -61,16 +60,6 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
       )
     )
   )
-
-  private def generateCrn = {
-    val num = Random.nextInt(1000000)
-    f"$num%010d"
-  }
-
-  private def generateUtr = {
-    val seed = Random.nextInt(1000000)
-    SaUtrGenerator(seed).nextSaUtr
-  }
 
   private def routeResult(request: FakeRequest[AnyContentAsText]): Future[Result] =
     route(app, request) match {
