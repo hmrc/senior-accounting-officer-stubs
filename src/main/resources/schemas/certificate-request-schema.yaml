@@ -8,19 +8,28 @@ required:
 properties:
   submitterName:
     type: string
+    maxLength: 254
   saoName:
     type: string
+    maxLength: 254
   saoEmail:
     type: string
     format: email
-  staffPID:
+    maxLength: 254
+  staffPid:
     type: string
+    maxLength: 30
   remarks:
     type: string
+    maxLength: 32767
+  customerId:
+    type: string
+    maxLength: 30
   companies:
     type: array
     items:
       type: object
+      additionalProperties: false
       required:
         - utr
         - name
@@ -40,17 +49,22 @@ properties:
       properties:
         crn:
           type: string
+          maxLength: 8
         utr:
           type: string
+          maxLength: 13
         name:
           type: string
+          maxLength: 160
         accPeriodEnd:
           type: string
           format: date
         status:
           type: string
+          maxLength: 20
         type:
           type: string
+          maxLength: §0
         isCorporationTaxQualified:
           type: boolean
         isVatQualified:
@@ -73,3 +87,4 @@ properties:
           type: boolean
         qualificationStatement:
           type: string
+          maxLength: 32767

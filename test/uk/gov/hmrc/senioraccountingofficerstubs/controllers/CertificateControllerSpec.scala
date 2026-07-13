@@ -64,7 +64,7 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
 
   private def generateCrn = {
     val num = Random.nextInt(1000000)
-    f"$num%010d"
+    f"$num%08d"
   }
 
   private def generateUtr = {
