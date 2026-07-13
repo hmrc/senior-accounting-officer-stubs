@@ -21,20 +21,32 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 
 import javax.inject.Inject
+import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
-class SubscriptionsController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
+class SubscriptionsController @Inject() (cc: ControllerComponents, repository: SignupConfigRepository)(using
+    ExecutionContext
+) extends BackendController(cc) {
 
-  private val stubbedSaoSubscriptionId = "123"
-
-  def putSubscription(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText) { implicit request =>
-    JsonErrorHandling.parseJson(request.body) match {
-      case Right(json) =>
-        val errors = JsonErrorHandling.Validators.validateSubscription(json)
-        if errors.nonEmpty then JsonErrorHandling.badRequest(errors)
-        else if saoSubscriptionId == stubbedSaoSubscriptionId then NoContent
-        else NotFound
-      case Left(errorResult) =>
-        errorResult
-    }
+  def putSubscription(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText).async {
+    implicit request =>
+      JsonErrorHandling.parseJson(request.body) match {
+        case Right(json) =>
+          val errors = JsonErrorHandling.Validators.validateSubscription(json)
+          if errors.nonEmpty
+          then Future.successful(JsonErrorHandling.badRequest(errors))
+          else
+            repository.get(saoSubscriptionId).map {
+              case Some(config) => {
+                config.putDpsSubscription
+                  .map(config => Status(config.status)(config.defaultBodyOverride.fold("")(identity)).as(JSON))
+                  .fold(NoContent)(identity)
+              }
+              case _ => NoContent
+            }
+        case Left(errorResult) =>
+          Future.successful(errorResult)
+      }
   }
 }
