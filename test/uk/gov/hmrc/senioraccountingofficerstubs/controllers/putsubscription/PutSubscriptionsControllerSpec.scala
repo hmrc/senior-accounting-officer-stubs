@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.controllers
+package uk.gov.hmrc.senioraccountingofficerstubs.controllers.putsubscription
 
 import org.mockito.ArgumentMatchers.{any, eq as meq}
 import org.mockito.Mockito.*
@@ -37,7 +37,7 @@ import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigReposit
 
 import scala.concurrent.Future
 
-class SubscriptionsControllerSpec
+class PutSubscriptionsControllerSpec
     extends AnyWordSpec
     with Matchers
     with GuiceOneAppPerSuite
