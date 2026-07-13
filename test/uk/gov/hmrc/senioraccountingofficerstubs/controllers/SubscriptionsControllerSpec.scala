@@ -44,12 +44,12 @@ class SubscriptionsControllerSpec
     with MockitoSugar
     with BeforeAndAfterEach {
 
-  private val knownId = "123"
+  private val testSafeId = "123"
 
   private val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
 
   private val validSubscriptionRequest = Json.obj(
-    "etmpSafeId"       -> knownId,
+    "etmpSafeId"       -> testSafeId,
     "nominatedCompany" -> Json.obj(
       "name" -> "Acme Manufacturing Ltd",
       "UTR"  -> "1234567890",
@@ -85,28 +85,28 @@ class SubscriptionsControllerSpec
 
   "PUT /subscriptions" should {
     "return 204 for a valid request payload" in {
-      val result = routeResult(fakeSubscriptionsPUTRequest(knownId, validSubscriptionRequest))
+      val result = routeResult(fakeSubscriptionsPUTRequest(testSafeId, validSubscriptionRequest))
       status(result) shouldBe Status.NO_CONTENT
     }
 
     "return a 404 for a configured safeId" in {
-      when(mockRepository.get(meq(knownId)))
+      when(mockRepository.get(meq(testSafeId)))
         .thenReturn(
           Future.successful(
             Some(
               SignupStubConfiguration(
-                safeId = knownId,
+                safeId = testSafeId,
                 putDpsSubscription = Some(NoneDefaultApiConfiguration(status = Status.NOT_FOUND))
               )
             )
           )
         )
-      val result = routeResult(fakeSubscriptionsPUTRequest(knownId, validSubscriptionRequest))
+      val result = routeResult(fakeSubscriptionsPUTRequest(testSafeId, validSubscriptionRequest))
       status(result) shouldBe Status.NOT_FOUND
     }
 
     "return a structured 400 for constraint violation with malformed request when JSON syntax is incorrect" in {
-      val fakeRequest = FakeRequest("PUT", s"/subscriptions/$knownId")
+      val fakeRequest = FakeRequest("PUT", s"/subscriptions/$testSafeId")
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody("""{"subscription":""")
 
@@ -123,7 +123,7 @@ class SubscriptionsControllerSpec
         "etmpSafeId" -> Json.arr("Invalid")
       )
 
-      val result = routeResult(fakeSubscriptionsPUTRequest(knownId, invalidSubscriptionRequest))
+      val result = routeResult(fakeSubscriptionsPUTRequest(testSafeId, invalidSubscriptionRequest))
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
@@ -146,7 +146,7 @@ class SubscriptionsControllerSpec
       val additionalProperty: JsObject     = Json.obj("extraProperty" -> "I shouldn't be here")
       val subscriptionRequestExtraProperty = validSubscriptionRequest.as[JsObject] ++ additionalProperty
 
-      val result = routeResult(fakeSubscriptionsPUTRequest(knownId, subscriptionRequestExtraProperty))
+      val result = routeResult(fakeSubscriptionsPUTRequest(testSafeId, subscriptionRequestExtraProperty))
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
@@ -159,7 +159,7 @@ class SubscriptionsControllerSpec
     "return a structured 400 for constraint violation with missing required field" in {
       val subscriptionRequestMissingRequiredField = validSubscriptionRequest.as[JsObject] - "etmpSafeId"
 
-      val result = routeResult(fakeSubscriptionsPUTRequest(knownId, subscriptionRequestMissingRequiredField))
+      val result = routeResult(fakeSubscriptionsPUTRequest(testSafeId, subscriptionRequestMissingRequiredField))
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.arr(
         Json.obj(
