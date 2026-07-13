@@ -18,7 +18,7 @@ package uk.gov.hmrc.senioraccountingofficerstubs.models
 
 import play.api.libs.json.{Json, OFormat}
 
-case class SeniorAccountingOfficer(
+final case class SeniorAccountingOfficer(
     name: String,
     startDate: String,
     endDate: String,

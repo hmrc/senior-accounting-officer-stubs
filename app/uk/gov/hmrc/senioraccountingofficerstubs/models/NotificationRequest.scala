@@ -18,7 +18,7 @@ package uk.gov.hmrc.senioraccountingofficerstubs.models
 
 import play.api.libs.json.{Json, OFormat}
 
-case class NotificationRequest(
+final case class NotificationRequest(
     companies: List[Company],
     additionalInformation: Option[String]
 )

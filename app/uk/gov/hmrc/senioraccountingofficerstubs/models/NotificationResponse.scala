@@ -18,7 +18,7 @@ package uk.gov.hmrc.senioraccountingofficerstubs.models
 
 import play.api.libs.json.{Json, OFormat}
 
-case class NotificationResponse(
+final case class NotificationResponse(
     notificationRef: String
 )
 

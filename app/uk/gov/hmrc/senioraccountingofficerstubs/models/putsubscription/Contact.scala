@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.models.subscription
+package uk.gov.hmrc.senioraccountingofficerstubs.models.putsubscription
 
 import play.api.libs.json.Json
 import play.api.libs.json.OFormat
 
-final case class Subscription(
-    etmpSafeId: String,
-    nominatedCompany: Company,
-    contacts: List[Contact]
-)
+final case class Contact(name: String, email: String, status: String)
 
-object Subscription {
-  given OFormat[Subscription] = Json.format[Subscription]
+object Contact {
+  given OFormat[Contact] = Json.format
 }

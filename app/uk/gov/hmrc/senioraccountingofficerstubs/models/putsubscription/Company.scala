@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.models.subscription
+package uk.gov.hmrc.senioraccountingofficerstubs.models.putsubscription
 
-import play.api.libs.json.Json
-import play.api.libs.json.OFormat
+import play.api.libs.json.{Json, OFormat}
 
-final case class Contact(name: String, email: String, status: String)
+final case class Company(
+    name: String,
+    `UTR`: String,
+    `CRN`: String
+)
 
-object Contact {
-  given OFormat[Contact] = Json.format
+object Company {
+  given OFormat[Company] = Json.format[Company]
 }

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.controllers
+package uk.gov.hmrc.senioraccountingofficerstubs.controllers.putsubscription
 
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
-import uk.gov.hmrc.senioraccountingofficerstubs.models.subscription.Subscription
+import uk.gov.hmrc.senioraccountingofficerstubs.models.putsubscription.Subscription
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
 
 import scala.concurrent.ExecutionContext
@@ -27,7 +27,7 @@ import scala.concurrent.Future
 
 import javax.inject.Inject
 
-class SubscriptionsController @Inject() (cc: ControllerComponents, repository: SignupConfigRepository)(using
+class PutSubscriptionsController @Inject() (cc: ControllerComponents, repository: SignupConfigRepository)(using
     ExecutionContext
 ) extends BackendController(cc) {
 
