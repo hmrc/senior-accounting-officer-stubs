@@ -48,7 +48,7 @@ class ObligationControllerSpec extends AnyWordSpec with Matchers with GuiceOneAp
 
       val subscription = json \ "subscription"
       (subscription \ "subscriptionTimestamp").as[String] shouldBe "2021-01-01T00:00:00Z"
-      (subscription \ "companyRegistrationNumber").as[String] should fullyMatch regex """\d{10}"""
+      (subscription \ "companyRegistrationNumber").as[String] should fullyMatch regex """\d{8}"""
       (subscription \ "uniqueTaxReference").as[String] should fullyMatch regex """\d{10}"""
       (subscription \ "companyName").as[String] shouldBe "Testdata Company Ltd"
 

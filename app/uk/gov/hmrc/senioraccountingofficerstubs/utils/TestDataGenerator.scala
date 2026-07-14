@@ -22,8 +22,8 @@ import scala.util.Random
 
 object TestDataGenerator {
   def generateCrn: String = {
-    val num = Random.nextInt(1000000)
-    f"$num%010d"
+    val num = Random.nextInt(10000000)
+    f"$num%08d"
   }
 
   def generateUtr: SaUtr = {

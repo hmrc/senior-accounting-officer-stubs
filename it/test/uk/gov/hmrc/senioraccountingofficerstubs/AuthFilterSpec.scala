@@ -173,14 +173,15 @@ class AuthFilterSpec
               "etmpSafeId"       -> "XE000123456789",
               "nominatedCompany" -> Json.obj(
                 "name" -> "Acme Manufacturing Ltd",
-                "UTR"  -> generateUtr,
-                "CRN"  -> generateCrn
+                "utr"  -> generateUtr,
+                "crn"  -> generateCrn
               ),
               "contacts" -> Json.arr(
                 Json.obj(
-                  "name"   -> "Jane Doe",
-                  "email"  -> "jane.doe@example.com",
-                  "status" -> "active"
+                  "name"     -> "Firstname Lastname",
+                  "email"    -> "firstname.lastname@example.com",
+                  "status"   -> "active",
+                  "language" -> "en-gb"
                 )
               )
             )
