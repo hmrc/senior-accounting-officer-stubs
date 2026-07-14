@@ -86,7 +86,7 @@ class PutSubscriptionsControllerSpec
   "PUT /subscriptions" should {
     "return 204 for a valid request payload" in {
       val result = routeResult(fakeSubscriptionsPUTRequest(testSafeId, validSubscriptionRequest))
-      status(result) shouldBe Status.NO_CONTENT
+      status(result) shouldBe Status.CREATED
     }
 
     "return a 404 for a configured safeId" in {

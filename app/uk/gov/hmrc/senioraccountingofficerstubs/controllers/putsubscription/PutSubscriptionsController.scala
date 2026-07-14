@@ -43,11 +43,11 @@ class PutSubscriptionsController @Inject() (cc: ControllerComponents, repository
             repository.get(subscription.etmpSafeId).map {
               case Some(config) => {
                 config.putDpsSubscription
-                  .fold(NoContent)(config =>
+                  .fold(Created)(config =>
                     Status(config.status)(config.defaultBodyOverride.fold("")(identity)).as(JSON)
                   )
               }
-              case _ => NoContent
+              case _ => Created
             }
         case Left(errorResult) =>
           Future.successful(errorResult)

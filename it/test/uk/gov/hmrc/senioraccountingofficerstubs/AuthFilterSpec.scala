@@ -26,6 +26,8 @@ import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.senioraccountingofficerstubs.config.AppConfig
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.generateUtr
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.generateCrn
 
 class AuthFilterSpec
     extends AnyWordSpec
@@ -171,8 +173,8 @@ class AuthFilterSpec
               "etmpSafeId"       -> "XE000123456789",
               "nominatedCompany" -> Json.obj(
                 "name" -> "Acme Manufacturing Ltd",
-                "UTR"  -> "1234567890",
-                "CRN"  -> "OC123456"
+                "UTR"  -> generateUtr,
+                "CRN"  -> generateCrn
               ),
               "contacts" -> Json.arr(
                 Json.obj(
@@ -185,7 +187,7 @@ class AuthFilterSpec
           )
           .futureValue
 
-      response.status shouldBe 204
+      response.status shouldBe 201
     }
   }
 
