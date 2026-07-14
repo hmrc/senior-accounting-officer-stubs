@@ -41,7 +41,7 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
     "saoEmail"      -> "Firstname.Lastname@example.com",
     "companies"     -> Json.arr(
       Json.obj(
-        "crn"                            -> generateCrn,
+        "crn"                            -> generateCertificateCrn,
         "utr"                            -> generateUtr,
         "name"                           -> "Example Subsidiary Ltd",
         "accPeriodEnd"                   -> "2025-03-31",
