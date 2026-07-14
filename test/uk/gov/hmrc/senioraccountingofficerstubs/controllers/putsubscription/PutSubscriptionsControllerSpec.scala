@@ -52,11 +52,11 @@ class PutSubscriptionsControllerSpec
     "etmpSafeId"       -> testSafeId,
     "nominatedCompany" -> Json.obj(
       "name" -> "Acme Manufacturing Ltd",
-      "UTR"  -> generateUtr,
-      "CRN"  -> generateCrn
+      "utr"  -> generateUtr,
+      "crn"  -> generateCrn
     ),
     "contacts" -> Json.arr(
-      Json.obj("name" -> "Jane Doe", "email" -> "jane.doe@example.com", "status" -> "active")
+      Json.obj("name" -> "Jane Doe", "email" -> "jane.doe@example.com", "status" -> "active", "language" -> "en-gb")
     )
   )
 
@@ -84,7 +84,7 @@ class PutSubscriptionsControllerSpec
   }
 
   "PUT /subscriptions" should {
-    "return 204 for a valid request payload" in {
+    "return 201 for a valid request payload" in {
       val result = routeResult(fakeSubscriptionsPUTRequest(testSafeId, validSubscriptionRequest))
       status(result) shouldBe Status.CREATED
     }

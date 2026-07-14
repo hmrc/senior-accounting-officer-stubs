@@ -20,8 +20,8 @@ import play.api.libs.json.{Json, OFormat}
 
 final case class Company(
     name: String,
-    `UTR`: String,
-    `CRN`: String
+    utr: String,
+    crn: String
 )
 
 object Company {

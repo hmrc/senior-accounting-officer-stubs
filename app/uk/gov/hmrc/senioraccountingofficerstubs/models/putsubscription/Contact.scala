@@ -19,7 +19,7 @@ package uk.gov.hmrc.senioraccountingofficerstubs.models.putsubscription
 import play.api.libs.json.Json
 import play.api.libs.json.OFormat
 
-final case class Contact(name: String, email: String, status: String)
+final case class Contact(name: String, email: String, status: String, language: String)
 
 object Contact {
   given OFormat[Contact] = Json.format

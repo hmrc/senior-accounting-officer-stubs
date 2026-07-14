@@ -7,20 +7,24 @@ required:
   - contacts
 properties:
   etmpSafeId:
+    maxLength: 75
     type: string
   nominatedCompany:
     type: object
     additionalProperties: false
     required:
       - name
-      - UTR
-      - CRN
+      - crn
+      - utr
     properties:
       name:
+        maxLength: 160
         type: string
-      UTR:
+      crn:
+        maxLength: 8
         type: string
-      CRN:
+      utr:
+        maxLength: 13
         type: string
   contacts:
     type: array
@@ -31,11 +35,18 @@ properties:
         - name
         - email
         - status
+        - language
       properties:
         name:
+          maxLength: 254
           type: string
         email:
-          type: string
           format: email
+          maxLength: 254
+          type: string
         status:
+          maxLength: 20
+          type: string
+        language:
+          maxLength: 5
           type: string
