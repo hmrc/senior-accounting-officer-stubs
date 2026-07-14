@@ -71,7 +71,6 @@ class AuthFilterSpec
       val decodedAuth        = java.util.Base64.getDecoder.decode(base64String)
       val stringAuth: String = new String(decodedAuth)
 
-      
       stringAuth shouldBe s"${appConfig.clientId}:${appConfig.clientSecret}"
 
       val response =
@@ -155,7 +154,7 @@ class AuthFilterSpec
       response.status shouldBe 401
     }
 
-    "respond with 200 status when an authorisation header is provided" in {
+    "respond with 204 status when an authorisation header is provided" in {
 
       val base64String       = "Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
       val decodedAuth        = java.util.Base64.getDecoder.decode(base64String)
@@ -167,24 +166,26 @@ class AuthFilterSpec
         wsClient
           .url(s"$baseUrl/subscriptions/$knownSubscriptionId")
           .withHttpHeaders(("Authorization", s"Basic $base64String"))
-          .put(Json.obj(
-            "safeId" -> "XE000123456789",
-            "company" -> Json.obj(
-              "companyName" -> "Acme Manufacturing Ltd",
-              "uniqueTaxReference" -> "1234567890",
-              "companyRegistrationNumber" -> "OC123456"
-            ),
-            "contacts" -> Json.arr(
-              Json.obj(
-                "name" -> "Jane Doe",
-                "email" -> "jane.doe@example.com"
+          .put(
+            Json.obj(
+              "etmpSafeId"       -> "XE000123456789",
+              "nominatedCompany" -> Json.obj(
+                "name" -> "Acme Manufacturing Ltd",
+                "UTR"  -> "1234567890",
+                "CRN"  -> "OC123456"
+              ),
+              "contacts" -> Json.arr(
+                Json.obj(
+                  "name"   -> "Jane Doe",
+                  "email"  -> "jane.doe@example.com",
+                  "status" -> "active"
+                )
               )
             )
           )
-          )
           .futureValue
 
-      response.status shouldBe 200
+      response.status shouldBe 204
     }
   }
 

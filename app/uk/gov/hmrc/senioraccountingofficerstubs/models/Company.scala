@@ -18,7 +18,7 @@ package uk.gov.hmrc.senioraccountingofficerstubs.models
 
 import play.api.libs.json.{Json, OFormat}
 
-case class Company(
+final case class Company(
     companyName: String,
     uniqueTaxReference: String,
     companyReferenceNumber: String,

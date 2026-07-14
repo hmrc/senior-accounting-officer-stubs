@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.models
+package uk.gov.hmrc.senioraccountingofficerstubs.models.putsubscription
 
 import play.api.libs.json.{Json, OFormat}
 
-case class SubscriptionResponse(
-    saoSubscriptionId: String,
-    subscriptionTimestamp: String
+final case class Company(
+    name: String,
+    `UTR`: String,
+    `CRN`: String
 )
 
-object SubscriptionResponse {
-  implicit val SubscriptionResponseFormat: OFormat[SubscriptionResponse] = Json.format[SubscriptionResponse]
+object Company {
+  given OFormat[Company] = Json.format[Company]
 }

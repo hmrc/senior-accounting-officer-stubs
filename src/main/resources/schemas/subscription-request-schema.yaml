@@ -2,48 +2,40 @@ $schema: "https://json-schema.org/draft/2020-12/schema"
 type: object
 additionalProperties: false
 required:
-  - safeId
-  - company
+  - etmpSafeId
+  - nominatedCompany
   - contacts
 properties:
-  safeId:
+  etmpSafeId:
     type: string
-    pattern: "^[0-9A-Za-z]{1,15}$"
-  company:
+  nominatedCompany:
     type: object
     additionalProperties: false
     required:
-      - companyName
-      - uniqueTaxReference
-      - companyRegistrationNumber
+      - name
+      - UTR
+      - CRN
     properties:
-      companyName:
+      name:
         type: string
-        minLength: 1
-        maxLength: 160
-      uniqueTaxReference:
+      UTR:
         type: string
-        pattern: "^[0-9]{10}$"
-      companyRegistrationNumber:
+      CRN:
         type: string
-        pattern: "^([0-9]{8}|[A-Z]{2}[0-9]{6})$"
   contacts:
     type: array
-    minItems: 1
-    maxItems: 2
     items:
       type: object
       additionalProperties: false
       required:
         - name
         - email
+        - status
       properties:
         name:
           type: string
-          minLength: 1
-          maxLength: 120
         email:
           type: string
           format: email
-          minLength: 1
-          maxLength: 254
+        status:
+          type: string
