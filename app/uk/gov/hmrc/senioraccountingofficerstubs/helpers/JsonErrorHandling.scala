@@ -40,13 +40,18 @@ object JsonErrorHandling {
 
   def badRequest(errors: Seq[ApiError]): Result =
     BadRequest(
-      JsArray(
-        errors.map { error =>
-          error.path match {
-            case Some(path) => Json.obj("path" -> path, "reason" -> error.reason)
-            case None       => Json.obj("reason" -> error.reason)
-          }
-        }
+      Json.obj(
+        "origin"   -> "HIP",
+        "response" -> Json.obj(
+          "failures" -> JsArray(
+            errors.map { error =>
+              error.path match {
+                case Some(path) => Json.obj("type" -> error.reason, "reason" -> path)
+                case None       => Json.obj("type" -> error.reason, "reason" -> "")
+              }
+            }
+          )
+        )
       )
     )
 
