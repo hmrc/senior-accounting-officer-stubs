@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.models
+package uk.gov.hmrc.senioraccountingofficerstubs.models.putsubscription
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.Json
+import play.api.libs.json.OFormat
 
-final case class NotificationRequest(
-    companies: List[Company],
-    additionalInformation: Option[String]
-)
+final case class Contact(name: String, email: String, status: String)
 
-object NotificationRequest {
-  implicit val NotificationRequestFormat: OFormat[NotificationRequest] = Json.format[NotificationRequest]
+object Contact {
+  given OFormat[Contact] = Json.format
 }
