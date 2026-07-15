@@ -20,15 +20,14 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.networknt.schema.*
 import com.networknt.schema.keyword.KeywordType
 import com.networknt.schema.path.PathType
-import play.api.libs.json.{JsArray, JsValue, Json}
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
+import uk.gov.hmrc.senioraccountingofficerstubs.models.*
 
 import scala.io.Source
 import scala.jdk.CollectionConverters.*
 import scala.util.Try
-
-import uk.gov.hmrc.senioraccountingofficerstubs.models.*
 
 object JsonErrorHandling {
 

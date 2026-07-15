@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.models
 
-import play.api.libs.json.OFormat
 import play.api.libs.json.Json
+import play.api.libs.json.OFormat
 
 // TODO: handle reason being None. does it need to be empty string?
 final case class HipErrorFailure(`type`: String, reason: Option[String])
