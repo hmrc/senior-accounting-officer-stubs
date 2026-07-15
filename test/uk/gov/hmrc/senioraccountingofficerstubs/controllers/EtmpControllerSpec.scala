@@ -114,8 +114,11 @@ class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSu
         "idNumber" -> f"${Random.nextInt(100000)}%010d",
         "idType"   -> "Test"
       )
-      val expectedContent = Json.arr(Json.obj("path" -> "idType", "reason" -> "INVALID_ENUM_VALUE"))
-      val result          = routeResult(fakeEtmpPOSTRequest(invalidPayload))
+      val expectedContent = Json.obj(
+        "origin"   -> "HIP",
+        "response" -> Json.obj("failures" -> Json.arr(Json.obj("type" -> "INVALID_ENUM_VALUE", "reason" -> "idType")))
+      )
+      val result = routeResult(fakeEtmpPOSTRequest(invalidPayload))
 
       status(result) shouldBe BAD_REQUEST
       contentAsJson(result) shouldBe expectedContent
@@ -123,7 +126,14 @@ class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSu
 
     "return a structured 400 for when any extra fields are added" in {
       val invalidPayload  = validEtmpRequest.as[JsObject] ++ Json.obj("extra" -> "value")
-      val expectedPayload = """[{"path":"extra","reason":"INVALID_DATA_TYPE"}]"""
+      val expectedPayload = Json
+        .obj(
+          "origin"   -> "HIP",
+          "response" -> Json.obj(
+            "failures" -> Json.arr(Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> "extra"))
+          )
+        )
+        .toString
 
       val result = routeResult(fakeEtmpPOSTRequest(invalidPayload))
 
@@ -134,14 +144,28 @@ class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSu
     "return a structured 400 for constraint violation with missing required field" in {
       val invalidPayload  = validEtmpRequest.as[JsObject] - "idType"
       val result          = routeResult(fakeEtmpPOSTRequest(invalidPayload))
-      val expectedPayload = Json.arr(Json.obj("path" -> "idType", "reason" -> "MISSING_REQUIRED_FIELD")).toString
+      val expectedPayload = Json
+        .obj(
+          "origin"   -> "HIP",
+          "response" -> Json.obj(
+            "failures" -> Json.arr(Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "idType"))
+          )
+        )
+        .toString
       status(result) shouldBe Status.BAD_REQUEST
       contentAsString(result) shouldBe expectedPayload
     }
 
     "return a structured 400 for a malformed request" in {
-      val expectedPayload = Json.arr(Json.obj("reason" -> "MALFORMED_REQUEST")).toString
-      val result          = routeResult(fakeEtmpPOSTRequest(validEtmpRequest).withTextBody("("))
+      val expectedPayload = Json
+        .obj(
+          "origin"   -> "HIP",
+          "response" -> Json.obj(
+            "failures" -> Json.arr(Json.obj("type" -> "MALFORMED_REQUEST"))
+          )
+        )
+        .toString
+      val result = routeResult(fakeEtmpPOSTRequest(validEtmpRequest).withTextBody("("))
       status(result) shouldBe Status.BAD_REQUEST
       contentAsString(result) shouldBe expectedPayload
     }

@@ -113,8 +113,15 @@ class PutSubscriptionsControllerSpec
       val result = routeResult(fakeRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
-        Json.obj("reason" -> "MALFORMED_REQUEST")
+      contentAsJson(result) shouldBe Json.obj(
+        "origin"   -> "HIP",
+        "response" -> Json.obj(
+          "failures" -> Json.arr(
+            Json.obj(
+              "type" -> "MALFORMED_REQUEST"
+            )
+          )
+        )
       )
     }
 
@@ -126,18 +133,20 @@ class PutSubscriptionsControllerSpec
       val result = routeResult(fakeSubscriptionsPUTRequest(testSafeId, invalidSubscriptionRequest))
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
-        Json.obj(
-          "path"   -> "contacts",
-          "reason" -> "MISSING_REQUIRED_FIELD"
-        ),
-        Json.obj(
-          "path"   -> "etmpSafeId",
-          "reason" -> "INVALID_DATA_TYPE"
-        ),
-        Json.obj(
-          "path"   -> "nominatedCompany",
-          "reason" -> "MISSING_REQUIRED_FIELD"
+      contentAsJson(result) shouldBe Json.obj(
+        "origin"   -> "HIP",
+        "response" -> Json.obj(
+          "failures" -> Json.arr(
+            Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "contacts"),
+            Json.obj(
+              "type"   -> "INVALID_DATA_TYPE",
+              "reason" -> "etmpSafeId"
+            ),
+            Json.obj(
+              "type"   -> "MISSING_REQUIRED_FIELD",
+              "reason" -> "nominatedCompany"
+            )
+          )
         )
       )
     }
@@ -148,10 +157,10 @@ class PutSubscriptionsControllerSpec
 
       val result = routeResult(fakeSubscriptionsPUTRequest(testSafeId, subscriptionRequestExtraProperty))
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
-        Json.obj(
-          "path"   -> "extraProperty",
-          "reason" -> "INVALID_DATA_TYPE"
+      contentAsJson(result) shouldBe Json.obj(
+        "origin"   -> "HIP",
+        "response" -> Json.obj(
+          "failures" -> Json.arr(Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> "extraProperty"))
         )
       )
     }
@@ -161,13 +170,12 @@ class PutSubscriptionsControllerSpec
 
       val result = routeResult(fakeSubscriptionsPUTRequest(testSafeId, subscriptionRequestMissingRequiredField))
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
-        Json.obj(
-          "path"   -> "etmpSafeId",
-          "reason" -> "MISSING_REQUIRED_FIELD"
+      contentAsJson(result) shouldBe Json.obj(
+        "origin"   -> "HIP",
+        "response" -> Json.obj(
+          "failures" -> Json.arr(Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "etmpSafeId"))
         )
       )
     }
-
   }
 }
