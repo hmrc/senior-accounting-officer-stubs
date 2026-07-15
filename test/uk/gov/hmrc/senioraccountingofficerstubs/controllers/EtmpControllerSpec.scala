@@ -161,7 +161,7 @@ class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSu
         .obj(
           "origin"   -> "HIP",
           "response" -> Json.obj(
-            "failures" -> Json.arr(Json.obj("type" -> "MALFORMED_REQUEST"))
+            "failures" -> Json.arr(Json.obj("type" -> "MALFORMED_REQUEST", "reason" -> ""))
           )
         )
         .toString

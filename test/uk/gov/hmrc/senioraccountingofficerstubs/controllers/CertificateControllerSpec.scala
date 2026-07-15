@@ -132,7 +132,8 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
         "response" -> Json.obj(
           "failures" -> Json.arr(
             Json.obj(
-              "type" -> "MALFORMED_REQUEST"
+              "type"   -> "MALFORMED_REQUEST",
+              "reason" -> ""
             )
           )
         )

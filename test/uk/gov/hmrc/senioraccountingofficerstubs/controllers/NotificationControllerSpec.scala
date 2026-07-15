@@ -185,7 +185,7 @@ class NotificationControllerSpec
       contentAsJson(result) shouldBe Json.obj(
         "origin"   -> "HIP",
         "response" -> Json.obj(
-          "failures" -> Json.arr(Json.obj("type" -> "MALFORMED_REQUEST"))
+          "failures" -> Json.arr(Json.obj("type" -> "MALFORMED_REQUEST", "reason" -> ""))
         )
       )
     }

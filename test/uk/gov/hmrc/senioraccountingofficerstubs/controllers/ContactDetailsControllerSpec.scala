@@ -99,7 +99,7 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
       contentAsJson(result) shouldBe Json.obj(
         "origin"   -> "HIP",
         "response" -> Json.obj(
-          "failures" -> Json.arr(Json.obj("type" -> "MALFORMED_REQUEST"))
+          "failures" -> Json.arr(Json.obj("type" -> "MALFORMED_REQUEST", "reason" -> ""))
         )
       )
     }

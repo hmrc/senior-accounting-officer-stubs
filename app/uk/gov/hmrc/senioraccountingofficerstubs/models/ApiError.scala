@@ -24,7 +24,9 @@ object ApiError {
       HipError(
         origin = "HIP",
         response = HipErrorResponse(failures =
-          apiErrors.map(apiError => HipErrorFailure(`type` = apiError.reason, reason = apiError.path))
+          apiErrors.map(apiError =>
+            HipErrorFailure(`type` = apiError.reason, reason = apiError.path.fold("")(identity))
+          )
         )
       )
     }
