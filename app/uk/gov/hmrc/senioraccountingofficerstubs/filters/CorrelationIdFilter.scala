@@ -22,6 +22,7 @@ import play.api.mvc.Results.*
 import play.api.mvc.*
 import play.api.routing.Router
 import play.api.routing.Router.RequestImplicits.WithHandlerDef
+import uk.gov.hmrc.senioraccountingofficerstubs.filters.CorrelationIdFilter.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.hip.*
 
 import scala.concurrent.Future
@@ -39,17 +40,14 @@ class CorrelationIdFilter @Inject() ()(using m: Materializer) extends Filter {
       val authorisationHeader = requestHeader.headers.get("correlationId")
 
       authorisationHeader match {
-        case Some(correlationId)
-            if correlationId.matches(
-              "^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$"
-            ) =>
+        case Some(correlationId) if correlationId.matches(hipCorrelationIdRegex) =>
           nextFilter(requestHeader)
         case None => nextFilter(requestHeader)
         case _    =>
           Future.successful(
             BadRequest(
               Json.toJson(
-                StandardFailures(
+                StandardHipFailures(
                   origin = "HIP",
                   failures = Seq(
                     Failure(
@@ -68,4 +66,9 @@ class CorrelationIdFilter @Inject() ()(using m: Materializer) extends Filter {
   private def isHealthCheck(path: String): Boolean =
     path.startsWith("/ping/")
 
+}
+
+object CorrelationIdFilter {
+  def hipCorrelationIdRegex: String =
+    "^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$"
 }

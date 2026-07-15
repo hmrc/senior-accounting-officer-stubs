@@ -30,11 +30,11 @@ object Failures {
   given OFormat[Failures] = Json.format
 }
 
-final case class StandardFailures(origin: String, response: Failures)
+final case class StandardHipFailures(origin: String, response: Failures)
 
-object StandardFailures {
-  given OFormat[StandardFailures] = Json.format
+object StandardHipFailures {
+  given OFormat[StandardHipFailures] = Json.format
 
-  def apply(origin: String, failures: Seq[Failure]): StandardFailures =
-    StandardFailures(origin = origin, response = Failures(failures))
+  def apply(origin: String, failures: Seq[Failure]): StandardHipFailures =
+    StandardHipFailures(origin = origin, response = Failures(failures))
 }

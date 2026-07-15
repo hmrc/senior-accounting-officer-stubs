@@ -36,10 +36,10 @@ class GetSubscriptionController @Inject() (cc: ControllerComponents, repository:
   def getSubscription(saoSubscriptionId: String): Action[AnyContent] = Action.async { implicit request =>
     repository.get(saoSubscriptionId).map {
       case Some(config) =>
-        val configuration: Option[(Int, Option[String])] = config.getSubscriptionConfig
-        val status: Int                                  = configuration.map(_._1).fold(OK)(identity)
-        val body: String                                 = configuration
-          .flatMap(_._2)
+        val configuration: Option[NoneDefaultApiConfiguration] = config.getSubscriptionConfig
+        val status: Int                                        = configuration.map(_.status).fold(OK)(identity)
+        val body: String                                       = configuration
+          .flatMap(_.defaultBodyOverride)
           .fold(
             Json.toJson(default200).toString
           )(identity)
@@ -57,24 +57,25 @@ class GetSubscriptionController @Inject() (cc: ControllerComponents, repository:
 
 object GetSubscriptionController {
   extension (config: PostSignupStubConfiguration) {
-    def getSubscriptionConfig: Option[(Int, Option[String])] = config.getSubscriptionAndPostRetrieveCustomerId.map {
-      case GetSubscriptionOnlyConfig(status, defaultBodyOverride) =>
-        (status, defaultBodyOverride)
-      case PostRetrieveCustomerIdConfig(GetSubscriptionConfig(utr, crn, name, contacts), _, _) =>
-        (
-          OK,
-          Some(
-            Json
-              .toJson(
-                GetSubscriptionResponse(
-                  contacts = contacts,
-                  nominatedCompany = Some(NominatedCompany(utr = Some(utr), crn = crn, name = name))
+    def getSubscriptionConfig: Option[NoneDefaultApiConfiguration] =
+      config.getSubscriptionAndPostRetrieveCustomerId.map {
+        case GetSubscriptionOnlyConfig(status, defaultBodyOverride) =>
+          NoneDefaultApiConfiguration(status, defaultBodyOverride)
+        case PostRetrieveCustomerIdConfig(GetSubscriptionConfig(utr, crn, name, contacts), _, _) =>
+          NoneDefaultApiConfiguration(
+            status = OK,
+            defaultBodyOverride = Some(
+              Json
+                .toJson(
+                  GetSubscriptionResponse(
+                    contacts = contacts,
+                    nominatedCompany = Some(NominatedCompany(utr = Some(utr), crn = crn, name = name))
+                  )
                 )
-              )
-              .toString
+                .toString
+            )
           )
-        )
-    }
+      }
   }
 
   def default200: GetSubscriptionResponse = GetSubscriptionResponse(
