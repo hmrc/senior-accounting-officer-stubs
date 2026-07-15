@@ -48,7 +48,7 @@ class EtmpController @Inject() (cc: ControllerComponents) extends BackendControl
                     f"XB${Random.nextInt(1000000)}%013d"
                   )
                 val response = EtmpSuccessResponse(etmpSuccess)
-                Created(Json.toJson(response)).withHeaders("X-Correlation-Id" -> correlationId)
+                Created(Json.toJson(response)).withHeaders("correlationId" -> correlationId)
               }
             }
             case Left(errorResult) => errorResult

@@ -1,0 +1,44 @@
+info:
+  name: Stub Get Subscription (503)
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/post-signup/config"
+  body:
+    type: json
+    data: |-
+      {
+        "subscriptionId": "{{subscriptionID}}",
+        "getSubscriptionAndPostRetrieveCustomerId": {
+          "api": "GetSubscription",
+          "status": 503,
+          "defaultBodyOverride" : {{payload}}
+        }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const payload = JSON.stringify(`{
+          "origin": "HIP",
+          "response": {
+            "failures": [
+              {
+                "type": "string",
+                "reason": "string"
+              }
+            ]
+          }
+        }`);
+
+        bru.setVar("payload", payload);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

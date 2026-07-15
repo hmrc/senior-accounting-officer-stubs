@@ -1,0 +1,25 @@
+info:
+  name: Stub Get Subscription (204) no results returned
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/post-signup/config"
+  body:
+    type: json
+    data: |-
+      {
+        "subscriptionId": "{{subscriptionID}}",
+        "getSubscriptionAndPostRetrieveCustomerId": {
+          "api": "GetSubscription",
+          "status": 204
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

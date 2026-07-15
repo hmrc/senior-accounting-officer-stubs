@@ -29,7 +29,7 @@ import uk.gov.hmrc.senioraccountingofficerstubs.config.AppConfig
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.generateUtr
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.generateCrn
 
-class AuthFilterSpec
+class AuthFilterIntegrationSpec
     extends AnyWordSpec
     with Matchers
     with ScalaFutures
