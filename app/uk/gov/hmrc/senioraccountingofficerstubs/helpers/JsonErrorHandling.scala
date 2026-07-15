@@ -28,9 +28,9 @@ import scala.io.Source
 import scala.jdk.CollectionConverters.*
 import scala.util.Try
 
-object JsonErrorHandling {
+import uk.gov.hmrc.senioraccountingofficerstubs.models.*
 
-  final case class ApiError(path: Option[String], reason: String)
+object JsonErrorHandling {
 
   def parseJson(body: String): Either[Result, JsValue] =
     Try(Json.parse(body)).toEither.left.map(_ => malformedRequest)
@@ -39,21 +39,7 @@ object JsonErrorHandling {
     badRequest(Seq(ApiError(None, "MALFORMED_REQUEST")))
 
   def badRequest(errors: Seq[ApiError]): Result =
-    BadRequest(
-      Json.obj(
-        "origin"   -> "HIP",
-        "response" -> Json.obj(
-          "failures" -> JsArray(
-            errors.map { error =>
-              error.path match {
-                case Some(path) => Json.obj("type" -> error.reason, "reason" -> path)
-                case None       => Json.obj("type" -> error.reason, "reason" -> "")
-              }
-            }
-          )
-        )
-      )
-    )
+    BadRequest(Json.toJson(errors.toHip))
 
   object Validators {
 
