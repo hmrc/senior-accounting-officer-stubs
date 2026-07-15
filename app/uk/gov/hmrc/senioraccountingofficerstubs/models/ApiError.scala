@@ -16,17 +16,17 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.models
 
+import uk.gov.hmrc.senioraccountingofficerstubs.models.hip.*
+
 final case class ApiError(path: Option[String], reason: String)
 
 object ApiError {
   extension (apiErrors: Seq[ApiError]) {
-    def toHip: HipError = {
-      HipError(
+    def toHip: StandardHipFailures = {
+      StandardHipFailures(
         origin = "HIP",
-        response = HipErrorResponse(failures =
-          apiErrors.map(apiError =>
-            HipErrorFailure(`type` = apiError.reason, reason = apiError.path.fold("")(identity))
-          )
+        response = Failures(failures =
+          apiErrors.map(apiError => Failure(`type` = apiError.reason, reason = apiError.path.fold("")(identity)))
         )
       )
     }
