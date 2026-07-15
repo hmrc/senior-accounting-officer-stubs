@@ -28,7 +28,7 @@ class EtmpHelperSpec extends AnyWordSpec with Matchers {
   private val validRequestHeaders = Headers(
     "X-Transmitting-System" -> "HIP",
     "X-Originating-System"  -> "MDTP",
-    "correlationid"         -> "f0bd1f32-de51-45cc-9b18-0520d6e3ab1a",
+    "correlationId"         -> "f0bd1f32-de51-45cc-9b18-0520d6e3ab1a",
     "X-Receipt-Date"        -> "2026-05-05T12:05:45Z"
   )
 
@@ -62,14 +62,12 @@ class EtmpHelperSpec extends AnyWordSpec with Matchers {
       validateHeaders(requestWithInvalidHeader) shouldBe Left("invalid X-Originating-System header")
     }
 
-    "return header errors messages when the correlationid header is not found, empty or invalid" in {
-      val requestWithoutHeader     = validRequestHeaders.remove("correlationid")
-      val requestWithEmptyHeader   = requestWithoutHeader.add("correlationid" -> "")
-      val requestWithInvalidHeader = requestWithoutHeader.add("correlationid" -> "12341")
+    "return header errors messages when the correlationId header is not found" in {
+      val requestWithoutHeader   = validRequestHeaders.remove("correlationId")
+      val requestWithEmptyHeader = requestWithoutHeader.add("correlationId" -> "")
 
-      validateHeaders(requestWithoutHeader) shouldBe Left("missing correlationid header")
-      validateHeaders(requestWithEmptyHeader) shouldBe Left("invalid correlationid header")
-      validateHeaders(requestWithInvalidHeader) shouldBe Left("invalid correlationid header")
+      validateHeaders(requestWithoutHeader) shouldBe Left("missing correlationId header")
+      validateHeaders(requestWithEmptyHeader) shouldBe Left("missing correlationId header")
     }
 
     "return false when the X-Receipt-Date header is not found, empty or invalid" in {

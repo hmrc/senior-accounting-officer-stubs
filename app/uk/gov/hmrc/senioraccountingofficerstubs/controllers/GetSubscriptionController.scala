@@ -18,7 +18,7 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
 import play.api.http.Status.*
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.controllers.GetSubscriptionController.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.getsubscription.*
@@ -35,21 +35,19 @@ class GetSubscriptionController @Inject() (cc: ControllerComponents, repository:
 ) extends BackendController(cc) {
   def getSubscription(saoSubscriptionId: String): Action[AnyContent] = Action.async { implicit request =>
     repository.get(saoSubscriptionId).map {
-      case Some(config) =>
-        val configuration: Option[NoneDefaultApiConfiguration] = config.getSubscriptionConfig
-        val status: Int                                        = configuration.map(_.status).fold(OK)(identity)
-        val body: String                                       = configuration
-          .flatMap(_.defaultBodyOverride)
-          .fold(
-            Json.toJson(default200).toString
-          )(identity)
+      case Some(config) => handleConfig(config)
+      case _            => Ok(Json.toJson(default200))
+    }
+  }
 
-        status match {
-          case NO_CONTENT => NoContent
-          case _          => Status(status)(body).as(JSON)
-        }
-      case _ =>
-        Ok(Json.toJson(default200))
+  private def handleConfig(config: PostSignupStubConfiguration): Result = {
+    val configuration: Option[NoneDefaultApiConfiguration] = config.getSubscriptionResponseConfig
+    val status: Int                                        = configuration.map(_.status).fold(OK)(identity)
+    val body: String = configuration.flatMap(_.defaultBodyOverride).fold(Json.toJson(default200).toString)(identity)
+
+    status match {
+      case NO_CONTENT => NoContent
+      case _          => Status(status)(body).as(JSON)
     }
   }
 
@@ -57,7 +55,7 @@ class GetSubscriptionController @Inject() (cc: ControllerComponents, repository:
 
 object GetSubscriptionController {
   extension (config: PostSignupStubConfiguration) {
-    def getSubscriptionConfig: Option[NoneDefaultApiConfiguration] =
+    def getSubscriptionResponseConfig: Option[NoneDefaultApiConfiguration] =
       config.getSubscriptionAndPostRetrieveCustomerId.map {
         case GetSubscriptionOnlyConfig(status, defaultBodyOverride) =>
           NoneDefaultApiConfiguration(status, defaultBodyOverride)
