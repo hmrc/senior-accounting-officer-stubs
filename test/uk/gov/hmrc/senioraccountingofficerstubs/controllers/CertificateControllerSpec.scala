@@ -20,7 +20,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.{MimeTypes, Status}
-import play.api.libs.json.{JsArray, JsObject}
+import play.api.libs.json.JsObject
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{AnyContentAsText, Result}
 import play.api.test.FakeRequest
@@ -75,7 +75,7 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
   private def assertValidationError(id: String, payload: JsValue, expectedError: JsValue): Unit = {
     val result = routeResult(fakeCertificatePOSTRequest(id, payload))
     status(result) shouldBe Status.BAD_REQUEST
-    contentAsJson(result) shouldBe Json.arr(expectedError)
+    contentAsJson(result) shouldBe expectedError
   }
 
   "POST /subscriptions/:saoSubscriptionId/certificates" should {
@@ -101,18 +101,20 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
       val result = routeResult(fakeCertificatePOSTRequest(knownId, invalidCertificateRequest))
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
-        Json.obj(
-          "path"   -> "companies[0]",
-          "reason" -> "INVALID_DATA_TYPE"
-        ),
-        Json.obj(
-          "path"   -> "saoEmail",
-          "reason" -> "MISSING_REQUIRED_FIELD"
-        ),
-        Json.obj(
-          "path"   -> "saoName",
-          "reason" -> "MISSING_REQUIRED_FIELD"
+      contentAsJson(result) shouldBe Json.obj(
+        "origin"   -> "HIP",
+        "response" -> Json.obj(
+          "failures" -> Json.arr(
+            Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> "companies[0]"),
+            Json.obj(
+              "type"   -> "MISSING_REQUIRED_FIELD",
+              "reason" -> "saoEmail"
+            ),
+            Json.obj(
+              "type"   -> "MISSING_REQUIRED_FIELD",
+              "reason" -> "saoName"
+            )
+          )
         )
       )
     }
@@ -125,8 +127,16 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
       val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
-        Json.obj("reason" -> "MALFORMED_REQUEST")
+      contentAsJson(result) shouldBe Json.obj(
+        "origin"   -> "HIP",
+        "response" -> Json.obj(
+          "failures" -> Json.arr(
+            Json.obj(
+              "type"   -> "MALFORMED_REQUEST",
+              "reason" -> ""
+            )
+          )
+        )
       )
     }
 
@@ -144,8 +154,8 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
         knownId,
         certificateRequestInvalidFormat,
         Json.obj(
-          "path"   -> "saoEmail",
-          "reason" -> "INVALID_FORMAT"
+          "origin"   -> "HIP",
+          "response" -> Json.obj("failures" -> Json.arr(Json.obj("type" -> "INVALID_FORMAT", "reason" -> "saoEmail")))
         )
       )
     }
@@ -157,11 +167,12 @@ class CertificateControllerSpec extends AnyWordSpec with Matchers with GuiceOneA
         knownId,
         certificateRequestMissingRequiredField,
         Json.obj(
-          "path"   -> "companies",
-          "reason" -> "MISSING_REQUIRED_FIELD"
+          "origin"   -> "HIP",
+          "response" -> Json.obj(
+            "failures" -> Json.arr(Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "companies"))
+          )
         )
       )
     }
-
   }
 }

@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.utils
+package uk.gov.hmrc.senioraccountingofficerstubs.models
 
-import uk.gov.hmrc.domain.SaUtrGenerator
+import uk.gov.hmrc.senioraccountingofficerstubs.models.hip.*
 
-import scala.util.Random
+final case class ApiError(path: Option[String], reason: String)
 
-object TestDataGenerator {
-  def generateCrn: String = {
-    val num = Random.nextInt(10000000)
-    f"$num%08d"
-  }
-
-  def generateCertificateCrn: String = {
-    val num = Random.nextInt(1000000)
-    f"$num%08d"
-  }
-
-  def generateUtr: String = {
-    val seed = Random.nextInt
-    SaUtrGenerator(seed).nextSaUtr.utr
+object ApiError {
+  extension (apiErrors: Seq[ApiError]) {
+    def toHip: StandardHipFailures = {
+      StandardHipFailures(
+        origin = "HIP",
+        response = Failures(failures =
+          apiErrors.map(apiError => Failure(`type` = apiError.reason, reason = apiError.path.fold("")(identity)))
+        )
+      )
+    }
   }
 }

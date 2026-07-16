@@ -57,7 +57,7 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
   private def assertValidationError(id: String, payload: JsValue, expectedError: JsValue): Unit = {
     val result = routeResult(fakeContactDetailsPUTRequest(id, payload))
     status(result) shouldBe Status.BAD_REQUEST
-    contentAsJson(result) shouldBe Json.arr(expectedError)
+    contentAsJson(result) shouldBe expectedError
   }
 
   "GET /contact-details/:saoSubscriptionId" should {
@@ -96,8 +96,11 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
       val result = routeResult(fakePUTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
-        Json.obj("reason" -> "MALFORMED_REQUEST")
+      contentAsJson(result) shouldBe Json.obj(
+        "origin"   -> "HIP",
+        "response" -> Json.obj(
+          "failures" -> Json.arr(Json.obj("type" -> "MALFORMED_REQUEST", "reason" -> ""))
+        )
       )
     }
 
@@ -110,8 +113,9 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
       val result = routeResult(fakeContactDetailsPUTRequest(knownId, invalidContactDetailsRequest))
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
-        Json.obj("path" -> "body", "reason" -> "INVALID_DATA_TYPE")
+      contentAsJson(result) shouldBe Json.obj(
+        "origin"   -> "HIP",
+        "response" -> Json.obj("failures" -> Json.arr(Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> "body")))
       )
     }
 
@@ -123,7 +127,12 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
       assertValidationError(
         knownId,
         contactDetailsRequestMissingRequiredField,
-        Json.obj("path" -> "[0].name", "reason" -> "MISSING_REQUIRED_FIELD")
+        Json.obj(
+          "origin"   -> "HIP",
+          "response" -> Json.obj(
+            "failures" -> Json.arr(Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "[0].name"))
+          )
+        )
       )
     }
 
@@ -139,8 +148,8 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
         knownId,
         contactDetailsRequestInvalidFormat,
         Json.obj(
-          "path"   -> "[0].email",
-          "reason" -> "INVALID_FORMAT"
+          "origin"   -> "HIP",
+          "response" -> Json.obj("failures" -> Json.arr(Json.obj("type" -> "INVALID_FORMAT", "reason" -> "[0].email")))
         )
       )
     }
@@ -158,8 +167,8 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
         knownId,
         contactDetailsRequestCannotBeEmpty,
         Json.obj(
-          "path"   -> "[0].name",
-          "reason" -> "CANNOT_BE_EMPTY"
+          "origin"   -> "HIP",
+          "response" -> Json.obj("failures" -> Json.arr(Json.obj("type" -> "CANNOT_BE_EMPTY", "reason" -> "[0].name")))
         )
       )
     }
@@ -172,8 +181,10 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
         knownId,
         contactDetailsRequestArrayMinItemsNotMet,
         Json.obj(
-          "path"   -> "body",
-          "reason" -> "ARRAY_MIN_ITEMS_NOT_MET"
+          "origin"   -> "HIP",
+          "response" -> Json.obj(
+            "failures" -> Json.arr(Json.obj("type" -> "ARRAY_MIN_ITEMS_NOT_MET", "reason" -> "body"))
+          )
         )
       )
     }
@@ -190,8 +201,10 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
         knownId,
         contactDetailsLengthOutOfBounds,
         Json.obj(
-          "path"   -> "[0].name",
-          "reason" -> "LENGTH_OUT_OF_BOUNDS"
+          "origin"   -> "HIP",
+          "response" -> Json.obj(
+            "failures" -> Json.arr(Json.obj("type" -> "LENGTH_OUT_OF_BOUNDS", "reason" -> "[0].name"))
+          )
         )
       )
     }

@@ -22,13 +22,12 @@ import scala.util.Try
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.util.UUID
 
 object EtmpHelper {
 
   private val TransmittingSystem = "X-Transmitting-System"
   private val OriginatingSystem  = "X-Originating-System"
-  private val CorrelationId      = "correlationid"
+  private val CorrelationId      = "correlationId"
   private val ReceiptDate        = "X-Receipt-Date"
   private val headers            = Seq(TransmittingSystem, OriginatingSystem, CorrelationId, ReceiptDate)
 
@@ -66,11 +65,7 @@ object EtmpHelper {
         else Left(s"invalid $ReceiptDate format")
       }
 
-      correlationId <- headersMap
-        .get(CorrelationId)
-        .toRight(s"missing $CorrelationId header")
-        .flatMap(id => Try(UUID.fromString(id)).toEither.left.map(_ => s"invalid $CorrelationId header").map(_ => id))
-
+      correlationId <- headersMap.get(CorrelationId).filter(_.nonEmpty).toRight(s"missing $CorrelationId header")
     } yield (correlationId)
   }
 }

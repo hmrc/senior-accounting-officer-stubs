@@ -93,7 +93,7 @@ class NotificationControllerSpec
   private def assertValidationError(id: String, payload: JsValue, expectedError: JsValue): Unit = {
     val result = routeResult(fakeNotificationPOSTRequest(id, payload))
     status(result) shouldBe Status.BAD_REQUEST
-    contentAsJson(result) shouldBe Json.arr(expectedError)
+    contentAsJson(result) shouldBe expectedError
   }
 
   private val mockRepository = mock[PostSignupConfigRepository]
@@ -166,8 +166,10 @@ class NotificationControllerSpec
         testSubscriptionId,
         invalidNotificationRequest,
         Json.obj(
-          "path"   -> "companies[0]",
-          "reason" -> "INVALID_DATA_TYPE"
+          "origin"   -> "HIP",
+          "response" -> Json.obj(
+            "failures" -> Json.arr(Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> "companies[0]"))
+          )
         )
       )
     }
@@ -180,8 +182,11 @@ class NotificationControllerSpec
       val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.arr(
-        Json.obj("reason" -> "MALFORMED_REQUEST")
+      contentAsJson(result) shouldBe Json.obj(
+        "origin"   -> "HIP",
+        "response" -> Json.obj(
+          "failures" -> Json.arr(Json.obj("type" -> "MALFORMED_REQUEST", "reason" -> ""))
+        )
       )
     }
 
@@ -199,8 +204,10 @@ class NotificationControllerSpec
         testSubscriptionId,
         notificationRequestInvalidFormat,
         Json.obj(
-          "path"   -> "saos[0].email",
-          "reason" -> "INVALID_FORMAT"
+          "origin"   -> "HIP",
+          "response" -> Json.obj(
+            "failures" -> Json.arr(Json.obj("type" -> "INVALID_FORMAT", "reason" -> "saos[0].email"))
+          )
         )
       )
     }
@@ -212,8 +219,10 @@ class NotificationControllerSpec
         testSubscriptionId,
         notificationRequestMissingRequiredField,
         Json.obj(
-          "path"   -> "companies",
-          "reason" -> "MISSING_REQUIRED_FIELD"
+          "origin"   -> "HIP",
+          "response" -> Json.obj(
+            "failures" -> Json.arr(Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "companies"))
+          )
         )
       )
     }
