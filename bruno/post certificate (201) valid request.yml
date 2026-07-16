@@ -1,0 +1,48 @@
+info:
+  name: post certificate (201) valid request
+  type: http
+  seq: 13
+
+http:
+  method: POST
+  url: "{{baseUrl}}/subscriptions/123/certificates"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      {
+        "submitterName": "Jane Smith",
+        "saoName": "JaneSmith",
+        "saoEmail": "jane.smith@examplecom",
+        "staffPID": "456",
+        "remarks": "testremarks",
+        "companies": [
+          {
+            "crn": "11223344",
+            "utr": "223453445566",
+            "name": "Example Subsidiary Ltd",
+            "accPeriodEnd": "2025-03-31",
+            "status": "COMPLIANT",
+            "type": "LTD",
+            "isCorporationTaxQualified": true,
+            "isVatQualified": true,
+            "isPayeQualified": true,
+            "isInsurancePremiumTaxQualified": false,
+            "isStampDutyLandTaxQualified": false,
+            "isStampDutyReserveTaxQualified": false,
+            "isPetroleumRevenueTaxQualified": false,
+            "isCustomsDutiesQualified": false,
+            "isExciseDutiesQualified": false,
+            "isBankLevyQualified": false,
+            "qualificationStatemet": ""
+          }
+        ]
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,65 @@
+info:
+  name: post certificate (201) valid multiple companies details
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: "{{baseUrl}}/subscriptions/123/certificates"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      {
+        "submitterName": "Jane Smith",
+        "SAOName": "JaneSmith",
+        "SAOEmail": "jane.smith@example.com",
+        "staffPID": "456",
+        "remarks": "Testremarks",
+        "companies": [
+          {
+            "crn": "11223344",
+            "utr": "2233445566",
+            "name": "Example Subsidiary Ltd",
+            "accPeriodEnd": "2025-03-31",
+            "status": "COMPLIANT",
+            "type": "ABC",
+            "isCorporationTaxQualified": true,
+            "isVatQualified": true,
+            "isPayeQualified": true,
+            "isInsurancePremiumTaxQualified": false,
+            "isStampDutyLandTaxQualified": false,
+            "isStampDutyReserveTaxQualified": false,
+            "isPetroleumRevenueTaxQualified": false,
+            "isCustomsDutiesQualified": false,
+            "isExciseDutiesQualified": false,
+            "isBankLevyQualified": false
+          },
+          {
+            "crn": "1765645",
+            "utr": "2876387429",
+            "name": "Example Company Ltd",
+            "accPeriodEnd": "1000-03-01",
+            "status": "COMPLIANT",
+            "type": "CHARITY",
+            "isCorporationTaxQualified": true,
+            "isVatQualified": true,
+            "isPayeQualified": true,
+            "isInsurancePremiumTaxQualified": false,
+            "isStampDutyLandTaxQualified": false,
+            "isStampDutyReserveTaxQualified": false,
+            "isPetroleumRevenueTaxQualified": false,
+            "isCustomsDutiesQualified": false,
+            "isExciseDutiesQualified": false,
+            "isBankLevyQualified": false
+          }
+        ]
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,46 @@
+info:
+  name: post certificate (404) missing subscriptionID
+  type: http
+  seq: 16
+
+http:
+  method: POST
+  url: "{{baseUrl}}/subscriptions//notifications"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      {
+        "submitterName": "Jane Smith",
+        "SAOName": "JaneSmith",
+        "SAOEmail": "jane.smith@example.com",
+        "staffPID": "456",
+        "companies": [
+          {
+            "crn": "11223344",
+            "utr": "2233445566",
+            "name": "Example Subsidiary Ltd",
+            "accPeriodEnd": "2025-03-31",
+            "status": "COMPLIANT",
+            "type": "",
+            "isCorporationTaxQualified": true,
+            "isVatQualified": true,
+            "isPayeQualified": true,
+            "isInsurancePremiumTaxQualified": false,
+            "isStampDutyLandTaxQualified": false,
+            "isStampDutyReserveTaxQualified": false,
+            "isPetroleumRevenueTaxQualified": false,
+            "isCustomsDutiesQualified": false,
+            "isExciseDutiesQualified": false,
+            "isBankLevyQualified": false
+          }
+        ]
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
