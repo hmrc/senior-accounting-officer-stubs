@@ -26,11 +26,6 @@ object TestDataGenerator {
     f"$num%08d"
   }
 
-  def generateCertificateCrn: String = {
-    val num = Random.nextInt(1000000)
-    f"$num%08d"
-  }
-
   def generateUtr: String = {
     val seed = Random.nextInt
     SaUtrGenerator(seed).nextSaUtr.utr
