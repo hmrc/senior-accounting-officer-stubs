@@ -21,29 +21,41 @@ import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.CertificateResponse
+import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 
 import scala.util.Random
-
 import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
 
-class CertificateController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
+class CertificateController @Inject() (cc: ControllerComponents, repository: PostSignupConfigRepository)(using ExecutionContext) extends BackendController(cc) {
 
-  private val stubbedSaoSubscriptionId = "123"
 
   private def generateCertificateId = {
     val num = Random.nextInt(10000000)
     "CRT" + f"$num%010d"
   }
 
-  def postCertificate(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText) { implicit request =>
-    JsonErrorHandling.parseJson(request.body) match {
-      case Right(json) =>
-        val errors = JsonErrorHandling.Validators.validateCertificate(json)
-        if errors.nonEmpty then JsonErrorHandling.badRequest(errors)
-        else if saoSubscriptionId == stubbedSaoSubscriptionId then
-          Created(Json.toJson(CertificateResponse(generateCertificateId)))
-        else NotFound
-      case Left(errorResult) => errorResult
-    }
+  def postCertificate(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText).async {
+    implicit request =>
+      JsonErrorHandling.parseJson(request.body) match {
+        case Right(json) =>
+          val errors = JsonErrorHandling.Validators.validateCertificate(json)
+
+          if errors.nonEmpty then Future.successful(JsonErrorHandling.badRequest(errors))
+          else
+            repository.get(saoSubscriptionId).map {
+              case Some(config) =>
+                val status: Int = config.postCertificate.map(_.status).fold(201)(identity)
+                val body: String = config.postCertificate
+                  .flatMap(_.defaultBodyOverride)
+                  .fold(
+                    Json.toJson(CertificateResponse(generateCertificateId)).toString
+                  )(identity)
+                Status(status)(body).as(JSON)
+              case _ =>
+                Created(Json.toJson(CertificateResponse(generateCertificateId)))
+            }
+        case Left(errorResult) => Future.successful(errorResult)
+      }
   }
 }
