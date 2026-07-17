@@ -95,7 +95,7 @@ object GetSubscriptionController {
     nominatedCompany = Some(
       NominatedCompany(
         crn = Some(generateCrn),
-        name = Some("Not a real company Ltd"),
+        name = Some("Fake Company Ltd"),
         utr = Some(generateUtr)
       )
     )
