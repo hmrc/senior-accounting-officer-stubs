@@ -26,7 +26,6 @@ object TestDataGenerator {
     f"$num%08d"
   }
 
-
   def generateUtr: String = {
     val seed = Random.nextInt
     SaUtrGenerator(seed).nextSaUtr.utr

@@ -41,14 +41,14 @@ import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.*
 import scala.concurrent.Future
 
 class CertificateControllerSpec
-  extends AnyWordSpec
-  with Matchers
-  with GuiceOneAppPerSuite
-  with BeforeAndAfterEach
-  with MockitoSugar {
+    extends AnyWordSpec
+    with Matchers
+    with GuiceOneAppPerSuite
+    with BeforeAndAfterEach
+    with MockitoSugar {
 
-  private val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
-  private val testSubscriptionId  = "123"
+  private val authHeader         = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
+  private val testSubscriptionId = "123"
 
   private val validCertificateRequest: JsValue = Json.obj(
     "submitterName" -> "Jane Smith",
@@ -107,10 +107,10 @@ class CertificateControllerSpec
 
   "POST /subscriptions/:saoSubscriptionId/certificates" should {
     "return 201 and certificate payload when PostSignupConfigRepository does not return a config for this endpoint" in {
-    val result = routeResult(fakeCertificatePOSTRequest(testSubscriptionId, validCertificateRequest))
+      val result = routeResult(fakeCertificatePOSTRequest(testSubscriptionId, validCertificateRequest))
 
-    status(result) shouldBe Status.CREATED
-    contentAsString(result) should fullyMatch regex """^\{"certificateRef":"CRT[0-9]{10}"\}$"""
+      status(result) shouldBe Status.CREATED
+      contentAsString(result) should fullyMatch regex """^\{"certificateRef":"CRT[0-9]{10}"\}$"""
     }
 
     "return the configured status code and the default body when PostSignupConfigRepository returns a status only config for this endpoint" in {

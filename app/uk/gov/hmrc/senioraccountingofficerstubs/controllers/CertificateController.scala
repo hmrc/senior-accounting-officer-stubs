@@ -23,12 +23,14 @@ import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.CertificateResponse
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 
-import scala.util.Random
-import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Random
 
-class CertificateController @Inject() (cc: ControllerComponents, repository: PostSignupConfigRepository)(using ExecutionContext) extends BackendController(cc) {
+import javax.inject.Inject
 
+class CertificateController @Inject() (cc: ControllerComponents, repository: PostSignupConfigRepository)(using
+    ExecutionContext
+) extends BackendController(cc) {
 
   private def generateCertificateId = {
     val num = Random.nextInt(10000000)
@@ -45,7 +47,7 @@ class CertificateController @Inject() (cc: ControllerComponents, repository: Pos
           else
             repository.get(saoSubscriptionId).map {
               case Some(config) =>
-                val status: Int = config.postCertificate.map(_.status).fold(201)(identity)
+                val status: Int  = config.postCertificate.map(_.status).fold(201)(identity)
                 val body: String = config.postCertificate
                   .flatMap(_.defaultBodyOverride)
                   .fold(
