@@ -44,14 +44,14 @@ class PutSubscriptionsControllerSpec
     with MockitoSugar
     with BeforeAndAfterEach {
 
-  private val testSubscriptionId = "123"
-
+  private val testSafeId             = "123"
+  private val testSubscriptionId     = "1234"
   private val testLongSubscriptionId = "1234567890123456"
 
   private val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
 
   private val validSubscriptionRequest = Json.obj(
-    "etmpSafeId"       -> testSubscriptionId,
+    "etmpSafeId"       -> testSafeId,
     "nominatedCompany" -> Json.obj(
       "name" -> "Acme Manufacturing Ltd",
       "utr"  -> generateUtr,
@@ -108,12 +108,12 @@ class PutSubscriptionsControllerSpec
     }
 
     "return a 404 for a configured safeId" in {
-      when(mockRepository.get(meq(testSubscriptionId)))
+      when(mockRepository.get(meq(testSafeId)))
         .thenReturn(
           Future.successful(
             Some(
               SignupStubConfiguration(
-                safeId = testSubscriptionId,
+                safeId = testSafeId,
                 putDpsSubscription = Some(NoneDefaultApiConfiguration(status = Status.NOT_FOUND))
               )
             )
@@ -124,7 +124,7 @@ class PutSubscriptionsControllerSpec
     }
 
     "return a structured 400 for constraint violation with malformed request when JSON syntax is incorrect" in {
-      val fakeRequest = FakeRequest("PUT", s"/subscriptions/$testSubscriptionId")
+      val fakeRequest = FakeRequest("PUT", s"/subscriptions/$testSafeId")
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody("""{"subscription":""")
 
@@ -187,7 +187,8 @@ class PutSubscriptionsControllerSpec
     "return a structured 400 for constraint violation with missing required field" in {
       val subscriptionRequestMissingRequiredField = validSubscriptionRequest.as[JsObject] - "etmpSafeId"
 
-      val result = routeResult(fakeSubscriptionsPUTRequest(testSubscriptionId, subscriptionRequestMissingRequiredField))
+      val result =
+        routeResult(fakeSubscriptionsPUTRequest(testSubscriptionId, subscriptionRequestMissingRequiredField))
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.obj(
         "origin"   -> "HIP",
