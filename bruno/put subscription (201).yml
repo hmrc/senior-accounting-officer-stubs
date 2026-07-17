@@ -1,18 +1,18 @@
 info:
-  name: put subscription (400) Invalid body
+  name: put subscription (201)
   type: http
-  seq: 22
+  seq: 19
 
 http:
   method: PUT
-  url: "{{baseUrl}}/subscriptions/123456789012365"
+  url: "{{baseUrl}}/subscriptions/987654321098765"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
   body:
     type: json
     data: |-
-      {@@@
+      {
         "etmpSafeId": "XE000123456789",
         "nominatedCompany": {
           "name": "Acme Manufacturing Ltd",

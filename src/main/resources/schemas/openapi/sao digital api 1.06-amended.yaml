@@ -1,0 +1,523 @@
+---
+openapi: 3.0.3
+info:
+  title: SAO Digital API
+  description: |
+    APIs supporting the digital management of Senior Accounting Officer (SAO) subscriptions, notifications, certificates, and operational contacts.
+    Change Log ``` | Version   | Date       | Author     | Description | |-----------|------------|------------|---------------| |  1.0.2    | 30-06-2026 | Ben Howdle | Initial draft | |  1.0.3    | 07-07-2026 | Ben Howdle | Introduce Customer ID + optional submitter | |  1.0.4    | 08-07-2026 | Ben Howdle | Max length validation | |  1.0.5    | 09-07-2026 | Ben Howdle | Fix OpenAPI formatting | |  1.0.6    | 10-07-2026 | Ben Howdle | Remove extra schemas & add validation |
+  version: 1.0.6-a
+  x-integration-catalogue:
+    status: ALPHA
+    api-type: SIMPLE
+    platform: HIP
+    backends:
+    - dsao
+    reviewed-date: 2024-04-25T15:19:20.843477359Z
+    short-description: Digitise Senior Accounting Officer API
+    domain: "2"
+    sub-domain: "1"
+servers:
+- url: https://api.ipaas.prod.eis.ns2p.corp.hmrc.gov.uk/dapm
+  description: Corporate - Production
+- url: https://api.ipaas.preprod.eis.ns2p.corp.hmrc.gov.uk/dapm
+  description: Corporate – Pre-Production
+- url: https://api.ipaas.test.eis.ns2n.corp.hmrc.gov.uk/dapm
+  description: Corporate - Test
+- url: https://hip.ws.hmrc.gov.uk/dapm
+  description: MDTP - Production
+- url: https://hip.ws.ibt.hmrc.gov.uk/dapm
+  description: MDTP - QA
+paths:
+  /subscriptions/{subscriptionId}:
+    put:
+      tags:
+      - Subscription
+      summary: Replace an SAO subscription
+      description: Fully replaces an existing SAO subscription. This operation is
+        idempotent.
+      parameters:
+      - name: subscriptionId
+        in: path
+        required: true
+        schema:
+          maxLength: 15
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionWrite'
+            example:
+              etmpSafeId: XSAFE123456789
+              nominatedCompany:
+                name: Example Group Ltd
+                crn: "09876543"
+                utr: "1234567890"
+              contacts:
+              - name: Jane Smith
+                email: jane.smith@example.com
+                status: ACTIVE
+                language: en-GB
+        required: true
+      responses:
+        "201":
+          description: Subscription updated
+        "400":
+          description: Bad Request
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/HIP-originResponse'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/HIP-originResponse'
+        "503":
+          description: Service Unavailable
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/HIP-originResponse'
+      security:
+      - oAuth2:
+        - write:dsao-submit
+  /subscriptions/{subscriptionId}/notifications:
+    post:
+      tags:
+      - Notification
+      summary: Submit an SAO notification
+      description: Submits an initial SAO notification for the given subscription.
+      parameters:
+      - name: subscriptionId
+        in: path
+        required: true
+        schema:
+          maxLength: 15
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationWrite'
+            example:
+              companies:
+              - crn: "11223344"
+                utr: "2233445566"
+                name: Example Subsidiary Ltd
+                type: PLC
+                status: COMPLIANT
+                accPeriodEnd: 2025-03-31
+              saos:
+              - name: Robert Brown
+                email: robert.brown@example.com
+                fromDate: 2024-04-01
+                toDate: 2025-03-31
+        required: true
+      responses:
+        "201":
+          description: Notification submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationCreated'
+        "404":
+          description: Subscription not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+        "400":
+          description: Bad Request
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/HIP-originResponse'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/HIP-originResponse'
+        "503":
+          description: Service Unavailable
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/HIP-originResponse'
+      security:
+      - oAuth2:
+        - write:dsao-submit
+  /subscriptions/{subscriptionId}/certificates:
+    post:
+      tags:
+      - Certificate
+      summary: Submit an SAO certificate
+      description: Submits an SAO certificate as a legal attestation.
+      parameters:
+      - name: subscriptionId
+        in: path
+        required: true
+        schema:
+          maxLength: 15
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificateWrite'
+            example:
+              submitterName: Jane Smith
+              saoName: Jane Smith
+              saoEmail: jane.smith@example.com
+              companies:
+              - crn: "11223344"
+                utr: "2233445566"
+                name: Example Subsidiary Ltd
+                accPeriodEnd: 2025-03-31
+                status: COMPLIANT
+                type: PLC
+                isCorporationTaxQualified: true
+                isVatQualified: true
+                isPayeQualified: true
+                isInsurancePremiumTaxQualified: false
+                isStampDutyLandTaxQualified: false
+                isStampDutyReserveTaxQualified: false
+                isPetroleumRevenueTaxQualified: false
+                isCustomsDutiesQualified: false
+                isExciseDutiesQualified: false
+                isBankLevyQualified: false
+        required: true
+      responses:
+        "201":
+          description: Certificate submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateCreated'
+        "404":
+          description: Subscription not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+        "400":
+          description: Bad Request
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/HIP-originResponse'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/HIP-originResponse'
+        "503":
+          description: Service Unavailable
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/HIP-originResponse'
+      security:
+      - oAuth2:
+        - write:dsao-submit
+components:
+  schemas:
+    NominatedCompany:
+      required:
+      - name
+      - utr
+      - crn
+      type: object
+      properties:
+        name:
+          maxLength: 160
+          type: string
+        crn:
+          maxLength: 8
+          type: string
+        utr:
+          maxLength: 13
+          type: string
+    ErrorObject:
+      required:
+      - timestamp
+      - errors
+      type: object
+      properties:
+        timestamp:
+          maxLength: 20
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorResponse'
+    SubscriptionWrite:
+      required:
+      - etmpSafeId
+      - nominatedCompany
+      - contacts
+      type: object
+      properties:
+        etmpSafeId:
+          maxLength: 75
+          type: string
+        nominatedCompany:
+          $ref: '#/components/schemas/NominatedCompany'
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactWrite'
+    NotificationWrite:
+      required:
+      - companies
+      - saos
+      type: object
+      properties:
+        remarks:
+          maxLength: 32767
+          type: string
+        staffPid:
+          maxLength: 30
+          type: string
+        customerId:
+          maxLength: 30
+          type: string
+        companies:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationCompany'
+        saos:
+          type: array
+          items:
+            $ref: '#/components/schemas/SAO'
+    NotificationCreated:
+      required:
+      - notificationRef
+      type: object
+      properties:
+        notificationRef:
+          maxLength: 16
+          type: string
+    NotificationCompany:
+      required:
+      - utr
+      - name
+      - accPeriodEnd
+      - status
+      - type
+      type: object
+      properties:
+        crn:
+          maxLength: 8
+          type: string
+        utr:
+          maxLength: 13
+          type: string
+        name:
+          maxLength: 160
+          type: string
+        accPeriodEnd:
+          format: date
+          type: string
+        status:
+          maxLength: 20
+          type: string
+        type:
+          maxLength: 10
+          type: string
+    SAO:
+      required:
+      - name
+      - fromDate
+      - toDate
+      type: object
+      properties:
+        name:
+          maxLength: 254
+          type: string
+        email:
+          format: email
+          maxLength: 254
+          type: string
+        fromDate:
+          format: date
+          type: string
+        toDate:
+          format: date
+          type: string
+    CertificateWrite:
+      required:
+      - saoEmail
+      - saoName
+      - companies
+      type: object
+      properties:
+        submitterName:
+          maxLength: 254
+          type: string
+        saoName:
+          maxLength: 254
+          type: string
+        saoEmail:
+          format: email
+          maxLength: 254
+          type: string
+        staffPid:
+          maxLength: 30
+          type: string
+        remarks:
+          maxLength: 32767
+          type: string
+        customerId:
+          maxLength: 30
+          type: string
+        companies:
+          type: array
+          items:
+            $ref: '#/components/schemas/CertificateCompany'
+    CertificateCompany:
+      required:
+      - utr
+      - name
+      - accPeriodEnd
+      - status
+      - type
+      - isCorporationTaxQualified
+      - isVatQualified
+      - isPayeQualified
+      - isInsurancePremiumTaxQualified
+      - isStampDutyLandTaxQualified
+      - isStampDutyReserveTaxQualified
+      - isPetroleumRevenueTaxQualified
+      - isCustomsDutiesQualified
+      - isExciseDutiesQualified
+      - isBankLevyQualified
+      type: object
+      properties:
+        crn:
+          maxLength: 8
+          type: string
+        utr:
+          maxLength: 13
+          type: string
+        name:
+          maxLength: 160
+          type: string
+        accPeriodEnd:
+          format: date
+          type: string
+        status:
+          maxLength: 20
+          type: string
+        type:
+          maxLength: 10
+          type: string
+        isCorporationTaxQualified:
+          type: boolean
+        isVatQualified:
+          type: boolean
+        isPayeQualified:
+          type: boolean
+        isInsurancePremiumTaxQualified:
+          type: boolean
+        isStampDutyLandTaxQualified:
+          type: boolean
+        isStampDutyReserveTaxQualified:
+          type: boolean
+        isPetroleumRevenueTaxQualified:
+          type: boolean
+        isCustomsDutiesQualified:
+          type: boolean
+        isExciseDutiesQualified:
+          type: boolean
+        isBankLevyQualified:
+          type: boolean
+        qualificationStatement:
+          maxLength: 32767
+          type: string
+    CertificateCreated:
+      required:
+      - certificateRef
+      type: object
+      properties:
+        certificateRef:
+          maxLength: 16
+          type: string
+    ContactWrite:
+      required:
+      - name
+      - email
+      - status
+      - language
+      type: object
+      properties:
+        name:
+          maxLength: 254
+          type: string
+        email:
+          format: email
+          maxLength: 254
+          type: string
+        status:
+          maxLength: 20
+          type: string
+        language:
+          maxLength: 5
+          type: string
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          maxLength: 75
+          type: string
+        message:
+          maxLength: 500
+          type: string
+    HIP-originEnum:
+      enum:
+      - HIP
+      - HoD
+      type: string
+    HIP-failureResponse:
+      required:
+      - failures
+      type: object
+      properties:
+        failures:
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            required:
+            - type
+            - reason
+            type: object
+            properties:
+              type:
+                type: string
+              reason:
+                type: string
+            additionalProperties: false
+    HIP-originResponse:
+      required:
+      - origin
+      - response
+      type: object
+      properties:
+        origin:
+          $ref: '#/components/schemas/HIP-originEnum'
+        response:
+          $ref: '#/components/schemas/HIP-failureResponse'
+      additionalProperties: false
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: OAuth2 Client Credentials Flow
+      flows:
+        clientCredentials:
+          tokenUrl: /tokenUrl/not-required
+          scopes:
+            write:dsao-submit: Scope for DSAO Submit

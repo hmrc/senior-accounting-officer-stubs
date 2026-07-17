@@ -1,11 +1,11 @@
 info:
   name: put subscription (400) multiple constraint violations
   type: http
-  seq: 21
+  seq: 23
 
 http:
   method: PUT
-  url: "{{baseUrl}}/subscriptions/123"
+  url: "{{baseUrl}}/subscriptions/12345678901236517412"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
@@ -13,18 +13,27 @@ http:
     type: json
     data: |-
       {
-        //"safeId": "XE000123456789",
-        "company": {
-          "companyName": "Acme Manufacturing Ltd",
-          "uniqueTaxReference": "12345678901212121212121212",
-          "CompanyRegistrationNumber": "OC123456"
+        //"etmpSafeId": "XE000123456789XE000123456789XE000123456789XE000123456789XE00012345678932165",
+        "nominatedCompany": {
+          "crn": "12345678",
+          "utr": "OC12345678978"
+        },
+        "nominatedCompany": {
+          "name": "ManufacturingManufacturingManufacturingManufacturinguringManufacturing ManufacturinguringManufacturingManufacturinguringManufacturingManufacturinguringManufacturi",
+          "crn": "123456780",
+          "utr": "OC123456789000"
         },
         "contacts": [
           {
-            "name": "",
-            "email": "jane.doe.example.com"
+            "name": "Acme Manufacturing LtdAcme Manufacturing LtdAcme Manufacturing LtdAcme Manufacturing LtdAcme Manufacturing LtdAcme Manufacturing LtdAcme Manufacturing LtdAcme MasssAcme Manufacturing LtdAcme Manufacturing LtdAcme Manufacturing LtdAcme fdgsfdfgdsf fgsgsd 1",
+            "email": "123456789012_ManufacturingManufacturingManufacturingManufacturing@gmail.com",
+            "status": "NOT ACTIVE NOT ACTIVE",
+            "language": "English"
           },
           {
+            "name": "!@£Acme Manufacturing LtdAcme Manufacturing LtdAcme Manufacturing LtdAcme Manufacturing LtdAcme Manufacturing LtdAcme Manufacturing LtdAcme Manufacturing LtdAcme MasssAcme Manufacturing LtdAcme Manufacturing LtdAcme Manufacturing LtdAcme fdgsfdfgds",
+            "email": "abcd.123@mail com",
+            "status": "NOT ACTIVE"
           }
         ]
       }
