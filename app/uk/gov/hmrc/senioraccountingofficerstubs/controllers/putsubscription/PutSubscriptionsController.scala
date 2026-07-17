@@ -18,7 +18,9 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers.putsubscription
 
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.senioraccountingofficerstubs.controllers.putsubscription.PutSubscriptionsController.subscriptionIdLengthError
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
+import uk.gov.hmrc.senioraccountingofficerstubs.models.ApiError
 import uk.gov.hmrc.senioraccountingofficerstubs.models.putsubscription.Subscription
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
 
@@ -35,7 +37,10 @@ class PutSubscriptionsController @Inject() (cc: ControllerComponents, repository
     implicit request =>
       JsonErrorHandling.parseJson(request.body) match {
         case Right(json) =>
-          val errors = JsonErrorHandling.Validators.validateSubscription(json)
+          val jsonErrors = JsonErrorHandling.Validators.validateSubscription(json)
+          val errors     = if saoSubscriptionId.size > 15 then {
+            subscriptionIdLengthError +: jsonErrors
+          } else { jsonErrors }
           if errors.nonEmpty
           then Future.successful(JsonErrorHandling.badRequest(errors))
           else
@@ -53,4 +58,8 @@ class PutSubscriptionsController @Inject() (cc: ControllerComponents, repository
           Future.successful(errorResult)
       }
   }
+}
+
+object PutSubscriptionsController {
+  val subscriptionIdLengthError: ApiError = ApiError(Some("subscriptionId"), "LENGTH_OUT_OF_BOUNDS")
 }
