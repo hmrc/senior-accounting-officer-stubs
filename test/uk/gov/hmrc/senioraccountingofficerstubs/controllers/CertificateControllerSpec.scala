@@ -47,8 +47,8 @@ class CertificateControllerSpec
     with BeforeAndAfterEach
     with MockitoSugar {
 
-  private val authHeader         = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
-  private val testSubscriptionId = "123"
+  private val authHeader             = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
+  private val testSubscriptionId     = "123"
   private val testLongSubscriptionId = "1234567890123456"
 
   private val validCertificateRequest: JsValue = Json.obj(
@@ -187,7 +187,7 @@ class CertificateControllerSpec
 
       status(result) shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.obj(
-        "origin" -> "HIP",
+        "origin"   -> "HIP",
         "response" -> Json.obj(
           "failures" -> Json.arr(
             Json.obj(
