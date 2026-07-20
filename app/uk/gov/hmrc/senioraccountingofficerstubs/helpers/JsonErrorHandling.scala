@@ -40,6 +40,9 @@ object JsonErrorHandling {
   def badRequest(errors: Seq[ApiError]): Result =
     BadRequest(Json.toJson(errors.toHip))
 
+  def badRequest(error: ApiError): Result =
+    BadRequest(Json.toJson(error.toHip))
+
   object Validators {
 
     private val schemaRegistry = SchemaRegistry.withDefaultDialect(
