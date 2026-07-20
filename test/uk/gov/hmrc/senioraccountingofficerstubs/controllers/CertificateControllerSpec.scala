@@ -49,6 +49,7 @@ class CertificateControllerSpec
 
   private val authHeader         = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
   private val testSubscriptionId = "123"
+  private val testLongSubscriptionId = "1234567890123456"
 
   private val validCertificateRequest: JsValue = Json.obj(
     "submitterName" -> "Jane Smith",
@@ -174,6 +175,24 @@ class CertificateControllerSpec
             Json.obj(
               "type"   -> "MISSING_REQUIRED_FIELD",
               "reason" -> "saoName"
+            )
+          )
+        )
+      )
+    }
+
+    "return 400 for a subscriptionId that is more than 15 characters long" in {
+
+      val result = routeResult(fakeCertificatePOSTRequest(testLongSubscriptionId, validCertificateRequest))
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.obj(
+        "origin" -> "HIP",
+        "response" -> Json.obj(
+          "failures" -> Json.arr(
+            Json.obj(
+              "type"   -> "LENGTH_OUT_OF_BOUNDS",
+              "reason" -> "subscriptionId"
             )
           )
         )

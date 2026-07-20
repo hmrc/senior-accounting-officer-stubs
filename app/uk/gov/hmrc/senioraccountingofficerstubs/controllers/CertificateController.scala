@@ -20,12 +20,12 @@ import play.api.libs.json.*
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
-import uk.gov.hmrc.senioraccountingofficerstubs.models.CertificateResponse
+import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling.subscriptionIdLengthError
+import uk.gov.hmrc.senioraccountingofficerstubs.models.{ApiError, CertificateResponse}
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
-
 import javax.inject.Inject
 
 class CertificateController @Inject() (cc: ControllerComponents, repository: PostSignupConfigRepository)(using
@@ -41,8 +41,12 @@ class CertificateController @Inject() (cc: ControllerComponents, repository: Pos
     implicit request =>
       JsonErrorHandling.parseJson(request.body) match {
         case Right(json) =>
-          val errors = JsonErrorHandling.Validators.validateCertificate(json)
-
+          val jsonErrors = JsonErrorHandling.Validators.validateCertificate(json)
+          val errors = if saoSubscriptionId.size > 15 then {
+            subscriptionIdLengthError +: jsonErrors
+          } else {
+            jsonErrors
+          }
           if errors.nonEmpty then Future.successful(JsonErrorHandling.badRequest(errors))
           else
             repository.get(saoSubscriptionId).map {
@@ -61,3 +65,4 @@ class CertificateController @Inject() (cc: ControllerComponents, repository: Pos
       }
   }
 }
+
