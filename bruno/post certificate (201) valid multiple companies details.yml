@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{baseUrl}}/subscriptions/123/certificates"
+  url: "{{baseUrl}}/subscriptions/123456789123456/certificates"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
@@ -15,7 +15,7 @@ http:
       {
         "submitterName": "Jane Testname Smith",
         "saoName": "sao testname",
-        "saoEmail": "jane.smith@example.com",
+        "saoEmail": "soaemail_123@example.com",
         "staffPid": "Lorem Ipsum is not random text",
         "remarks": "Testremarks",
         "customerId": "Lorem Ipsum is not random text",

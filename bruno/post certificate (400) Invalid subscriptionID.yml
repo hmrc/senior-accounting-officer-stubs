@@ -15,7 +15,7 @@ http:
       {
         "submitterName": "Submitter Test Name",
         "saoName": "sao testname",
-        "saoEmail": "a2345567812_ManufacturingManufacturingManufacturingManufacture12@gmail.com",
+        "saoEmail": "sao.smith@example.com",
         "staffPid": "staffpid_123",
         "remarks": "Testremarks",
         "customerId": "id567",
