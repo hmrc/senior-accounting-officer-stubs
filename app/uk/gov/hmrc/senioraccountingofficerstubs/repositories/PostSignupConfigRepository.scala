@@ -44,9 +44,15 @@ class PostSignupConfigRepository @Inject() (
       domainFormat = PostSignupStubConfiguration.format,
       indexes = Seq(
         IndexModel(
-          Indexes.ascending("subscriptionId"),
+          Indexes
+            .ascending(
+              "subscriptionId",
+              "getSubscriptionAndPostRetrieveCustomerId.getSubscription.crn",
+              "getSubscriptionAndPostRetrieveCustomerId.getSubscription.utr"
+            ),
           IndexOptions()
             .name("subscriptionIdIdx")
+            .unique(true)
         ),
         IndexModel(
           Indexes
@@ -56,7 +62,6 @@ class PostSignupConfigRepository @Inject() (
             ),
           IndexOptions()
             .name("api5Idx")
-            .unique(true)
         ),
         IndexModel(
           Indexes.ascending("lastUpdated"),
@@ -64,7 +69,8 @@ class PostSignupConfigRepository @Inject() (
             .name("lastUpdatedIdx")
             .expireAfter(appConfig.cacheTtl, TimeUnit.SECONDS)
         )
-      )
+      ),
+      replaceIndexes = true
     ) {
 
   given instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat

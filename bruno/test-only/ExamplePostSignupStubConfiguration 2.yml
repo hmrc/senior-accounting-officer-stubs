@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "subscriptionId": "123",
+        "subscriptionId": "{{subscriptionId}}",
         "getSubscriptionAndPostRetrieveCustomerId": {
           "api": "PostRetrieveCustomerId",
           "getSubscription": {

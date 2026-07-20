@@ -1,0 +1,37 @@
+info:
+  name: Put Subscription (201)
+  type: http
+  seq: 1
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/subscriptions/{{subscriptionId}}"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      {
+        "etmpSafeId": "XE000123456789",
+        "nominatedCompany": {
+          "name": "Acme Manufacturing Ltd",
+          "crn": "12345678",
+          "utr": "{{utr}}"
+        },
+        "contacts": [
+          {
+            "name": "ABC Doe",
+            "email": "jane.doe@example.com",
+            "status": "valid",
+            "language": "en-GB"
+          }
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

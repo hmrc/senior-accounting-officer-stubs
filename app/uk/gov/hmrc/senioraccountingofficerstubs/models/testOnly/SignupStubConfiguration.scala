@@ -22,7 +22,7 @@ import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import java.time.Instant
 
 final case class SignupStubConfiguration(
-    safeId: String,
+    utr: String,
     postEtmpSubscription: Option[NoneDefaultApiConfiguration] = None,
     putDpsSubscription: Option[NoneDefaultApiConfiguration] = None,
     lastUpdated: Instant = Instant.now

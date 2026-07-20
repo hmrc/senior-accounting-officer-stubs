@@ -1,18 +1,17 @@
 info:
-  name: Stub Get Subscription (503)
+  name: Stub Put Subscription (503)
   type: http
-  seq: 11
+  seq: 6
 
 http:
   method: POST
-  url: "{{baseUrl}}/test-only/post-signup/config"
+  url: "{{baseUrl}}/test-only/signup/config"
   body:
     type: json
     data: |-
       {
-        "subscriptionId": "{{subscriptionId}}",
-        "getSubscriptionAndPostRetrieveCustomerId": {
-          "api": "GetSubscription",
+        "utr": "{{utr}}",
+        "putDpsSubscription": {
           "status": 503,
           "defaultBodyOverride" : {{payload}}
         }

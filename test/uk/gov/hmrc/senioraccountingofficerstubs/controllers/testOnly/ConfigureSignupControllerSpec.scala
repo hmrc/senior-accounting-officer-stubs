@@ -34,6 +34,7 @@ import play.api.test.Helpers.*
 import uk.gov.hmrc.senioraccountingofficerstubs.controllers.testOnly.ConfigureSignupControllerSpec.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.*
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.generateUtr
 
 import scala.concurrent.Future
 
@@ -83,7 +84,7 @@ class ConfigureSignupControllerSpec
 
     "return 200 for a valid request and persist it into Mongo" in {
       val expectedConfig = SignupStubConfiguration(
-        safeId = testSafeId,
+        utr = testUtr,
         postEtmpSubscription = Some(NoneDefaultApiConfiguration(status = 500)),
         putDpsSubscription = Some(NoneDefaultApiConfiguration(status = 400)),
         lastUpdated = instant
@@ -92,7 +93,7 @@ class ConfigureSignupControllerSpec
       val expectedConfigAsString =
         s"""
         |{
-        |  "safeId": "$testSafeId",
+        |  "utr": "$testUtr",
         |  "postEtmpSubscription": {
         |    "status": 500
         |  },
@@ -115,5 +116,5 @@ class ConfigureSignupControllerSpec
 }
 
 object ConfigureSignupControllerSpec {
-  val testSafeId = "123"
+  val testUtr: String = generateUtr
 }
