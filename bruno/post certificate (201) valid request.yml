@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{baseUrl}}/subscriptions/123/certificates"
+  url: "{{baseUrl}}/subscriptions/12345345634/certificates"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
@@ -13,11 +13,12 @@ http:
     type: json
     data: |-
       {
-        "submitterName": "Jane Smith",
-        "saoName": "JaneSmith",
-        "saoEmail": "jane.smith@examplecom",
-        "staffPID": "456",
-        "remarks": "testremarks",
+        "submitterName": "sao testname",
+        "saoName": "sao testname",
+        "saoEmail": "a2345567812_ManufacturingManufacturingManufacturingManufacture12@gmailcom",
+        "staffPid": "staffpid_123",
+        "remarks": "Testremarks",
+        "customerId": "id56787",
         "companies": [
           {
             "crn": "11223344",
@@ -36,7 +37,7 @@ http:
             "isCustomsDutiesQualified": false,
             "isExciseDutiesQualified": false,
             "isBankLevyQualified": false,
-            "qualificationStatemet": ""
+            "qualificationStatement": "test"
           }
         ]
       }

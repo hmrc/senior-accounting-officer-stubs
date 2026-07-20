@@ -1,7 +1,7 @@
 info:
   name: put subscription (404) Invalid Id
   type: http
-  seq: 22
+  seq: 25
 
 http:
   method: PUT

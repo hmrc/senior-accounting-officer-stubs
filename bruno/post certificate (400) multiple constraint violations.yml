@@ -1,11 +1,11 @@
 info:
   name: post certificate (400) multiple constraint violations
   type: http
-  seq: 16
+  seq: 19
 
 http:
   method: POST
-  url: "{{baseUrl}}/certificate/123"
+  url: "{{baseUrl}}/subscriptions/123/certificates"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
@@ -13,44 +13,50 @@ http:
     type: json
     data: |-
       {
+        "submitterName": "Jane Testname Smith",
+        "saoName": "Lorem Ipsum is not random text. Lorem Ipsum is simply dummy text of the printing and typesetting industry. It has been industry's standard dummy text ever since 1966, when designers at Letraset and James Mosley, the librarian at St Bride Printing Library",
+        "saoEmail": "jane.smith@examplecom",
+        "staffPid": "Lorem Ipsum is not random text",
+        "remarks": "Testremarks",
+        "customerId": "Lorem Ipsum is not random text",
         "companies": [
           {
-            "companyName": "" ,
-            "uniqueTaxReference": "1234567890",
-            "companyReferenceNumber": "AB123456",
-            "companyType": "LTD",
-            "financialYearEndDate": "ERROR",
-            "qualifiedRegimes": [
-              "CORPORATION",
-              "CORPORATION",
-              "VALUE_ADDED"
-            ],
-            "qualificationStatement": "All relevant corporation and VAT obligations have been delayed due to grievance.",
-            "seniorAccountingOfficers": [
-            ]
+            "crn": 12345678,
+            "utr": "22334455661254",
+            "name": "Example Subsidiary Ltd",
+            "accPeriodEnd": "25-03-2001",
+            "type": "ABC45678915",
+            "isCorporationTaxQualified": true,
+            "isVatQualified": true,
+            "isPayeQualified": true,
+            "isInsurancePremiumTaxQualified": false,
+            "isStampDutyLandTaxQualified": false,
+            "isStampDutyReserveTaxQualified": false,
+            "isPetroleumRevenueTaxQualified": false,
+            "isExciseDutiesQualified": "true",
+            "isBankLevyQualified": false
           },
           {
-            "companyName": "Example PLC",
-            "uniqueTaxReference": "0987654321",
-            "companyReferenceNumber": "CD654321",
-            "companyType": "SUMMIT",
-            "financialYearEndDate": "2024-06-30",
-            "isDormant": true,
-            "isInAdministration": false,
-            "qualifiedRegimes": [
-              "PAY_AS_YOU_EARN",
-              "PETROLEUM_REVENUE"
-            ],
-            "seniorAccountingOfficers": [
-              {
-                "name": "Another Officer",
-                "startDate": "2024-05-01",
-                "endDate": "2025-04-30"
-              }
-            ]
-          }
-        ],
-        "additionalInformation": "non-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty stringnon-empty string"
+            "crn": "1765645",
+            "utr": "",
+            "name": "Example Company Ltd",
+            "accPeriodEnd": "1000.03.01",
+            "status": "ABC45678915ABC456789156",
+            "type": "test",
+            "isCorporationTaxQualified": "",
+            "isVat-Qualified": true,
+            "isPayeQualified": true,
+            "isInsurancePremiumTaxQualified": false,
+            "isStampDutyLandTaxQualified": false,
+            "isStampDutyReserveTaxQualified": false,
+            "isPetroleumRevenueTaxQualified": false,
+            "isCustomsDutiesQualified": false,
+            "isExciseDutiesQualified": false,
+            "isBankLevyQualified": false,
+            "qualificationStatement": "Teststatement"
+          },
+          {  } 
+        ]
       }
 
 settings:

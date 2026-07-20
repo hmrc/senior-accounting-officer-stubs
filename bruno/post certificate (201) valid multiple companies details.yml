@@ -13,11 +13,12 @@ http:
     type: json
     data: |-
       {
-        "submitterName": "Jane Smith",
-        "SAOName": "JaneSmith",
-        "SAOEmail": "jane.smith@example.com",
-        "staffPID": "456",
+        "submitterName": "Jane Testname Smith",
+        "saoName": "sao testname",
+        "saoEmail": "jane.smith@example.com",
+        "staffPid": "Lorem Ipsum is not random text",
         "remarks": "Testremarks",
+        "customerId": "Lorem Ipsum is not random text",
         "companies": [
           {
             "crn": "11223344",
