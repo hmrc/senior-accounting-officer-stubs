@@ -43,7 +43,7 @@ class CertificateController @Inject() (cc: ControllerComponents, repository: Pos
       JsonErrorHandling.parseJson(request.body) match {
         case Right(json) =>
           val jsonErrors = JsonErrorHandling.Validators.validateCertificate(json)
-          val errors     = if saoSubscriptionId.size > 15 then {
+          val errors     = if saoSubscriptionId.length > 15 then {
             subscriptionIdLengthError +: jsonErrors
           } else {
             jsonErrors
