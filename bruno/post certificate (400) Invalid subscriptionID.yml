@@ -1,5 +1,5 @@
 info:
-  name: post certificate (404) Invalid subscriptionID
+  name: post certificate (400) Invalid subscriptionID
   type: http
   seq: 15
 
