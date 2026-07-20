@@ -1,5 +1,5 @@
 info:
-  name: put subscription (404) Invalid Id
+  name: put subscription (404) Invalid subscriptionID
   type: http
   seq: 21
 
@@ -13,16 +13,18 @@ http:
     type: json
     data: |-
       {
-        "safeId": "XE000123456789",
-        "company": {
-          "companyName": "Acme Manufacturing Ltd",
-          "uniqueTaxReference": "1234567890",
-          "companyRegistrationNumber": "OC123456"
+        "etmpSafeId": "XE000123456789",
+        "nominatedCompany": {
+          "name": "Acme Manufacturing Ltd",
+          "crn": "12345678",
+          "utr": "OC123456"
         },
         "contacts": [
           {
-            "name": "Jane Doe",
-            "email": "jane.doe@example.com"
+            "name": "ABC Doe",
+            "email": "jane.doe@example.com",
+            "status": "ACTIVE",
+            "language": "en-GB"
           }
         ]
       }
