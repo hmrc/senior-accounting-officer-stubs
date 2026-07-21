@@ -1,5 +1,5 @@
 info:
-  name: "Put Subscription (414) Invalid Url "
+  name: "Put Subscription (414) Url too long "
   type: http
   seq: 2
 
