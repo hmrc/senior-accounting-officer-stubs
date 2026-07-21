@@ -1,24 +1,24 @@
 info:
-  name: post certificate (400) Invalid body
+  name: post certificate (201) valid request
   type: http
-  seq: 17
+  seq: 13
 
 http:
   method: POST
-  url: "{{baseUrl}}/subscriptions/123/certificates"
+  url: "{{baseUrl}}/subscriptions/12345345634/certificates"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
   body:
     type: json
     data: |-
-      {@@@@
-        "submitterName": "Submitter Test Name",
+      {
+        "submitterName": "sao testname",
         "saoName": "sao testname",
         "saoEmail": "soaemail_123@example.com",
         "staffPid": "staffpid_123",
         "remarks": "Testremarks",
-        "customerId": "id567",
+        "customerId": "id56787",
         "companies": [
           {
             "crn": "11223344",

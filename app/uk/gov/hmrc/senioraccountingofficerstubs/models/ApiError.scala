@@ -21,13 +21,24 @@ import uk.gov.hmrc.senioraccountingofficerstubs.models.hip.*
 final case class ApiError(path: Option[String], reason: String)
 
 object ApiError {
+  extension (apiError: ApiError) {
+    def toHip: StandardHipFailures = {
+      StandardHipFailures(
+        origin = "HIP",
+        response = Failures(failures = Seq(apiError.toHipFailure))
+      )
+    }
+
+    def toHipFailure: Failure = {
+      Failure(`type` = apiError.reason, reason = apiError.path.fold("")(identity))
+    }
+  }
+
   extension (apiErrors: Seq[ApiError]) {
     def toHip: StandardHipFailures = {
       StandardHipFailures(
         origin = "HIP",
-        response = Failures(failures =
-          apiErrors.map(apiError => Failure(`type` = apiError.reason, reason = apiError.path.fold("")(identity)))
-        )
+        response = Failures(failures = apiErrors.map(_.toHipFailure))
       )
     }
   }

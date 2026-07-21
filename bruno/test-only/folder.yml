@@ -1,7 +1,7 @@
 info:
   name: test-only
   type: folder
-  seq: 24
+  seq: 27
 
 request:
   auth: inherit

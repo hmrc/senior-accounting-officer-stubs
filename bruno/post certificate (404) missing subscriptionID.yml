@@ -1,32 +1,30 @@
 info:
-  name: post certificate (400) Invalid body
+  name: post certificate (404) missing subscriptionID
   type: http
-  seq: 17
+  seq: 16
 
 http:
   method: POST
-  url: "{{baseUrl}}/subscriptions/123/certificates"
+  url: "{{baseUrl}}/subscriptions//certificates"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
   body:
     type: json
     data: |-
-      {@@@@
-        "submitterName": "Submitter Test Name",
-        "saoName": "sao testname",
-        "saoEmail": "soaemail_123@example.com",
-        "staffPid": "staffpid_123",
-        "remarks": "Testremarks",
-        "customerId": "id567",
+      {
+        "submitterName": "Jane Smith",
+        "SAOName": "JaneSmith",
+        "SAOEmail": "jane.smith@example.com",
+        "staffPID": "456",
         "companies": [
           {
             "crn": "11223344",
-            "utr": "223453445566",
+            "utr": "2233445566",
             "name": "Example Subsidiary Ltd",
             "accPeriodEnd": "2025-03-31",
             "status": "COMPLIANT",
-            "type": "LTD",
+            "type": "",
             "isCorporationTaxQualified": true,
             "isVatQualified": true,
             "isPayeQualified": true,
@@ -36,8 +34,7 @@ http:
             "isPetroleumRevenueTaxQualified": false,
             "isCustomsDutiesQualified": false,
             "isExciseDutiesQualified": false,
-            "isBankLevyQualified": false,
-            "qualificationStatement": "test"
+            "isBankLevyQualified": false
           }
         ]
       }

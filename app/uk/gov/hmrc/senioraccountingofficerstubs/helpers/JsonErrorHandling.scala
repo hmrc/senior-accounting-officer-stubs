@@ -37,8 +37,13 @@ object JsonErrorHandling {
   private def malformedRequest: Result =
     badRequest(Seq(ApiError(None, "MALFORMED_REQUEST")))
 
+  val subscriptionIdLengthError: ApiError = ApiError(Some("subscriptionId"), "LENGTH_OUT_OF_BOUNDS")
+
   def badRequest(errors: Seq[ApiError]): Result =
     BadRequest(Json.toJson(errors.toHip))
+
+  def badRequest(error: ApiError): Result =
+    BadRequest(Json.toJson(error.toHip))
 
   object Validators {
 
