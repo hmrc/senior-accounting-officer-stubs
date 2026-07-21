@@ -1,21 +1,21 @@
 info:
-  name: post certificate (400) Invalid body
+  name: post certificate (400) Invalid subscriptionID
   type: http
-  seq: 17
+  seq: 15
 
 http:
   method: POST
-  url: "{{baseUrl}}/subscriptions/123/certificates"
+  url: "{{baseUrl}}/subscriptions/37845274925274525/certificates"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
   body:
     type: json
     data: |-
-      {@@@@
+      {
         "submitterName": "Submitter Test Name",
         "saoName": "sao testname",
-        "saoEmail": "soaemail_123@example.com",
+        "saoEmail": "sao.smith@example.com",
         "staffPid": "staffpid_123",
         "remarks": "Testremarks",
         "customerId": "id567",
@@ -30,7 +30,7 @@ http:
             "isCorporationTaxQualified": true,
             "isVatQualified": true,
             "isPayeQualified": true,
-            "isInsurancePremiumTaxQualified": false,
+            "isInsurancePremiumTaxQualified": true,
             "isStampDutyLandTaxQualified": false,
             "isStampDutyReserveTaxQualified": false,
             "isPetroleumRevenueTaxQualified": false,
