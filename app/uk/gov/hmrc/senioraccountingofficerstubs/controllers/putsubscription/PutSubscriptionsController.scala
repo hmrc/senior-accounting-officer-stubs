@@ -38,20 +38,19 @@ class PutSubscriptionsController @Inject() (cc: ControllerComponents, repository
       JsonErrorHandling.parseJson(request.body) match {
         case Right(json) =>
           val jsonErrors = JsonErrorHandling.Validators.validateSubscription(json)
-          val errors     = if saoSubscriptionId.size > 15 then {
+          val errors     = if saoSubscriptionId.length > 15 then {
             subscriptionIdLengthError +: jsonErrors
           } else { jsonErrors }
           if errors.nonEmpty
           then Future.successful(JsonErrorHandling.badRequest(errors))
           else
             val subscription = json.as[Subscription]
-            repository.get(subscription.etmpSafeId).map {
-              case Some(config) => {
+            repository.get(subscription.nominatedCompany.utr).map {
+              case Some(config) =>
                 config.putDpsSubscription
                   .fold(Created)(config =>
                     Status(config.status)(config.defaultBodyOverride.fold("")(identity)).as(JSON)
                   )
-              }
               case _ => Created
             }
         case Left(errorResult) =>

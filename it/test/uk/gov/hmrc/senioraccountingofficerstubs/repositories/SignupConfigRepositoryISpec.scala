@@ -47,7 +47,7 @@ class SignupConfigRepositoryISpec
   private val instant          = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-  private val testStubConfig = SignupStubConfiguration("safeId", None, None, Instant.ofEpochSecond(1))
+  private val testStubConfig = SignupStubConfiguration("utr", None, None, Instant.ofEpochSecond(1))
 
   private val mockAppConfig = mock[AppConfig]
   when(mockAppConfig.cacheTtl) thenReturn 1L
@@ -65,7 +65,7 @@ class SignupConfigRepositoryISpec
       val expectedResult = testStubConfig copy (lastUpdated = instant)
 
       val setResult     = repository.set(testStubConfig).futureValue
-      val updatedRecord = find(Filters.equal("safeId", testStubConfig.safeId)).futureValue.headOption.value
+      val updatedRecord = find(Filters.equal("utr", testStubConfig.utr)).futureValue.headOption.value
 
       updatedRecord mustEqual expectedResult
     }
@@ -75,28 +75,28 @@ class SignupConfigRepositoryISpec
 
   ".get" - {
 
-    "when there is a record for this safeId" - {
+    "when there is a record for this utr" - {
 
       "must update the lastUpdated time and get the record" in {
 
         insert(testStubConfig).futureValue
 
-        val result         = repository.get(testStubConfig.safeId).futureValue
+        val result         = repository.get(testStubConfig.utr).futureValue
         val expectedResult = testStubConfig copy (lastUpdated = instant)
 
         result.value mustEqual expectedResult
       }
     }
 
-    "when there is no record for this safeId" - {
+    "when there is no record for this utr" - {
 
       "must return None" in {
 
-        repository.get("safeId that does not exist").futureValue must not be defined
+        repository.get("utr that does not exist").futureValue must not be defined
       }
     }
 
-    mustPreserveMdc(repository.get(testStubConfig.safeId))
+    mustPreserveMdc(repository.get(testStubConfig.utr))
   }
 
   ".clear" - {
@@ -105,46 +105,46 @@ class SignupConfigRepositoryISpec
 
       insert(testStubConfig).futureValue
 
-      val result = repository.clear(testStubConfig.safeId).futureValue
+      val result = repository.clear(testStubConfig.utr).futureValue
 
-      repository.get(testStubConfig.safeId).futureValue must not be defined
+      repository.get(testStubConfig.utr).futureValue must not be defined
     }
 
     "must return true when there is no record to remove" in {
-      val result = repository.clear("safeId that does not exist").futureValue
+      val result = repository.clear("utr that does not exist").futureValue
 
       result mustEqual true
     }
 
-    mustPreserveMdc(repository.clear(testStubConfig.safeId))
+    mustPreserveMdc(repository.clear(testStubConfig.utr))
   }
 
   ".keepAlive" - {
 
-    "when there is a record for this safeId" - {
+    "when there is a record for this utr" - {
 
       "must update its lastUpdated to `now` and return true" in {
 
         insert(testStubConfig).futureValue
 
-        val result = repository.keepAlive(testStubConfig.safeId).futureValue
+        val result = repository.keepAlive(testStubConfig.utr).futureValue
 
         val expectedUpdatedAnswers = testStubConfig copy (lastUpdated = instant)
 
-        val updatedAnswers = find(Filters.equal("safeId", testStubConfig.safeId)).futureValue.headOption.value
+        val updatedAnswers = find(Filters.equal("utr", testStubConfig.utr)).futureValue.headOption.value
         updatedAnswers mustEqual expectedUpdatedAnswers
       }
     }
 
-    "when there is no record for this safeId" - {
+    "when there is no record for this utr" - {
 
       "must return true" in {
 
-        repository.keepAlive("safeId that does not exist").futureValue mustEqual true
+        repository.keepAlive("utr that does not exist").futureValue mustEqual true
       }
     }
 
-    mustPreserveMdc(repository.keepAlive(testStubConfig.safeId))
+    mustPreserveMdc(repository.keepAlive(testStubConfig.utr))
   }
 
   private def mustPreserveMdc[A](f: => Future[A])(using pos: Position): Unit =

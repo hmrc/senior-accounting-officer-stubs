@@ -1,0 +1,37 @@
+info:
+  name: Put Subscription (400) Invalid body
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/subscriptions/{{subscriptionId}}"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      {@@@
+        "etmpSafeId": "XE000123456789",
+        "nominatedCompany": {
+          "name": "Acme Manufacturing Ltd",
+          "crn": "OC123456",
+          "utr": "{{utr}}"
+        },
+        "contacts": [
+          {
+            "name": "Jane Doe",
+            "email": "jane.doe@example.com",
+            "status": "valid",
+            "language": "en-GB"
+          }
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

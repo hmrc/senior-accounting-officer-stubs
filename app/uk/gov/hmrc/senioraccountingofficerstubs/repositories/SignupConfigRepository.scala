@@ -44,7 +44,9 @@ class SignupConfigRepository @Inject() (
       domainFormat = SignupStubConfiguration.format,
       indexes = Seq(
         IndexModel(
-          Indexes.ascending("safeId")
+          Indexes.ascending("utr"),
+          IndexOptions()
+            .name("utrIdx")
         ),
         IndexModel(
           Indexes.ascending("lastUpdated"),
@@ -52,17 +54,18 @@ class SignupConfigRepository @Inject() (
             .name("lastUpdatedIdx")
             .expireAfter(appConfig.cacheTtl, TimeUnit.SECONDS)
         )
-      )
+      ),
+      replaceIndexes = true
     ) {
 
   given instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
-  private def byId(safeId: String): Bson = Filters.equal("safeId", safeId)
+  private def byId(utr: String): Bson = Filters.equal("utr", utr)
 
-  def keepAlive(safeId: String): Future[Boolean] = Mdc.preservingMdc {
+  def keepAlive(utr: String): Future[Boolean] = Mdc.preservingMdc {
     collection
       .updateOne(
-        filter = byId(safeId),
+        filter = byId(utr),
         update = Updates.set("lastUpdated", Instant.now(clock))
       )
       .toFuture()
@@ -83,7 +86,7 @@ class SignupConfigRepository @Inject() (
 
     collection
       .replaceOne(
-        filter = byId(updatedConfig.safeId),
+        filter = byId(updatedConfig.utr),
         replacement = updatedConfig,
         options = ReplaceOptions().upsert(true)
       )
@@ -91,9 +94,9 @@ class SignupConfigRepository @Inject() (
       .map(_ => true)
   }
 
-  def clear(safeId: String): Future[Boolean] = Mdc.preservingMdc {
+  def clear(utr: String): Future[Boolean] = Mdc.preservingMdc {
     collection
-      .deleteOne(byId(safeId))
+      .deleteOne(byId(utr))
       .toFuture()
       .map(_ => true)
   }

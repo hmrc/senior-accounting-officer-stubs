@@ -45,6 +45,7 @@ class PutSubscriptionsControllerSpec
     with BeforeAndAfterEach {
 
   private val testSafeId             = "123"
+  private val testUtr                = generateUtr
   private val testSubscriptionId     = "1234"
   private val testLongSubscriptionId = "1234567890123456"
 
@@ -54,7 +55,7 @@ class PutSubscriptionsControllerSpec
     "etmpSafeId"       -> testSafeId,
     "nominatedCompany" -> Json.obj(
       "name" -> "Acme Manufacturing Ltd",
-      "utr"  -> generateUtr,
+      "utr"  -> testUtr,
       "crn"  -> generateCrn
     ),
     "contacts" -> Json.arr(
@@ -108,12 +109,12 @@ class PutSubscriptionsControllerSpec
     }
 
     "return a 404 for a configured safeId" in {
-      when(mockRepository.get(meq(testSafeId)))
+      when(mockRepository.get(meq(testUtr)))
         .thenReturn(
           Future.successful(
             Some(
               SignupStubConfiguration(
-                safeId = testSafeId,
+                utr = testUtr,
                 putDpsSubscription = Some(NoneDefaultApiConfiguration(status = Status.NOT_FOUND))
               )
             )
@@ -124,7 +125,7 @@ class PutSubscriptionsControllerSpec
     }
 
     "return a structured 400 for constraint violation with malformed request when JSON syntax is incorrect" in {
-      val fakeRequest = FakeRequest("PUT", s"/subscriptions/$testSafeId")
+      val fakeRequest = FakeRequest("PUT", s"/subscriptions/$testUtr")
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody("""{"subscription":""")
 

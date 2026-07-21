@@ -16,7 +16,9 @@ config:
 
 request:
   variables:
-    - name: subscriptionID
+    - name: subscriptionId
+      value: "1234567890"
+    - name: utr
       value: "1234567890"
 bundled: false
 extensions:

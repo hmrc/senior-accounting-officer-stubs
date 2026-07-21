@@ -1,5 +1,5 @@
 info:
-  name: ExampleSignupStubConfiguration 1
+  name: Stub Put Subscription (201)
   type: http
   seq: 3
 
@@ -11,11 +11,8 @@ http:
     data: |-
       {
         "utr": "{{utr}}",
-        "postEtmpSubscription": {
-          "status": 500
-        },
         "putDpsSubscription": {
-          "status": 435
+          "status": 201
         }
       }
   auth: inherit
