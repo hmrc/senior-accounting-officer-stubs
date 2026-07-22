@@ -3,7 +3,7 @@
 GET         /contact-details/:saoSubscriptionId        uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.getContactDetails(saoSubscriptionId: String)
 PUT         /contact-details/:saoSubscriptionId        uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.putContactDetails(saoSubscriptionId: String)
 
-GET         /views/iv_subscriptions/:saoSubscriptionId    uk.gov.hmrc.senioraccountingofficerstubs.controllers.GetSubscriptionController.getSubscription(saoSubscriptionId: String)
+GET         /iv_subscriptions/:saoSubscriptionId    uk.gov.hmrc.senioraccountingofficerstubs.controllers.GetSubscriptionController.getSubscription(saoSubscriptionId: String)
 PUT         /subscriptions/:saoSubscriptionId                              uk.gov.hmrc.senioraccountingofficerstubs.controllers.putsubscription.PutSubscriptionsController.putSubscription(saoSubscriptionId: String)
 
 POST        /subscriptions/:saoSubscriptionId/notifications           uk.gov.hmrc.senioraccountingofficerstubs.controllers.NotificationController.postNotification(saoSubscriptionId: String)

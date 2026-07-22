@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{baseUrl}}/views/iv_subscriptions/{{subscriptionId}}"
+  url: "{{baseUrl}}/iv_subscriptions/{{subscriptionId}}"
   headers:
     - name: Authorization
       value: Basic not a valid token

@@ -41,7 +41,6 @@ properties:
           maxLength: 254
           type: string
         email:
-          format: email
           maxLength: 254
           type: string
         status:
