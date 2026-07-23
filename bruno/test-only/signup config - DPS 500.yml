@@ -1,0 +1,27 @@
+info:
+  name: signup config - DPS 500
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/signup/config"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      {
+        "safeId": "1234567890",
+        "putDpsSubscription": {
+          "status": 500
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
