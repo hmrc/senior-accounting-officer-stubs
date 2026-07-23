@@ -70,6 +70,10 @@ object JsonErrorHandling {
     def validateEtmp(json: JsValue): Seq[ApiError] =
       validate(etmpSchema, json, rootPrefix = None)
 
+    def validateRetrieveCustomerRequest(json: JsValue): Seq[ApiError] = {
+      validate(retrieveCustomerSchema, json, None)
+    }
+
     private def validate(schema: Schema, json: JsValue, rootPrefix: Option[String]): Seq[ApiError] =
       schema
         .validate(toJackson(json))
@@ -132,11 +136,12 @@ object JsonErrorHandling {
     private def isEmptyString(error: Error): Boolean =
       Option(error.getInstanceNode).exists(node => node.isTextual && node.textValue().isEmpty)
 
-    private lazy val notificationSchema   = loadSchema("schemas/notification-request-schema.yaml")
-    private lazy val subscriptionSchema   = loadSchema("schemas/subscription-request-schema.yaml")
-    private lazy val contactDetailsSchema = loadSchema("schemas/contact-details-request-schema.yaml")
-    private lazy val certificateSchema    = loadSchema("schemas/certificate-request-schema.yaml")
-    private lazy val etmpSchema           = loadSchema("schemas/etmp-request-schema.yaml")
+    private lazy val notificationSchema     = loadSchema("schemas/notification-request-schema.yaml")
+    private lazy val subscriptionSchema     = loadSchema("schemas/subscription-request-schema.yaml")
+    private lazy val contactDetailsSchema   = loadSchema("schemas/contact-details-request-schema.yaml")
+    private lazy val certificateSchema      = loadSchema("schemas/certificate-request-schema.yaml")
+    private lazy val retrieveCustomerSchema = loadSchema("schemas/retrieve-customer-request-schema.yaml")
+    private lazy val etmpSchema             = loadSchema("schemas/etmp-request-schema.yaml")
 
     private def loadSchema(path: String): Schema = {
       val resource = Option(getClass.getClassLoader.getResourceAsStream(path))

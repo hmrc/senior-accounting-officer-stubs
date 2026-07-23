@@ -8,3 +8,6 @@ PUT         /contact-details/:saoSubscriptionId        uk.gov.hmrc.senioraccount
 
 
 GET         /obligation/:saoSubscriptionId             uk.gov.hmrc.senioraccountingofficerstubs.controllers.ObligationController.getObligation(saoSubscriptionId: String)
+
+# CRMM a.k.a. API-5
+POST        /api/customer/v1/retrievecustomer                      uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm.CrmmController.retrieveCustomer()
