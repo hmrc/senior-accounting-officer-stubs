@@ -13,3 +13,6 @@ GET         /obligation/:saoSubscriptionId             uk.gov.hmrc.senioraccount
 POST        /subscriptions/:saoSubscriptionId/certificates            uk.gov.hmrc.senioraccountingofficerstubs.controllers.CertificateController.postCertificate(saoSubscriptionId: String)
 
 POST        /RESTAdapter/dsao/subscription             uk.gov.hmrc.senioraccountingofficerstubs.controllers.EtmpController.createEtmp()
+
+# CRMM a.k.a. API-5
+POST        /api/customer/v1/retrievecustomer                      uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm.CrmmController.retrieveCustomer()

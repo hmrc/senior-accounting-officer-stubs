@@ -14,25 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.utils
+package uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm
 
-import uk.gov.hmrc.domain.SaUtrGenerator
+import play.api.libs.json.Json
+import play.api.libs.json.OFormat
 
-import scala.util.Random
+final case class RetrieveCustomerResponse(
+    customerId: Option[String],
+    errorDescription: Option[String],
+    existingCustomer: Option[String],
+    status: Option[String] // TODO: enum?
+)
 
-object TestDataGenerator {
-  def generateCrn: String = {
-    val num = Random.nextInt(10000000)
-    f"$num%08d"
-  }
-
-  def generateUtr: String = {
-    val seed = Random.nextInt
-    SaUtrGenerator(seed).nextSaUtr.utr
-  }
-
-  def generateCustomerId: String = {
-    val num = Random.nextInt(10000000)
-    f"$num%08d"
-  }
+object RetrieveCustomerResponse {
+  given OFormat[RetrieveCustomerResponse] = Json.format
 }
