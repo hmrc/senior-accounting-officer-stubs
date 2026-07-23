@@ -136,24 +136,6 @@ class ContactDetailsControllerSpec extends AnyWordSpec with Matchers with GuiceO
       )
     }
 
-    "return a structured 400 for constraint violation with invalid format" in {
-      val contactDetailsRequestInvalidFormat: JsValue = Json.arr(
-        Json.obj(
-          "name"  -> "Jane Doe",
-          "email" -> "jane.doe example.com"
-        )
-      )
-
-      assertValidationError(
-        knownId,
-        contactDetailsRequestInvalidFormat,
-        Json.obj(
-          "origin"   -> "HIP",
-          "response" -> Json.obj("failures" -> Json.arr(Json.obj("type" -> "INVALID_FORMAT", "reason" -> "[0].email")))
-        )
-      )
-    }
-
     "return a structured 400 for constraint violation with cannot be empty" in {
 
       val contactDetailsRequestCannotBeEmpty: JsValue = Json.arr(

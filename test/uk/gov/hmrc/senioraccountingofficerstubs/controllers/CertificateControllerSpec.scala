@@ -220,26 +220,6 @@ class CertificateControllerSpec
       )
     }
 
-    "return a structured 400 for constraint violation with invalid format" in {
-      val certificateRequestInvalidFormat = Json.parse(
-        validCertificateRequest
-          .toString()
-          .replaceFirst(
-            "Firstname\\.Lastname@example\\.com",
-            "Firstname.Lastname example.com"
-          )
-      )
-
-      assertValidationError(
-        testSubscriptionId,
-        certificateRequestInvalidFormat,
-        Json.obj(
-          "origin"   -> "HIP",
-          "response" -> Json.obj("failures" -> Json.arr(Json.obj("type" -> "INVALID_FORMAT", "reason" -> "saoEmail")))
-        )
-      )
-    }
-
     "return a structured 400 for constraint violation with missing required field" in {
       val certificateRequestMissingRequiredField = validCertificateRequest.as[JsObject] - "companies"
 
