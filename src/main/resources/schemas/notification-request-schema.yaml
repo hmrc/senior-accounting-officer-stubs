@@ -44,7 +44,6 @@ properties:
           type: string
         email:
           type: string
-          format: email
         fromDate:
           type: string
           format: date

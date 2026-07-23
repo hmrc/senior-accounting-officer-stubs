@@ -190,28 +190,6 @@ class NotificationControllerSpec
       )
     }
 
-    "return a structured 400 for constraint violation with invalid format" in {
-      val notificationRequestInvalidFormat = Json.parse(
-        validNotificationRequest
-          .toString()
-          .replaceFirst(
-            "Firstname\\.Lastname@example\\.com",
-            "Firstname.Lastname example.com"
-          )
-      )
-
-      assertValidationError(
-        testSubscriptionId,
-        notificationRequestInvalidFormat,
-        Json.obj(
-          "origin"   -> "HIP",
-          "response" -> Json.obj(
-            "failures" -> Json.arr(Json.obj("type" -> "INVALID_FORMAT", "reason" -> "saos[0].email"))
-          )
-        )
-      )
-    }
-
     "return a structured 400 for constraint violation with missing required field" in {
       val notificationRequestMissingRequiredField = validNotificationRequest.as[JsObject] - "companies"
 
