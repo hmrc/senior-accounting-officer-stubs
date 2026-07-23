@@ -19,7 +19,6 @@ components:
       maxLength: 5000
     email:
       type: string
-      format: email
       pattern: ""
       minLength: 1
       maxLength: 254
