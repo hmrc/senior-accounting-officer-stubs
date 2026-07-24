@@ -1,15 +1,10 @@
 # microservice specific routes
+->         /etmp                                       etmp.Routes
+->         /business-tax/corporate-tax                 dpsRead.Routes
+->         /dapm                                       dpsWrite.Routes
 
 GET         /contact-details/:saoSubscriptionId        uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.getContactDetails(saoSubscriptionId: String)
 PUT         /contact-details/:saoSubscriptionId        uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.putContactDetails(saoSubscriptionId: String)
 
-GET         /iv_subscriptions/:saoSubscriptionId    uk.gov.hmrc.senioraccountingofficerstubs.controllers.GetSubscriptionController.getSubscription(saoSubscriptionId: String)
-PUT         /subscriptions/:saoSubscriptionId                              uk.gov.hmrc.senioraccountingofficerstubs.controllers.putsubscription.PutSubscriptionsController.putSubscription(saoSubscriptionId: String)
-
-POST        /subscriptions/:saoSubscriptionId/notifications           uk.gov.hmrc.senioraccountingofficerstubs.controllers.NotificationController.postNotification(saoSubscriptionId: String)
 
 GET         /obligation/:saoSubscriptionId             uk.gov.hmrc.senioraccountingofficerstubs.controllers.ObligationController.getObligation(saoSubscriptionId: String)
-
-POST        /subscriptions/:saoSubscriptionId/certificates            uk.gov.hmrc.senioraccountingofficerstubs.controllers.CertificateController.postCertificate(saoSubscriptionId: String)
-
-POST        /RESTAdapter/dsao/subscription             uk.gov.hmrc.senioraccountingofficerstubs.controllers.EtmpController.createEtmp()

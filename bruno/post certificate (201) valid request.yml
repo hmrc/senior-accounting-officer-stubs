@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{baseUrl}}/subscriptions/12345345634/certificates"
+  url: "{{baseUrl}}/dapm/subscriptions/12345345634/certificates"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}

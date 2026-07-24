@@ -45,8 +45,10 @@ class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSu
   private val correlationId       = ("correlationId"         -> UUID.randomUUID().toString)
   private val xReceiptDate        = ("X-Receipt-Date"        -> "2026-05-05T12:05:45Z")
 
+  def apiUri = "/etmp/RESTAdapter/dsao/subscription"
+
   private def fakeEtmpPOSTRequest(payload: JsValue) = {
-    FakeRequest("POST", "/RESTAdapter/dsao/subscription").withHeaders(
+    FakeRequest("POST", apiUri).withHeaders(
       CONTENT_TYPE   -> MimeTypes.JSON,
       (AUTHORIZATION -> authHeader),
       xTransmittingSystem,
@@ -62,7 +64,7 @@ class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSu
       case Some(value) => value
       case None        => fail("Expected route to be defined")
 
-  "POST /RESTAdapter/dsao/subscription" should {
+  "POST /etmp/RESTAdapter/dsao/subscription" should {
     "return code 201, correlationId header, and an Etmp success response for an idNumber" in {
       val request          = fakeEtmpPOSTRequest(validEtmpRequest)
       val correlationId    = request.headers.get("correlationId").get
@@ -76,7 +78,7 @@ class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSu
     }
 
     "return code 400 for a request without a required header, correlationId" in {
-      val requestWithoutCorrelationId = FakeRequest("POST", "/RESTAdapter/dsao/subscription")
+      val requestWithoutCorrelationId = FakeRequest("POST", apiUri)
         .withHeaders(
           CONTENT_TYPE  -> MimeTypes.JSON,
           AUTHORIZATION -> authHeader,
@@ -94,7 +96,7 @@ class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSu
 
     "return code 400 for a request where a required header is invalid" in {
       val invalidXTransmittingSystemHeader = xTransmittingSystem._1 -> "Test"
-      val requestWithInvalidHeader         = FakeRequest("POST", "/RESTAdapter/dsao/subscription")
+      val requestWithInvalidHeader         = FakeRequest("POST", apiUri)
         .withHeaders(
           CONTENT_TYPE  -> MimeTypes.JSON,
           AUTHORIZATION -> authHeader,
