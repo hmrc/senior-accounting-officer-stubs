@@ -1,0 +1,1 @@
+GET         /iv_subscriptions/:saoSubscriptionId    uk.gov.hmrc.senioraccountingofficerstubs.controllers.GetSubscriptionController.getSubscription(saoSubscriptionId: String)

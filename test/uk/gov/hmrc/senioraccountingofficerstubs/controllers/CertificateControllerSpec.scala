@@ -84,7 +84,7 @@ class CertificateControllerSpec
     }
 
   private def fakeCertificatePOSTRequest(id: String, payload: JsValue) =
-    FakeRequest("POST", s"/subscriptions/$id/certificates")
+    FakeRequest("POST", s"/dapm/subscriptions/$id/certificates")
       .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
       .withTextBody(payload.toString())
 
@@ -106,7 +106,7 @@ class CertificateControllerSpec
     when(mockRepository.get(any())).thenReturn(Future.successful(None))
   }
 
-  "POST /subscriptions/:saoSubscriptionId/certificates" should {
+  "POST /dapm/subscriptions/:saoSubscriptionId/certificates" should {
     "return 201 and certificate payload when PostSignupConfigRepository does not return a config for this endpoint" in {
       val result = routeResult(fakeCertificatePOSTRequest(testSubscriptionId, validCertificateRequest))
 
@@ -200,7 +200,7 @@ class CertificateControllerSpec
     }
 
     "return a structured 400 for constraint violation with malformed request when JSON syntax is incorrect" in {
-      val fakePOSTRequest = FakeRequest("POST", s"/subscriptions/$testSubscriptionId/certificates")
+      val fakePOSTRequest = FakeRequest("POST", s"/dapm/subscriptions/$testSubscriptionId/certificates")
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody("""{"companies":["Test"]""")
 

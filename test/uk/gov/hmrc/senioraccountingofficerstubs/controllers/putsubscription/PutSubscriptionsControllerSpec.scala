@@ -70,7 +70,7 @@ class PutSubscriptionsControllerSpec
     }
 
   private def fakeSubscriptionsPUTRequest(id: String, payload: JsValue) =
-    FakeRequest("PUT", s"/subscriptions/$id")
+    FakeRequest("PUT", s"/dapm/subscriptions/$id")
       .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
       .withTextBody(payload.toString())
 
@@ -86,7 +86,7 @@ class PutSubscriptionsControllerSpec
     when(mockRepository.get(any())).thenReturn(Future.successful(None))
   }
 
-  "PUT /subscriptions" should {
+  "PUT /dapm/subscriptions" should {
     "return 201 for a valid request payload" in {
       val result = routeResult(fakeSubscriptionsPUTRequest(testSubscriptionId, validSubscriptionRequest))
       status(result) shouldBe Status.CREATED
@@ -125,7 +125,7 @@ class PutSubscriptionsControllerSpec
     }
 
     "return a structured 400 for constraint violation with malformed request when JSON syntax is incorrect" in {
-      val fakeRequest = FakeRequest("PUT", s"/subscriptions/$testUtr")
+      val fakeRequest = FakeRequest("PUT", s"/dapm/subscriptions/$testUtr")
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody("""{"subscription":""")
 

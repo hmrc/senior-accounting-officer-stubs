@@ -1,0 +1,5 @@
+PUT         /subscriptions/:saoSubscriptionId                         uk.gov.hmrc.senioraccountingofficerstubs.controllers.putsubscription.PutSubscriptionsController.putSubscription(saoSubscriptionId: String)
+
+POST        /subscriptions/:saoSubscriptionId/notifications           uk.gov.hmrc.senioraccountingofficerstubs.controllers.NotificationController.postNotification(saoSubscriptionId: String)
+
+POST        /subscriptions/:saoSubscriptionId/certificates            uk.gov.hmrc.senioraccountingofficerstubs.controllers.CertificateController.postCertificate(saoSubscriptionId: String)

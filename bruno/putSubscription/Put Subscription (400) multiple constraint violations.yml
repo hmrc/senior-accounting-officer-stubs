@@ -5,7 +5,7 @@ info:
 
 http:
   method: PUT
-  url: "{{baseUrl}}/subscriptions/{{subscriptionId}}"
+  url: "{{baseUrl}}/dapm/subscriptions/{{subscriptionId}}"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}

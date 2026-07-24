@@ -1,0 +1,1 @@
+POST        /RESTAdapter/dsao/subscription             uk.gov.hmrc.senioraccountingofficerstubs.controllers.EtmpController.createEtmp()

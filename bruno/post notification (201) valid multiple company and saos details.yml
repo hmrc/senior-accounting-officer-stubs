@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{baseUrl}}/subscriptions/123/notifications"
+  url: "{{baseUrl}}/dapm/subscriptions/123/notifications"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}

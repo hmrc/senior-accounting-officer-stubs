@@ -86,7 +86,7 @@ class NotificationControllerSpec
     }
 
   private def fakeNotificationPOSTRequest(id: String, payload: JsValue) =
-    FakeRequest("POST", s"/subscriptions/$id/notifications")
+    FakeRequest("POST", s"/dapm/subscriptions/$id/notifications")
       .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
       .withTextBody(payload.toString())
 
@@ -108,7 +108,7 @@ class NotificationControllerSpec
     when(mockRepository.get(any())).thenReturn(Future.successful(None))
   }
 
-  "POST /subscriptions/:saoSubscriptionId/notifications" should {
+  "POST /dapm/subscriptions/:saoSubscriptionId/notifications" should {
     "return 201 and notification payload when PostSignupConfigRepository does not return a config for this endpoint" in {
       val result = routeResult(fakeNotificationPOSTRequest(testSubscriptionId, validNotificationRequest))
 
@@ -175,7 +175,7 @@ class NotificationControllerSpec
     }
 
     "return a structured 400 for malformed JSON syntax" in {
-      val fakePOSTRequest = FakeRequest("POST", s"/subscriptions/$testSubscriptionId/notifications")
+      val fakePOSTRequest = FakeRequest("POST", s"/dapm/subscriptions/$testSubscriptionId/notifications")
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody("""{"companies":["Test"]""")
 

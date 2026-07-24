@@ -55,7 +55,7 @@ class GetSubscriptionControllerSpec
     }
 
   private def fakeGetSubscriptionRequest(id: String): FakeRequest[AnyContentAsEmpty.type] =
-    FakeRequest("GET", s"/iv_subscriptions/$id")
+    FakeRequest("GET", s"/business-tax/corporate-tax/iv_subscriptions/$id")
       .withHeaders(AUTHORIZATION -> authHeader)
 
   private val mockRepository = mock[PostSignupConfigRepository]
@@ -70,7 +70,7 @@ class GetSubscriptionControllerSpec
     when(mockRepository.get(any())).thenReturn(Future.successful(None))
   }
 
-  "GET /iv_subscriptions/:saoSubscriptionId" when {
+  "GET /business-tax/corporate-tax/iv_subscriptions/:saoSubscriptionId" when {
     "PostSignupConfigRepository does not return a config for this endpoint" must {
       "return 200 with a default response payload" in {
         val result = routeResult(fakeGetSubscriptionRequest(testSubscriptionId))
