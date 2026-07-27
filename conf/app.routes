@@ -1,13 +1,11 @@
 # microservice specific routes
-->         /etmp                                       etmp.Routes
-->         /business-tax/corporate-tax                 dpsRead.Routes
-->         /dapm                                       dpsWrite.Routes
+->         /etmp                                                etmp.Routes
+->         /business-tax/corporate-tax                          dpsRead.Routes
+->         /dapm                                                dpsWrite.Routes
+->         /compliance/civil-investigation-and-avoidance        crmm.Routes
 
-GET         /contact-details/:saoSubscriptionId        uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.getContactDetails(saoSubscriptionId: String)
-PUT         /contact-details/:saoSubscriptionId        uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.putContactDetails(saoSubscriptionId: String)
+GET        /contact-details/:saoSubscriptionId                  uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.getContactDetails(saoSubscriptionId: String)
+PUT        /contact-details/:saoSubscriptionId                  uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.putContactDetails(saoSubscriptionId: String)
 
 
-GET         /obligation/:saoSubscriptionId             uk.gov.hmrc.senioraccountingofficerstubs.controllers.ObligationController.getObligation(saoSubscriptionId: String)
-
-# CRMM a.k.a. API-5
-POST        /api/customer/v1/retrievecustomer                      uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm.CrmmController.retrieveCustomer()
+GET        /obligation/:saoSubscriptionId                       uk.gov.hmrc.senioraccountingofficerstubs.controllers.ObligationController.getObligation(saoSubscriptionId: String)
