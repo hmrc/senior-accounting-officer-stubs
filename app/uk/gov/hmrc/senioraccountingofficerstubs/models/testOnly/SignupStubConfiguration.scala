@@ -25,7 +25,7 @@ final case class SignupStubConfiguration(
     utr: String,
     postEtmpSubscription: Option[NoneDefaultApiConfiguration] = None,
     putDpsSubscription: Option[NoneDefaultApiConfiguration] = None,
-    postCrmmRetrieveCustomer: Option[NoneDefaultApiConfiguration],
+    postCrmmRetrieveCustomer: Option[NoneDefaultApiConfiguration] = None,
     lastUpdated: Instant = Instant.now
 )
 

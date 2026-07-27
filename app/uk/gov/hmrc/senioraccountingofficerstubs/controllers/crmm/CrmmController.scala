@@ -19,45 +19,79 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm
 import play.api.libs.json.*
 import play.api.mvc.Action
 import play.api.mvc.ControllerComponents
-import javax.inject.Inject
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.senioraccountingofficerstubs.helpers.CrmmHelper
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
-import scala.concurrent.Future
+import uk.gov.hmrc.senioraccountingofficerstubs.models.ApiError
+import uk.gov.hmrc.senioraccountingofficerstubs.models.crmm.*
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.generateCustomerId
+
 import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+
+import javax.inject.Inject
 
 class CrmmController @Inject() (cc: ControllerComponents, repository: SignupConfigRepository)(using
     ExecutionContext
 ) extends BackendController(cc) {
   def retrieveCustomer(): Action[String] = Action(parse.tolerantText).async { implicit request =>
-    {
-      request.headers.get("correlationId").fold(???) { correlationId =>
-        {
-          // TODO: return error properly
+    CrmmHelper
+      .validateHeaders(request.headers)
+      .fold(
+        headerError => Future.successful(BadRequest(headerError)),
+        correlationId => {
           JsonErrorHandling.parseJson(request.body) match {
             case Right(json) =>
               val errors = JsonErrorHandling.Validators.validateRetrieveCustomerRequest(json)
               if errors.nonEmpty then Future.successful(JsonErrorHandling.badRequest(errors))
               else
-                repository.get(correlationId).map {
-                  case Some(config) =>
-                    val status: Int  = config.postCrmmRetrieveCustomer.map(_.status).fold(201)(identity)
-                    val body: String = config.postCrmmRetrieveCustomer
-                      .flatMap(_.defaultBodyOverride)
-                      .fold(
-                        // TODO: what should these nones be?
-                        Json.toJson(RetrieveCustomerResponse(Some(generateCustomerId), None, None, None)).toString
-                      )(identity)
-                    Status(status)(body).as(JSON)
-                  case _ =>
-                    // TODO: what should these nones be?
-                    Created(Json.toJson(RetrieveCustomerResponse(Some(generateCustomerId), None, None, None)))
-                }
+                val retrieveCustomerRequest = json.as[RetrieveCustomerRequest]
+                val neitherCrnOrUtrIncluded =
+                  retrieveCustomerRequest.companyRegistrationNumber.isEmpty && retrieveCustomerRequest.uniqueTaxReference.isEmpty
+
+                if neitherCrnOrUtrIncluded
+                then
+                  Future.successful(
+                    JsonErrorHandling
+                      .badRequest(
+                        ApiError(Some("companyRegistrationNumber and uniqueTaxReference"), "MISSING_REQUIRED_FIELD")
+                      )
+                  )
+                else
+                  repository.get(correlationId).map {
+                    case Some(config) =>
+                      val status: Int  = config.postCrmmRetrieveCustomer.map(_.status).fold(201)(identity)
+                      val body: String = config.postCrmmRetrieveCustomer
+                        .flatMap(_.defaultBodyOverride)
+                        .fold(
+                          Json
+                            .toJson(
+                              RetrieveCustomerResponse(
+                                customerId = Some(generateCustomerId),
+                                errorDescription = None,
+                                existingCustomer = false,
+                                status = "Success"
+                              )
+                            )
+                            .toString
+                        )(identity)
+                      Status(status)(body).as(JSON)
+                    case _ =>
+                      Created(
+                        Json.toJson(
+                          RetrieveCustomerResponse(
+                            customerId = Some(generateCustomerId),
+                            errorDescription = None,
+                            existingCustomer = false,
+                            status = "Success"
+                          )
+                        )
+                      )
+                  }
             case Left(errorResult) => Future.successful(errorResult)
           }
         }
-      }
-    }
+      )
   }
 }
