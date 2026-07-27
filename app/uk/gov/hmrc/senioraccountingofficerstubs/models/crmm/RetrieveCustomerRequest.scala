@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm
+package uk.gov.hmrc.senioraccountingofficerstubs.models.crmm
 
 import play.api.libs.json.Json
 import play.api.libs.json.OFormat
 
-final case class RetrieveCustomerResponse(
-    customerId: Option[String],
-    errorDescription: Option[String],
-    existingCustomer: Option[String],
-    status: Option[String] // TODO: enum?
+final case class RetrieveCustomerRequest(
+    companyRegistrationNumber: Option[String],
+    uniqueTaxReference: Option[String]
 )
 
-object RetrieveCustomerResponse {
-  given OFormat[RetrieveCustomerResponse] = Json.format
+object RetrieveCustomerRequest {
+  given OFormat[RetrieveCustomerRequest] = Json.format
 }
