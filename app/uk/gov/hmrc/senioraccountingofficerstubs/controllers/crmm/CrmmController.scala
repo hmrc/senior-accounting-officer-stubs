@@ -19,8 +19,9 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm
 import play.api.libs.json.*
 import play.api.mvc.Action
 import play.api.mvc.ControllerComponents
+import play.api.mvc.Headers
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.senioraccountingofficerstubs.helpers.CrmmHelper
+import uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm.CrmmController.*
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.ApiError
 import uk.gov.hmrc.senioraccountingofficerstubs.models.crmm.*
@@ -36,8 +37,7 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: SignupConf
     ExecutionContext
 ) extends BackendController(cc) {
   def retrieveCustomer(): Action[String] = Action(parse.tolerantText).async { implicit request =>
-    CrmmHelper
-      .validateHeaders(request.headers)
+    validateHeaders(request.headers)
       .fold(
         headerError => Future.successful(BadRequest(headerError)),
         correlationId => {
@@ -55,13 +55,13 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: SignupConf
                   Future.successful(
                     JsonErrorHandling
                       .badRequest(
-                        ApiError(Some("companyRegistrationNumber and uniqueTaxReference"), "MISSING_REQUIRED_FIELD")
+                        ApiError(Some("companyRegistrationNumber or uniqueTaxReference"), "MISSING_REQUIRED_FIELD")
                       )
                   )
                 else
                   repository.get(correlationId).map {
                     case Some(config) =>
-                      val status: Int  = config.postCrmmRetrieveCustomer.map(_.status).fold(201)(identity)
+                      val status: Int  = config.postCrmmRetrieveCustomer.map(_.status).fold(200)(identity)
                       val body: String = config.postCrmmRetrieveCustomer
                         .flatMap(_.defaultBodyOverride)
                         .fold(
@@ -70,7 +70,7 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: SignupConf
                               RetrieveCustomerResponse(
                                 customerId = Some(generateCustomerId),
                                 errorDescription = None,
-                                existingCustomer = false,
+                                existingCustomer = true,
                                 status = "Success"
                               )
                             )
@@ -78,12 +78,12 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: SignupConf
                         )(identity)
                       Status(status)(body).as(JSON)
                     case _ =>
-                      Created(
+                      Ok(
                         Json.toJson(
                           RetrieveCustomerResponse(
                             customerId = Some(generateCustomerId),
                             errorDescription = None,
-                            existingCustomer = false,
+                            existingCustomer = true,
                             status = "Success"
                           )
                         )
@@ -93,5 +93,31 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: SignupConf
           }
         }
       )
+  }
+}
+
+object CrmmController {
+
+  private val correlationIdHeader = "correlationId"
+  private val sourceSysRefHeader  = "sourceSysRef"
+  private val headers             = Seq(correlationIdHeader, sourceSysRefHeader)
+
+  def validateHeaders(requestHeaders: Headers): Either[String, String] = {
+    val headersMap = headers.foldLeft(Map.empty[String, String]) { (map, header) =>
+      requestHeaders.get(header) match {
+        case Some(headerVal) => map + (header -> headerVal)
+        case None            => map
+      }
+    }
+
+    for {
+      sourceSystemReference <- headersMap
+        .get(sourceSysRefHeader)
+        .toRight(s"missing $sourceSysRefHeader header")
+      correlationId <- headersMap
+        .get(correlationIdHeader)
+        .filter(_.nonEmpty)
+        .toRight(s"missing $correlationIdHeader header")
+    } yield (correlationId)
   }
 }
