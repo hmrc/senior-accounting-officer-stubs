@@ -51,7 +51,6 @@ class SignupConfigRepositoryISpec
     utr = "utr",
     postEtmpSubscription = None,
     putDpsSubscription = None,
-    postCrmmRetrieveCustomer = None,
     lastUpdated = Instant.ofEpochSecond(1)
   )
 

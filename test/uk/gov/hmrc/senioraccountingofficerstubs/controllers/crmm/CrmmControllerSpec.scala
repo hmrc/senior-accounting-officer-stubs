@@ -34,8 +34,11 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm.CrmmControllerSpec.*
-import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.{NoneDefaultApiConfiguration, SignupStubConfiguration}
-import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
+import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.{
+  NoneDefaultApiConfiguration,
+  PostSignupStubConfiguration
+}
+import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.{generateCrn, generateUtr}
 
 import scala.concurrent.Future
@@ -54,10 +57,10 @@ class CrmmControllerSpec
       case None        => fail("Expected route to be defined")
   }
 
-  private val mockRepository = mock[SignupConfigRepository]
+  private val mockRepository = mock[PostSignupConfigRepository]
 
   override lazy val app: Application = GuiceApplicationBuilder()
-    .overrides(bind[SignupConfigRepository].toInstance(mockRepository))
+    .overrides(bind[PostSignupConfigRepository].toInstance(mockRepository))
     .build()
 
   override def beforeEach(): Unit = {
@@ -205,8 +208,8 @@ class CrmmControllerSpec
     when(mockRepository.get(meq(correlationId))).thenReturn(
       Future.successful(
         Some(
-          SignupStubConfiguration(
-            utr = generateUtr,
+          PostSignupStubConfiguration(
+            subscriptionId = "sub id",
             postCrmmRetrieveCustomer = Some(NoneDefaultApiConfiguration(status = Status.IM_A_TEAPOT))
           )
         )
@@ -233,8 +236,8 @@ class CrmmControllerSpec
     when(mockRepository.get(meq(correlationId))).thenReturn(
       Future.successful(
         Some(
-          SignupStubConfiguration(
-            utr = generateUtr,
+          PostSignupStubConfiguration(
+            subscriptionId = "sub id",
             postCrmmRetrieveCustomer = Some(
               NoneDefaultApiConfiguration(status = Status.IM_A_TEAPOT, defaultBodyOverride = Some(expectedResponse))
             )

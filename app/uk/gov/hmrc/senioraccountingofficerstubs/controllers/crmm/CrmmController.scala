@@ -25,7 +25,7 @@ import uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm.CrmmController.
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.ApiError
 import uk.gov.hmrc.senioraccountingofficerstubs.models.crmm.*
-import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
+import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.generateCustomerId
 
 import scala.concurrent.ExecutionContext
@@ -33,7 +33,7 @@ import scala.concurrent.Future
 
 import javax.inject.Inject
 
-class CrmmController @Inject() (cc: ControllerComponents, repository: SignupConfigRepository)(using
+class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignupConfigRepository)(using
     ExecutionContext
 ) extends BackendController(cc) {
   def retrieveCustomer(): Action[String] = Action(parse.tolerantText).async { implicit request =>
