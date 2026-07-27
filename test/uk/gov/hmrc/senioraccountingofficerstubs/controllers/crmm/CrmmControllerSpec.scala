@@ -113,6 +113,29 @@ class CrmmControllerSpec
 
     }
 
+    "return structured error message for a request with an additional field companyRegistrationNumber with an invalid format" in {
+      val requestBody = s"""{"$unkownProperty": "Firstname Lastname"}"""
+
+      val requestWithoutCorrelationId = FakeRequest("POST", path)
+        .withHeaders(validHeaders*)
+        .withTextBody(requestBody)
+
+      val expectedResponse = Json
+        .obj(
+          "origin"   -> "HIP",
+          "response" -> Json.obj(
+            "failures" -> Json.arr(Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> unkownProperty))
+          )
+        )
+        .toString
+
+      val result = routeResult(requestWithoutCorrelationId)
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsString(result) shouldBe expectedResponse
+
+    }
+
     "return structured error message for a request with a uniqueTaxReference with an invalid format" in {
       val requestBody = """{"uniqueTaxReference": "|||"}"""
 
@@ -247,4 +270,6 @@ object CrmmControllerSpec {
   val correlationId: String = UUID.randomUUID().toString
 
   val validHeaders: Seq[(String, String)] = headersNoCorrelationId.concat(Seq("correlationId" -> correlationId))
+
+  val unkownProperty = "saoMagicField"
 }
