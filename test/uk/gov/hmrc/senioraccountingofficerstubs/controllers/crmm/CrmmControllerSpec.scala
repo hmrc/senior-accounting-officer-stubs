@@ -91,11 +91,11 @@ class CrmmControllerSpec
     }
 
     "return structured error message for a request with a companyRegistrationNumber with an invalid format" in {
-      val request = """{"companyRegistrationNumber": "|||"}"""
+      val requestBody = """{"companyRegistrationNumber": "|||"}"""
 
       val requestWithoutCorrelationId = FakeRequest("POST", path)
         .withHeaders(validHeaders*)
-        .withTextBody(request)
+        .withTextBody(requestBody)
 
       val expectedResponse = Json
         .obj(
@@ -114,11 +114,11 @@ class CrmmControllerSpec
     }
 
     "return structured error message for a request with a uniqueTaxReference with an invalid format" in {
-      val request = """{"uniqueTaxReference": "|||"}"""
+      val requestBody = """{"uniqueTaxReference": "|||"}"""
 
       val requestWithoutCorrelationId = FakeRequest("POST", path)
         .withHeaders(validHeaders*)
-        .withTextBody(request)
+        .withTextBody(requestBody)
 
       val expectedResponse = Json
         .obj(
@@ -183,7 +183,7 @@ class CrmmControllerSpec
       Future.successful(
         Some(
           SignupStubConfiguration(
-            utr = "testSubscriptionId",
+            utr = generateUtr,
             postCrmmRetrieveCustomer = Some(NoneDefaultApiConfiguration(status = Status.IM_A_TEAPOT))
           )
         )
@@ -211,7 +211,7 @@ class CrmmControllerSpec
       Future.successful(
         Some(
           SignupStubConfiguration(
-            utr = "testSubscriptionId",
+            utr = generateUtr,
             postCrmmRetrieveCustomer = Some(
               NoneDefaultApiConfiguration(status = Status.IM_A_TEAPOT, defaultBodyOverride = Some(expectedResponse))
             )
