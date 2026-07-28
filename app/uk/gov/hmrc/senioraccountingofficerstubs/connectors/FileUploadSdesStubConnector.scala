@@ -34,8 +34,8 @@ class FileUploadSdesStubConnector @Inject() (
 )(using ExecutionContext) {
 
   def notifyFileReady(payload: JsValue)(using HeaderCarrier): Future[HttpResponse] = {
-  
-  val url = url"${servicesConfig.baseUrl("file-upload-sdes-stub")}${appConfig.fileUploadNotificationPath}"
+
+    val url = url"${servicesConfig.baseUrl("file-upload-sdes-stub")}${appConfig.fileUploadNotificationPath}"
 
     httpClientV2
       .post(url)
