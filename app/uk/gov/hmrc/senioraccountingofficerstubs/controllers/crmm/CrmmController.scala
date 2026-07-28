@@ -48,12 +48,14 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
                 JsonErrorHandling.Validators.validateRetrieveCustomerRequest(json) match {
                   case errors if errors.nonEmpty => Future.successful(JsonErrorHandling.badRequest(errors))
                   case _                         =>
-                    validateAtLeastOneId(json)
-                      .toLeft(repository.get(correlationId).map {
-                        case Some(config) => retrieveConfiguredResponse(config)
-                        case _            => Ok(Json.toJson(generateStandardResponse))
-                      })
-                      .fold(Future.successful(_), identity)
+                    validateAtLeastOneId(json) match {
+                      case Left(error) => Future.successful(error)
+                      case _           =>
+                        repository.get(correlationId).map {
+                          case Some(config) => retrieveConfiguredResponse(config)
+                          case _            => Ok(Json.toJson(generateStandardResponse))
+                        }
+                    }
                 }
             )
         }
@@ -64,6 +66,7 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
     for {
       _ <- requestHeaders
         .get(sourceSysRefHeader)
+        .filter(_.nonEmpty)
         .toRight(
           JsonErrorHandling
             .badRequest(
@@ -79,19 +82,19 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
               ApiError(Some(s"headers.$correlationIdHeader"), "MISSING_REQUIRED_FIELD")
             )
         )
-    } yield (correlationId)
+    } yield correlationId
   }
 
-  def validateAtLeastOneId(json: JsValue): Option[Result] = {
+  def validateAtLeastOneId(json: JsValue): Either[Result, RetrieveCustomerRequest] = {
     json.as[RetrieveCustomerRequest] match {
       case RetrieveCustomerRequest(None, None) =>
-        Some(
+        Left(
           JsonErrorHandling
             .badRequest(
               ApiError(Some("companyRegistrationNumber or uniqueTaxReference"), "MISSING_REQUIRED_FIELD")
             )
         )
-      case _ => None
+      case request => Right(request)
     }
   }
 
