@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.controllers
+package uk.gov.hmrc.senioraccountingofficerstubs.controllers.dps.write
 
 import play.api.libs.json.*
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
-import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling.subscriptionIdLengthError
-import uk.gov.hmrc.senioraccountingofficerstubs.models.CertificateResponse
+import uk.gov.hmrc.senioraccountingofficerstubs.models.NotificationResponse
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -29,38 +28,34 @@ import scala.util.Random
 
 import javax.inject.Inject
 
-class CertificateController @Inject() (cc: ControllerComponents, repository: PostSignupConfigRepository)(using
+class NotificationController @Inject() (cc: ControllerComponents, repository: PostSignupConfigRepository)(using
     ExecutionContext
 ) extends BackendController(cc) {
 
-  private def generateCertificateId = {
+  private def generateNotificationId = {
     val num = Random.nextInt(10000000)
-    "CRT" + f"$num%010d"
+    "NOT" + f"$num%010d"
   }
 
-  def postCertificate(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText).async {
+  def postNotification(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText).async {
     implicit request =>
       JsonErrorHandling.parseJson(request.body) match {
         case Right(json) =>
-          val jsonErrors = JsonErrorHandling.Validators.validateCertificate(json)
-          val errors     = if saoSubscriptionId.length > 15 then {
-            subscriptionIdLengthError +: jsonErrors
-          } else {
-            jsonErrors
-          }
+          val errors = JsonErrorHandling.Validators.validateNotification(json)
+
           if errors.nonEmpty then Future.successful(JsonErrorHandling.badRequest(errors))
           else
             repository.get(saoSubscriptionId).map {
               case Some(config) =>
-                val status: Int  = config.postCertificate.map(_.status).fold(201)(identity)
-                val body: String = config.postCertificate
+                val status: Int  = config.postNotification.map(_.status).fold(201)(identity)
+                val body: String = config.postNotification
                   .flatMap(_.defaultBodyOverride)
                   .fold(
-                    Json.toJson(CertificateResponse(generateCertificateId)).toString
+                    Json.toJson(NotificationResponse(generateNotificationId)).toString
                   )(identity)
                 Status(status)(body).as(JSON)
               case _ =>
-                Created(Json.toJson(CertificateResponse(generateCertificateId)))
+                Created(Json.toJson(NotificationResponse(generateNotificationId)))
             }
         case Left(errorResult) => Future.successful(errorResult)
       }

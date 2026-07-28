@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.controllers
+package uk.gov.hmrc.senioraccountingofficerstubs.controllers.dps.read
 
 import play.api.http.Status.*
 import play.api.libs.json.Json
 import play.api.mvc.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.senioraccountingofficerstubs.controllers.GetSubscriptionController.*
+import uk.gov.hmrc.senioraccountingofficerstubs.controllers.dps.read.GetSubscriptionController.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.getsubscription.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.*
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository

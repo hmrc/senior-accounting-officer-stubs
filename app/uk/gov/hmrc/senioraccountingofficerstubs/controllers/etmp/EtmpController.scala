@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.controllers
+package uk.gov.hmrc.senioraccountingofficerstubs.controllers.etmp
 
 import play.api.libs.json.Json
 import play.api.mvc.Action

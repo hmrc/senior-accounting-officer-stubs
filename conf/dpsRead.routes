@@ -1,1 +1,1 @@
-GET         /iv_subscriptions/:saoSubscriptionId    uk.gov.hmrc.senioraccountingofficerstubs.controllers.GetSubscriptionController.getSubscription(saoSubscriptionId: String)
+GET         /iv_subscriptions/:saoSubscriptionId    uk.gov.hmrc.senioraccountingofficerstubs.controllers.dps.read.GetSubscriptionController.getSubscription(saoSubscriptionId: String)
