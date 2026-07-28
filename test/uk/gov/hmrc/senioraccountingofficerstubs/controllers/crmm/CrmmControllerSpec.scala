@@ -76,10 +76,21 @@ class CrmmControllerSpec
         .withHeaders(headersNoSourceSysRefOrCorrelationId*)
         .withTextBody("")
 
+      val expectedResponse = Json
+        .obj(
+          "origin"   -> "HIP",
+          "response" -> Json.obj(
+            "failures" -> Json.arr(
+              Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "headers.sourceSysRef")
+            )
+          )
+        )
+        .toString
+
       val result = routeResult(requestWithoutCorrelationId)
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsString(result) shouldBe "missing sourceSysRef header"
+      contentAsString(result) shouldBe expectedResponse
     }
 
     "return code 400 for a request without correlationId header" in {
@@ -87,10 +98,21 @@ class CrmmControllerSpec
         .withHeaders(headersNoCorrelationId*)
         .withTextBody("")
 
+      val expectedResponse = Json
+        .obj(
+          "origin"   -> "HIP",
+          "response" -> Json.obj(
+            "failures" -> Json.arr(
+              Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "headers.correlationId")
+            )
+          )
+        )
+        .toString
+
       val result = routeResult(requestWithoutCorrelationId)
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsString(result) shouldBe "missing correlationId header"
+      contentAsString(result) shouldBe expectedResponse
     }
 
     "return structured error message for a request with a companyRegistrationNumber with an invalid format" in {

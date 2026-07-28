@@ -17,14 +17,13 @@
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm
 
 import play.api.libs.json.*
-import play.api.mvc.Action
-import play.api.mvc.ControllerComponents
-import play.api.mvc.Headers
+import play.api.mvc.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm.CrmmController.*
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.ApiError
 import uk.gov.hmrc.senioraccountingofficerstubs.models.crmm.*
+import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.PostSignupStubConfiguration
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.generateCustomerId
 
@@ -39,85 +38,84 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
   def retrieveCustomer(): Action[String] = Action(parse.tolerantText).async { implicit request =>
     validateHeaders(request.headers)
       .fold(
-        headerError => Future.successful(BadRequest(headerError)),
+        Future.successful(_),
         correlationId => {
-          JsonErrorHandling.parseJson(request.body) match {
-            case Right(json) =>
-              val errors = JsonErrorHandling.Validators.validateRetrieveCustomerRequest(json)
-              if errors.nonEmpty then Future.successful(JsonErrorHandling.badRequest(errors))
-              else
-                val retrieveCustomerRequest = json.as[RetrieveCustomerRequest]
-                val neitherCrnOrUtrIncluded =
-                  retrieveCustomerRequest.companyRegistrationNumber.isEmpty && retrieveCustomerRequest.uniqueTaxReference.isEmpty
-
-                if neitherCrnOrUtrIncluded
-                then
-                  Future.successful(
-                    JsonErrorHandling
-                      .badRequest(
-                        ApiError(Some("companyRegistrationNumber or uniqueTaxReference"), "MISSING_REQUIRED_FIELD")
-                      )
-                  )
-                else
-                  repository.get(correlationId).map {
-                    case Some(config) =>
-                      val status: Int  = config.postCrmmRetrieveCustomer.map(_.status).fold(200)(identity)
-                      val body: String = config.postCrmmRetrieveCustomer
-                        .flatMap(_.defaultBodyOverride)
-                        .fold(
-                          Json
-                            .toJson(
-                              RetrieveCustomerResponse(
-                                customerId = Some(generateCustomerId),
-                                errorDescription = None,
-                                existingCustomer = true,
-                                status = "Success"
-                              )
-                            )
-                            .toString
-                        )(identity)
-                      Status(status)(body).as(JSON)
-                    case _ =>
-                      Ok(
-                        Json.toJson(
-                          RetrieveCustomerResponse(
-                            customerId = Some(generateCustomerId),
-                            errorDescription = None,
-                            existingCustomer = true,
-                            status = "Success"
-                          )
-                        )
-                      )
-                  }
-            case Left(errorResult) => Future.successful(errorResult)
-          }
+          JsonErrorHandling
+            .parseJson(request.body)
+            .fold(
+              Future.successful(_),
+              json =>
+                JsonErrorHandling.Validators.validateRetrieveCustomerRequest(json) match {
+                  case errors if errors.nonEmpty => Future.successful(JsonErrorHandling.badRequest(errors))
+                  case _                         =>
+                    validateAtLeastOneId(json)
+                      .toLeft(repository.get(correlationId).map {
+                        case Some(config) => retrieveConfiguredResponse(config)
+                        case _            => Ok(Json.toJson(generateStandardResponse))
+                      })
+                      .fold(Future.successful(_), identity)
+                }
+            )
         }
       )
+  }
+
+  def validateHeaders(requestHeaders: Headers): Either[Result, String] = {
+    for {
+      _ <- requestHeaders
+        .get(sourceSysRefHeader)
+        .toRight(
+          JsonErrorHandling
+            .badRequest(
+              ApiError(Some(s"headers.$sourceSysRefHeader"), "MISSING_REQUIRED_FIELD")
+            )
+        )
+      correlationId <- requestHeaders
+        .get(correlationIdHeader)
+        .filter(_.nonEmpty)
+        .toRight(
+          JsonErrorHandling
+            .badRequest(
+              ApiError(Some(s"headers.$correlationIdHeader"), "MISSING_REQUIRED_FIELD")
+            )
+        )
+    } yield (correlationId)
+  }
+
+  def validateAtLeastOneId(json: JsValue): Option[Result] = {
+    json.as[RetrieveCustomerRequest] match {
+      case RetrieveCustomerRequest(None, None) =>
+        Some(
+          JsonErrorHandling
+            .badRequest(
+              ApiError(Some("companyRegistrationNumber or uniqueTaxReference"), "MISSING_REQUIRED_FIELD")
+            )
+        )
+      case _ => None
+    }
+  }
+
+  def retrieveConfiguredResponse(config: PostSignupStubConfiguration): Result = {
+    val status: Int  = config.postCrmmRetrieveCustomer.map(_.status).fold(200)(identity)
+    val body: String = config.postCrmmRetrieveCustomer
+      .flatMap(_.defaultBodyOverride)
+      .fold(
+        Json.toJson(generateStandardResponse).toString
+      )(identity)
+    Status(status)(body).as(JSON)
+  }
+
+  def generateStandardResponse: RetrieveCustomerResponse = {
+    RetrieveCustomerResponse(
+      customerId = Some(generateCustomerId),
+      errorDescription = None,
+      existingCustomer = true,
+      status = "Success"
+    )
   }
 }
 
 object CrmmController {
-
-  private val correlationIdHeader = "correlationId"
-  private val sourceSysRefHeader  = "sourceSysRef"
-  private val headers             = Seq(correlationIdHeader, sourceSysRefHeader)
-
-  def validateHeaders(requestHeaders: Headers): Either[String, String] = {
-    val headersMap = headers.foldLeft(Map.empty[String, String]) { (map, header) =>
-      requestHeaders.get(header) match {
-        case Some(headerVal) => map + (header -> headerVal)
-        case None            => map
-      }
-    }
-
-    for {
-      sourceSystemReference <- headersMap
-        .get(sourceSysRefHeader)
-        .toRight(s"missing $sourceSysRefHeader header")
-      correlationId <- headersMap
-        .get(correlationIdHeader)
-        .filter(_.nonEmpty)
-        .toRight(s"missing $correlationIdHeader header")
-    } yield (correlationId)
-  }
+  val correlationIdHeader = "correlationId"
+  val sourceSysRefHeader  = "sourceSysRef"
 }
