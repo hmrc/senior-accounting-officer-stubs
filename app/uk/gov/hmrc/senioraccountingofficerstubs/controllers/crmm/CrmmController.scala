@@ -49,8 +49,8 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
                   case errors if errors.nonEmpty => Future.successful(JsonErrorHandling.badRequest(errors))
                   case _                         =>
                     validateAtLeastOneId(json) match {
-                      case Left(error) => Future.successful(error)
-                      case _           =>
+                      case Left(error)                       => Future.successful(error)
+                      case Right(_: RetrieveCustomerRequest) =>
                         repository.get(correlationId).map {
                           case Some(config) => retrieveConfiguredResponse(config)
                           case _            => Ok(Json.toJson(generateStandardResponse))
