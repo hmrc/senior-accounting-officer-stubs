@@ -19,15 +19,12 @@ package uk.gov.hmrc.senioraccountingofficerstubs.connectors
 import play.api.libs.json.JsValue
 import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.http.HttpReads.Implicits.*
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.senioraccountingofficerstubs.config.AppConfig
 
 import scala.concurrent.{ExecutionContext, Future}
-
-import java.net.URI
-import java.net.URL
 import javax.inject.Inject
 
 class FileUploadSdesStubConnector @Inject() (
@@ -37,9 +34,8 @@ class FileUploadSdesStubConnector @Inject() (
 )(using ExecutionContext) {
 
   def notifyFileReady(payload: JsValue)(using HeaderCarrier): Future[HttpResponse] = {
-    val url: URL = URI
-      .create(s"${servicesConfig.baseUrl("file-upload-sdes-stub")}${appConfig.fileUploadNotificationPath}")
-      .toURL
+  
+  val url = url"${servicesConfig.baseUrl("file-upload-sdes-stub")}${appConfig.fileUploadNotificationPath}"
 
     httpClientV2
       .post(url)
