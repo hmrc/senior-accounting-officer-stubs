@@ -29,4 +29,8 @@ class AppConfig @Inject() (config: Configuration) {
   def clientSecret: String = config.get[String]("hip.clientSecret")
 
   def cacheTtl: Long = config.get[Int]("mongodb.timeToLiveInSeconds")
+
+  def sdesProxyStubClientId: String        = config.get[String]("sdes-proxy-stub.xClientId")
+  def sdesProxyStubInformationType: String = config.get[String]("sdes-proxy-stub.informationType")
+  def fileUploadNotificationPath: String   = config.get[String]("sdes-proxy-stub.fileUploadNotificationPath")
 }
