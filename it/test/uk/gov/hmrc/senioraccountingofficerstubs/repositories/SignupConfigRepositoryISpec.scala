@@ -47,7 +47,12 @@ class SignupConfigRepositoryISpec
   private val instant          = Instant.now.truncatedTo(ChronoUnit.MILLIS)
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
-  private val testStubConfig = SignupStubConfiguration("utr", None, None, Instant.ofEpochSecond(1))
+  private val testStubConfig = SignupStubConfiguration(
+    utr = "utr",
+    postEtmpSubscription = None,
+    putDpsSubscription = None,
+    lastUpdated = Instant.ofEpochSecond(1)
+  )
 
   private val mockAppConfig = mock[AppConfig]
   when(mockAppConfig.cacheTtl) thenReturn 1L
