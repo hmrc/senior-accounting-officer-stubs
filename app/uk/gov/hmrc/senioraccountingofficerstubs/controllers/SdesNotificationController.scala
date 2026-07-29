@@ -18,7 +18,6 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.connectors.FileUploadSdesStubConnector
 
@@ -34,12 +33,11 @@ class SdesNotificationController @Inject() (
 )(using ExecutionContext)
     extends BackendController(cc) {
 
-  def fileReady(): Action[JsValue] = Action.async(parse.json) { request =>
+  def fileReady(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     request.headers.get("X-Client-ID") match {
-      case Some(clientId) if clientId == supportedClientId =>
+      case Some(`supportedClientId`) =>
         (request.body \ "informationType").asOpt[String] match {
-          case Some(informationType) if informationType == supportedInformationType =>
-            given HeaderCarrier = hc(request)
+          case Some(`supportedInformationType`) =>
 
             fileUploadSdesStubConnector.notifyFileReady(request.body).map { response =>
               Status(response.status)(response.body)
