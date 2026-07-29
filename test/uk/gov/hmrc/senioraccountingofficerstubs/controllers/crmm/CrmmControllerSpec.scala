@@ -241,7 +241,7 @@ class CrmmControllerSpec
         "return the configured status code and the default body" in {
           val requestBody = s"""{"uniqueTaxReference": "$utr", "companyRegistrationNumber": "$crn"}"""
 
-          when(mockRepository.getByCrnAndUtr(crn = meq(Some(crn)), utr = meq(Some(utr)))).thenReturn(
+          when(mockRepository.getByCrnAndUtr(crn = meq(crn), utr = meq(utr))).thenReturn(
             Future.successful(
               Some(
                 PostSignupStubConfiguration(
@@ -277,7 +277,7 @@ class CrmmControllerSpec
 
           val requestBody = s"""{"uniqueTaxReference": "$utr", "companyRegistrationNumber": "$crn"}"""
 
-          when(mockRepository.getByCrnAndUtr(crn = meq(Some(crn)), utr = meq(Some(utr)))).thenReturn(
+          when(mockRepository.getByCrnAndUtr(crn = meq(crn), utr = meq(utr))).thenReturn(
             Future.successful(
               Some(
                 PostSignupStubConfiguration(

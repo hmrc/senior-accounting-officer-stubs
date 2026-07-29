@@ -52,10 +52,15 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
                     validateAtLeastOneId(json) match {
                       case Left(error) => Future.successful(error)
                       case Right(RetrieveCustomerRequest(companyRegistrationNumber, uniqueTaxReference)) =>
-                        repository.getByCrnAndUtr(companyRegistrationNumber, uniqueTaxReference).map {
-                          case Some(config) => retrieveConfiguredResponse(config)
-                          case _            => Ok(Json.toJson(generateStandardResponse))
-                        }
+                        repository
+                          .getByCrnAndUtr(
+                            companyRegistrationNumber.fold("")(identity),
+                            uniqueTaxReference.fold("")(identity)
+                          )
+                          .map {
+                            case Some(config) => retrieveConfiguredResponse(config)
+                            case _            => Ok(Json.toJson(generateStandardResponse))
+                          }
                     }
                 }
             )
