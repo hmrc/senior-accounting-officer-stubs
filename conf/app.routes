@@ -9,3 +9,6 @@ PUT        /contact-details/:saoSubscriptionId                  uk.gov.hmrc.seni
 
 
 GET        /obligation/:saoSubscriptionId                       uk.gov.hmrc.senioraccountingofficerstubs.controllers.ObligationController.getObligation(saoSubscriptionId: String)
+
++ noauth
+POST        /notification/fileready                    uk.gov.hmrc.senioraccountingofficerstubs.controllers.SdesNotificationController.fileReady()
