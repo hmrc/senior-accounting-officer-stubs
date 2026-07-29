@@ -20,25 +20,25 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.senioraccountingofficerstubs.config.AppConfig
 import uk.gov.hmrc.senioraccountingofficerstubs.connectors.FileUploadSdesStubConnector
 
 import scala.concurrent.{ExecutionContext, Future}
 
 import javax.inject.Inject
 
+import SdesNotificationController.*
+
 class SdesNotificationController @Inject() (
     cc: ControllerComponents,
-    appConfig: AppConfig,
     fileUploadSdesStubConnector: FileUploadSdesStubConnector
 )(using ExecutionContext)
     extends BackendController(cc) {
 
   def fileReady(): Action[JsValue] = Action.async(parse.json) { request =>
     request.headers.get("X-Client-ID") match {
-      case Some(clientId) if clientId == appConfig.sdesProxyStubClientId =>
+      case Some(clientId) if clientId == supportedClientId =>
         (request.body \ "informationType").asOpt[String] match {
-          case Some(informationType) if informationType == appConfig.sdesProxyStubInformationType =>
+          case Some(informationType) if informationType == supportedInformationType =>
             given HeaderCarrier = hc(request)
 
             fileUploadSdesStubConnector.notifyFileReady(request.body).map { response =>
@@ -67,4 +67,9 @@ class SdesNotificationController @Inject() (
         )
     }
   }
+}
+
+object SdesNotificationController {
+  private val supportedClientId        = "senior-accounting-officer"
+  private val supportedInformationType = "DSAO"
 }

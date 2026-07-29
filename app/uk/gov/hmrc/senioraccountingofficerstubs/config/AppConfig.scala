@@ -30,7 +30,5 @@ class AppConfig @Inject() (config: Configuration) {
 
   def cacheTtl: Long = config.get[Int]("mongodb.timeToLiveInSeconds")
 
-  def sdesProxyStubClientId: String        = config.get[String]("sdes-proxy-stub.xClientId")
-  def sdesProxyStubInformationType: String = config.get[String]("sdes-proxy-stub.informationType")
-  def fileUploadNotificationPath: String   = config.get[String]("sdes-proxy-stub.fileUploadNotificationPath")
+  def fileUploadNotificationPath: String = config.get[String]("sdes-proxy-stub.fileUploadNotificationPath")
 }

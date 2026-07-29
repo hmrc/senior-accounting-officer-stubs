@@ -56,10 +56,6 @@ class SdesNotificationControllerSpec
 
   override lazy val app: Application = GuiceApplicationBuilder()
     .overrides(bind[FileUploadSdesStubConnector].toInstance(mockConnector))
-    .configure(
-      "sdes-proxy-stub.xClientId"       -> "senior-accounting-officer",
-      "sdes-proxy-stub.informationType" -> "DSAO"
-    )
     .build()
 
   override def beforeEach(): Unit = {
