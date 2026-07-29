@@ -24,6 +24,7 @@ import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.ApiError
 import uk.gov.hmrc.senioraccountingofficerstubs.models.crmm.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.PostSignupStubConfiguration
+import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.*
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.generateCustomerId
 
@@ -38,20 +39,20 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
   def retrieveCustomer(): Action[String] = Action(parse.tolerantText).async { implicit request =>
     validateHeaders(request.headers)
       .fold(
-        Future.successful(_),
+        Future.successful,
         correlationId => {
           JsonErrorHandling
             .parseJson(request.body)
             .fold(
-              Future.successful(_),
+              Future.successful,
               json =>
                 JsonErrorHandling.Validators.validateRetrieveCustomerRequest(json) match {
                   case errors if errors.nonEmpty => Future.successful(JsonErrorHandling.badRequest(errors))
                   case _                         =>
                     validateAtLeastOneId(json) match {
-                      case Left(error)                       => Future.successful(error)
-                      case Right(_: RetrieveCustomerRequest) =>
-                        repository.get(correlationId).map {
+                      case Left(error) => Future.successful(error)
+                      case Right(RetrieveCustomerRequest(companyRegistrationNumber, uniqueTaxReference)) =>
+                        repository.getByCrnAndUtr(companyRegistrationNumber, uniqueTaxReference).map {
                           case Some(config) => retrieveConfiguredResponse(config)
                           case _            => Ok(Json.toJson(generateStandardResponse))
                         }
@@ -99,12 +100,18 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
   }
 
   def retrieveConfiguredResponse(config: PostSignupStubConfiguration): Result = {
-    val status: Int  = config.postCrmmRetrieveCustomer.map(_.status).fold(200)(identity)
-    val body: String = config.postCrmmRetrieveCustomer
-      .flatMap(_.defaultBodyOverride)
-      .fold(
-        Json.toJson(generateStandardResponse).toString
-      )(identity)
+    val status: Int = config.getSubscriptionAndPostRetrieveCustomerId
+      .collect { case PostRetrieveCustomerIdConfig(_, status, _) =>
+        status
+      }
+      .fold(200)(identity)
+
+    val body: String = config.getSubscriptionAndPostRetrieveCustomerId
+      .collect { case PostRetrieveCustomerIdConfig(getSubscription, status, Some(defaultBodyOverride)) =>
+        defaultBodyOverride
+      }
+      .fold(Json.toJson(generateStandardResponse).toString)(identity)
+
     Status(status)(body).as(JSON)
   }
 

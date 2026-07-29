@@ -25,6 +25,7 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.senioraccountingofficerstubs.config.AppConfig
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.PostSignupStubConfiguration
+import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository.{crnPath, utrPath}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -47,8 +48,8 @@ class PostSignupConfigRepository @Inject() (
           Indexes
             .ascending(
               "subscriptionId",
-              "getSubscriptionAndPostRetrieveCustomerId.getSubscription.crn",
-              "getSubscriptionAndPostRetrieveCustomerId.getSubscription.utr"
+              crnPath,
+              utrPath
             ),
           IndexOptions()
             .name("subscriptionIdIdx")
@@ -57,8 +58,8 @@ class PostSignupConfigRepository @Inject() (
         IndexModel(
           Indexes
             .ascending(
-              "getSubscriptionAndPostRetrieveCustomerId.getSubscription.crn",
-              "getSubscriptionAndPostRetrieveCustomerId.getSubscription.utr"
+              crnPath,
+              utrPath
             ),
           IndexOptions()
             .name("api5Idx")
@@ -77,10 +78,26 @@ class PostSignupConfigRepository @Inject() (
 
   private def byId(subscriptionId: String): Bson = Filters.equal("subscriptionId", subscriptionId)
 
+  private def byCrnAndUtr(crn: Option[String], utr: Option[String]): Bson =
+    Filters.and(
+      Filters.equal(crnPath, crn),
+      Filters.equal(utrPath, utr)
+    )
+
   def keepAlive(subscriptionId: String): Future[Boolean] = Mdc.preservingMdc {
     collection
       .updateOne(
         filter = byId(subscriptionId),
+        update = Updates.set("lastUpdated", Instant.now(clock))
+      )
+      .toFuture()
+      .map(_ => true)
+  }
+
+  def keepAliveViaCrnAndUtr(crn: Option[String], utr: Option[String]): Future[Boolean] = Mdc.preservingMdc {
+    collection
+      .updateOne(
+        filter = byCrnAndUtr(crn, utr),
         update = Updates.set("lastUpdated", Instant.now(clock))
       )
       .toFuture()
@@ -94,6 +111,15 @@ class PostSignupConfigRepository @Inject() (
         .headOption()
     }
   }
+
+  def getByCrnAndUtr(crn: Option[String], utr: Option[String]): Future[Option[PostSignupStubConfiguration]] =
+    Mdc.preservingMdc {
+      keepAliveViaCrnAndUtr(crn, utr).flatMap { _ =>
+        collection
+          .find(byCrnAndUtr(crn, utr))
+          .headOption()
+      }
+    }
 
   def set(config: PostSignupStubConfiguration): Future[Boolean] = Mdc.preservingMdc {
 
@@ -116,4 +142,9 @@ class PostSignupConfigRepository @Inject() (
       .map(_ => true)
   }
 
+}
+
+object PostSignupConfigRepository {
+  val crnPath = "getSubscriptionAndPostRetrieveCustomerId.getSubscription.crn"
+  val utrPath = "getSubscriptionAndPostRetrieveCustomerId.getSubscription.utr"
 }

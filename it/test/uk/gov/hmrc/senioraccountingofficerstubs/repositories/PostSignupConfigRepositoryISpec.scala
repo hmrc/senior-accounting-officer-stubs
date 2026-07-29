@@ -48,7 +48,13 @@ class PostSignupConfigRepositoryISpec
   private val stubClock: Clock = Clock.fixed(instant, ZoneId.systemDefault)
 
   private val testStubConfig =
-    PostSignupStubConfiguration("subscriptionId", None, None, None, None, Instant.ofEpochSecond(1))
+    PostSignupStubConfiguration(
+      subscriptionId = "subscriptionId",
+      getSubscriptionAndPostRetrieveCustomerId = None,
+      postNotification = None,
+      postCertificate = None,
+      lastUpdated = Instant.ofEpochSecond(1)
+    )
 
   private val mockAppConfig = mock[AppConfig]
   when(mockAppConfig.cacheTtl) thenReturn 1L
