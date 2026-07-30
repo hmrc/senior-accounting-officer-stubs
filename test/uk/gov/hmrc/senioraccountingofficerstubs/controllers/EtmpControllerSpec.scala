@@ -34,9 +34,9 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.{NoneDefaultApiConfiguration, SignupStubConfiguration}
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.generateUtr
 
 import scala.concurrent.Future
-import scala.util.Random
 
 import java.util.UUID
 
@@ -49,7 +49,7 @@ class EtmpControllerSpec
 
   private val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
 
-  private val testIdNumber = f"${Random.nextInt(100000)}%010d"
+  private val testIdNumber = generateUtr
 
   private val validEtmpRequest: JsValue = Json.obj(
     "idType"   -> "UTR",
@@ -153,7 +153,7 @@ class EtmpControllerSpec
 
     "return a structured 400 for a request with invalid enum for idType" in {
       val invalidPayload: JsValue = Json.obj(
-        "idNumber" -> f"${Random.nextInt(100000)}%010d",
+        "idNumber" -> generateUtr,
         "idType"   -> "Test"
       )
       val expectedContent = Json.obj(
