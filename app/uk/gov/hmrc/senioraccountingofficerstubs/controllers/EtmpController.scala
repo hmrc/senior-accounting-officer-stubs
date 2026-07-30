@@ -26,9 +26,9 @@ import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.NoneDefaultApiConfiguration
 import uk.gov.hmrc.senioraccountingofficerstubs.models.{EtmpSuccessResponse, Success as EtmpSuccess}
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.generateDsaoIdNumber
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Random
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -58,7 +58,7 @@ class EtmpController @Inject() (cc: ControllerComponents, repository: SignupConf
                           EtmpSuccessResponse(
                             EtmpSuccess(
                               Instant.now().truncatedTo(ChronoUnit.SECONDS).toString,
-                              f"XB${Random.nextInt(1000000)}%013d"
+                              generateDsaoIdNumber
                             )
                           )
                         )

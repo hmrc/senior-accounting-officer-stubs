@@ -35,4 +35,9 @@ object TestDataGenerator {
     val num = Random.nextInt(10000000)
     f"$num%08d"
   }
+
+  def generateDsaoIdNumber: String = {
+    val num = Random.nextInt(1000000)
+    f"XB$num%013d"
+  }
 }
