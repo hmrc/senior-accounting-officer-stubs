@@ -16,29 +16,69 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.*
 import org.scalactic.Prettifier.default
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.Application
 import play.api.http.{MimeTypes, Status}
+import play.api.inject.*
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.*
 import play.api.mvc.{AnyContentAsText, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.{NoneDefaultApiConfiguration, SignupStubConfiguration}
+import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
 
 import scala.concurrent.Future
 import scala.util.Random
 
 import java.util.UUID
 
-class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
+class EtmpControllerSpec
+    extends AnyWordSpec
+    with Matchers
+    with GuiceOneAppPerSuite
+    with MockitoSugar
+    with BeforeAndAfterEach {
 
   private val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
 
+  private val testIdNumber = f"${Random.nextInt(100000)}%010d"
+
   private val validEtmpRequest: JsValue = Json.obj(
     "idType"   -> "UTR",
-    "idNumber" -> f"${Random.nextInt(100000)}%010d"
+    "idNumber" -> testIdNumber
   )
+
+  private val mockRepository: SignupConfigRepository = mock[SignupConfigRepository]
+
+  override lazy val app: Application = GuiceApplicationBuilder()
+    .overrides(bind[SignupConfigRepository].toInstance(mockRepository))
+    .build()
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockRepository)
+    when(mockRepository.get(any())).thenReturn(Future.successful(None))
+  }
+
+  private def stubEtmpStatus(status: Int, body: Option[String] = None): Unit =
+    when(mockRepository.get(meq(testIdNumber))).thenReturn(
+      Future.successful(
+        Some(
+          SignupStubConfiguration(
+            utr = testIdNumber,
+            postEtmpSubscription = Some(NoneDefaultApiConfiguration(status, body))
+          )
+        )
+      )
+    )
 
   private val xTransmittingSystem = ("X-Transmitting-System" -> "HIP")
   private val xOriginatingSystem  = ("X-Originating-System"  -> "MDTP")
@@ -170,6 +210,75 @@ class EtmpControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSu
       val result = routeResult(fakeEtmpPOSTRequest(validEtmpRequest).withTextBody("("))
       status(result) shouldBe Status.BAD_REQUEST
       contentAsString(result) shouldBe expectedPayload
+    }
+  }
+
+  "POST /etmp/RESTAdapter/dsao/subscription with a configured stub response" should {
+    val hipFailure = Json
+      .obj(
+        "origin"   -> "HIP",
+        "response" -> Json.obj("failures" -> Json.arr(Json.obj("type" -> "string", "reason" -> "string")))
+      )
+      .toString
+
+    Seq(
+      Status.UNAUTHORIZED,
+      Status.FORBIDDEN,
+      Status.NOT_FOUND,
+      Status.UNPROCESSABLE_ENTITY,
+      Status.INTERNAL_SERVER_ERROR,
+      Status.SERVICE_UNAVAILABLE
+    ).foreach { configuredStatus =>
+      s"return the configured $configuredStatus with its body and the correlationId header" in {
+        stubEtmpStatus(configuredStatus, Some(hipFailure))
+
+        val request       = fakeEtmpPOSTRequest(validEtmpRequest)
+        val correlationId = request.headers.get("correlationId").get
+        val result        = routeResult(request)
+
+        status(result) shouldBe configuredStatus
+        contentAsString(result) shouldBe hipFailure
+        header("correlationId", result) shouldBe Some(correlationId)
+      }
+    }
+
+    "return 204 with no body when configured with 204" in {
+      stubEtmpStatus(Status.NO_CONTENT)
+
+      val result = routeResult(fakeEtmpPOSTRequest(validEtmpRequest))
+
+      status(result) shouldBe Status.NO_CONTENT
+      contentAsString(result) shouldBe ""
+    }
+
+    "return 201 when the configuration holds no ETMP override" in {
+      when(mockRepository.get(meq(testIdNumber))).thenReturn(
+        Future.successful(Some(SignupStubConfiguration(utr = testIdNumber)))
+      )
+
+      val result = routeResult(fakeEtmpPOSTRequest(validEtmpRequest))
+
+      status(result) shouldBe Status.CREATED
+    }
+
+    "reject an invalid request before consulting the configuration" in {
+      stubEtmpStatus(Status.SERVICE_UNAVAILABLE)
+
+      val result = routeResult(fakeEtmpPOSTRequest(validEtmpRequest.as[JsObject] - "idType"))
+
+      status(result) shouldBe Status.BAD_REQUEST
+    }
+
+    Seq(
+      "a missing idNumber"    -> (validEtmpRequest.as[JsObject] - "idNumber"),
+      "a non-string idNumber" -> (validEtmpRequest.as[JsObject] ++ Json.obj("idNumber" -> 1234567890)),
+      "a top level array"     -> Json.arr(validEtmpRequest)
+    ).foreach { case (description, payload) =>
+      s"return 400 rather than failing the config lookup for $description" in {
+        stubEtmpStatus(Status.SERVICE_UNAVAILABLE)
+
+        status(routeResult(fakeEtmpPOSTRequest(payload))) shouldBe Status.BAD_REQUEST
+      }
     }
   }
 }
