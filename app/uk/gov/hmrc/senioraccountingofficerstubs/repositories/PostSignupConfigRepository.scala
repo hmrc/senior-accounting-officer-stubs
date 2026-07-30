@@ -79,15 +79,10 @@ class PostSignupConfigRepository @Inject() (
 
   private def byId(subscriptionId: String): Bson = equal("subscriptionId", subscriptionId)
 
-  @SuppressWarnings(
-    Array(
-      "scalafix:DisableSyntax.null"
-    )
-  )
   private def byCrnAndUtr(crn: Option[String], utr: Option[String]): Bson =
     and(
-      equal(crnPath, crn.fold(null)(identity)),
-      equal(utrPath, utr.fold(null)(identity))
+      crn.fold(not(exists(crnPath)))(crn => equal(crnPath, crn)),
+      utr.fold(not(exists(utrPath)))(utr => equal(utrPath, utr))
     )
 
   def keepAlive(subscriptionId: String): Future[Boolean] = Mdc.preservingMdc {
