@@ -90,8 +90,8 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
   private def getConfiguredResponse(request: RetrieveCustomerRequest): Future[Result] = {
     repository
       .getByCrnAndUtr(
-        request.companyRegistrationNumber.fold("")(identity),
-        request.uniqueTaxReference.fold("")(identity)
+        request.companyRegistrationNumber,
+        request.uniqueTaxReference
       )
       .map {
         case Some(config) => retrieveConfiguredResponse(config)

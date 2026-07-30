@@ -18,6 +18,7 @@ package uk.gov.hmrc.senioraccountingofficerstubs.repositories
 
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.*
+import org.mongodb.scala.model.Filters.*
 import play.api.libs.json.Format
 import uk.gov.hmrc.mdc.Mdc
 import uk.gov.hmrc.mongo.MongoComponent
@@ -76,12 +77,12 @@ class PostSignupConfigRepository @Inject() (
 
   given instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
-  private def byId(subscriptionId: String): Bson = Filters.equal("subscriptionId", subscriptionId)
+  private def byId(subscriptionId: String): Bson = equal("subscriptionId", subscriptionId)
 
-  private def byCrnAndUtr(crn: String, utr: String): Bson =
-    Filters.and(
-      Filters.equal(crnPath, crn),
-      Filters.equal(utrPath, utr)
+  private def byCrnAndUtr(crn: Option[String], utr: Option[String]): Bson =
+    and(
+      equal(crnPath, crn.fold(null)(identity)),
+      equal(utrPath, utr.fold(null)(identity))
     )
 
   def keepAlive(subscriptionId: String): Future[Boolean] = Mdc.preservingMdc {
@@ -94,7 +95,7 @@ class PostSignupConfigRepository @Inject() (
       .map(_ => true)
   }
 
-  def keepAliveViaCrnAndUtr(crn: String, utr: String): Future[Boolean] = Mdc.preservingMdc {
+  def keepAliveViaCrnAndUtr(crn: Option[String], utr: Option[String]): Future[Boolean] = Mdc.preservingMdc {
     collection
       .updateOne(
         filter = byCrnAndUtr(crn, utr),
@@ -112,7 +113,7 @@ class PostSignupConfigRepository @Inject() (
     }
   }
 
-  def getByCrnAndUtr(crn: String, utr: String): Future[Option[PostSignupStubConfiguration]] =
+  def getByCrnAndUtr(crn: Option[String], utr: Option[String]): Future[Option[PostSignupStubConfiguration]] =
     Mdc.preservingMdc {
       keepAliveViaCrnAndUtr(crn, utr).flatMap { _ =>
         collection
