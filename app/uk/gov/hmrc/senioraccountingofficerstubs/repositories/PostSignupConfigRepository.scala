@@ -17,8 +17,8 @@
 package uk.gov.hmrc.senioraccountingofficerstubs.repositories
 
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.*
+import org.mongodb.scala.model.*
 import play.api.libs.json.Format
 import uk.gov.hmrc.mdc.Mdc
 import uk.gov.hmrc.mongo.MongoComponent
@@ -79,6 +79,11 @@ class PostSignupConfigRepository @Inject() (
 
   private def byId(subscriptionId: String): Bson = equal("subscriptionId", subscriptionId)
 
+  @SuppressWarnings(
+    Array(
+      "scalafix:DisableSyntax.null"
+    )
+  )
   private def byCrnAndUtr(crn: Option[String], utr: Option[String]): Bson =
     and(
       equal(crnPath, crn.fold(null)(identity)),
