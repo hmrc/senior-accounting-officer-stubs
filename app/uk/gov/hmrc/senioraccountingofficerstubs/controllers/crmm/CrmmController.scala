@@ -37,38 +37,15 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
     ExecutionContext
 ) extends BackendController(cc) {
   def retrieveCustomer(): Action[String] = Action(parse.tolerantText).async { implicit request =>
-    validateHeaders(request.headers)
-      .fold(
-        Future.successful,
-        correlationId => {
-          JsonErrorHandling
-            .parseJson(request.body)
-            .fold(
-              Future.successful,
-              json =>
-                JsonErrorHandling.Validators.validateRetrieveCustomerRequest(json) match {
-                  case errors if errors.nonEmpty => Future.successful(JsonErrorHandling.badRequest(errors))
-                  case _                         =>
-                    validateAtLeastOneId(json) match {
-                      case Left(error) => Future.successful(error)
-                      case Right(RetrieveCustomerRequest(companyRegistrationNumber, uniqueTaxReference)) =>
-                        repository
-                          .getByCrnAndUtr(
-                            companyRegistrationNumber.fold("")(identity),
-                            uniqueTaxReference.fold("")(identity)
-                          )
-                          .map {
-                            case Some(config) => retrieveConfiguredResponse(config)
-                            case _            => Ok(Json.toJson(generateStandardResponse))
-                          }
-                    }
-                }
-            )
-        }
-      )
+    (for {
+      _            <- validateHeaders(request.headers)
+      json         <- JsonErrorHandling.parseJson(request.body)
+      _            <- jsonSchemaValidation(json)
+      requestModel <- validateAtLeastOneId(json)
+    } yield getConfiguredResponse(requestModel)).left.map(Future.successful).merge
   }
 
-  def validateHeaders(requestHeaders: Headers): Either[Result, String] = {
+  private def validateHeaders(requestHeaders: Headers): Either[Result, String] = {
     for {
       _ <- requestHeaders
         .get(sourceSysRefHeader)
@@ -91,7 +68,13 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
     } yield correlationId
   }
 
-  def validateAtLeastOneId(json: JsValue): Either[Result, RetrieveCustomerRequest] = {
+  private def jsonSchemaValidation(json: JsValue): Either[Result, Unit] =
+    JsonErrorHandling.Validators.validateRetrieveCustomerRequest(json) match {
+      case Nil    => Right(())
+      case errors => Left(JsonErrorHandling.badRequest(errors))
+    }
+
+  private def validateAtLeastOneId(json: JsValue): Either[Result, RetrieveCustomerRequest] = {
     json.as[RetrieveCustomerRequest] match {
       case RetrieveCustomerRequest(None, None) =>
         Left(
@@ -104,7 +87,19 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
     }
   }
 
-  def retrieveConfiguredResponse(config: PostSignupStubConfiguration): Result = {
+  private def getConfiguredResponse(request: RetrieveCustomerRequest): Future[Result] = {
+    repository
+      .getByCrnAndUtr(
+        request.companyRegistrationNumber.fold("")(identity),
+        request.uniqueTaxReference.fold("")(identity)
+      )
+      .map {
+        case Some(config) => retrieveConfiguredResponse(config)
+        case _            => Ok(Json.toJson(generateStandardResponse))
+      }
+  }
+
+  private def retrieveConfiguredResponse(config: PostSignupStubConfiguration): Result = {
     val status: Int = config.getSubscriptionAndPostRetrieveCustomerId
       .collect { case PostRetrieveCustomerIdConfig(_, status, _) =>
         status
@@ -120,7 +115,7 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
     Status(status)(body).as(JSON)
   }
 
-  def generateStandardResponse: RetrieveCustomerResponse = {
+  private def generateStandardResponse: RetrieveCustomerResponse = {
     RetrieveCustomerResponse(
       customerId = Some(generateCustomerId),
       errorDescription = None,
