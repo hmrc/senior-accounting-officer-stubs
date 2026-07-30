@@ -16,24 +16,36 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers.putsubscription
 
-import play.api.mvc.{Action, ControllerComponents}
+import org.apache.pekko.stream.Materializer
+import play.api.Logging
+import play.api.libs.json.Json
+import play.api.mvc.{Action, ControllerComponents, Result}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.senioraccountingofficerstubs.controllers.OpenApiBlock
 import uk.gov.hmrc.senioraccountingofficerstubs.controllers.putsubscription.PutSubscriptionsController.subscriptionIdLengthError
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.ApiError
 import uk.gov.hmrc.senioraccountingofficerstubs.models.putsubscription.Subscription
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.ValidationErrorFormatter.*
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.{OpenApiSchema, OpenApiValidator}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 import javax.inject.Inject
 
-class PutSubscriptionsController @Inject() (cc: ControllerComponents, repository: SignupConfigRepository)(using
-    ExecutionContext
-) extends BackendController(cc) {
+class PutSubscriptionsController @Inject() (
+    cc: ControllerComponents,
+    openApiFilter: OpenApiBlock,
+    repository: SignupConfigRepository
+)(using
+    ExecutionContext,
+    Materializer
+) extends BackendController(cc)
+    with Logging {
 
-  def putSubscription(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText).async {
+  def putSubscription0(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText).async {
     implicit request =>
       JsonErrorHandling.parseJson(request.body) match {
         case Right(json) =>
@@ -57,6 +69,44 @@ class PutSubscriptionsController @Inject() (cc: ControllerComponents, repository
           Future.successful(errorResult)
       }
   }
+
+  def putSubscription_1(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText).async {
+    implicit request =>
+      val schemaValidator = OpenApiValidator
+        .of(OpenApiSchema.SaoDigitalApi)(pathPrefix = "/dapm")
+      val requestValidationReport = schemaValidator
+        .validateRequestAs[Subscription](request)
+
+      requestValidationReport.left
+        .map(report => Future.successful(BadRequest(Json.toJson(report.toStandardHipFailures))))
+        .map { subscription =>
+          val response: Future[Result] = repository.get(subscription.nominatedCompany.utr).map {
+            case Some(config) =>
+              config.putDpsSubscription
+                .fold(Created)(config => Status(config.status)(config.defaultBodyOverride.fold("")(identity)).as(JSON))
+            case _ => Created
+          }
+          response.map { result =>
+            val responseValidationReport = schemaValidator.validateResponse(result)
+            if responseValidationReport.hasErrors then logger.warn(responseValidationReport.toString)
+            result
+          }
+        }
+        .merge
+  }
+
+  def putSubscription(saoSubscriptionId: String): Action[String] =
+    openApiFilter[Subscription](logger)(OpenApiSchema.SaoDigitalApi, pathPrefix = "/dapm")
+      .fold(report => report.toStandardHipFailures) { implicit request =>
+        val subscription = request.body
+        repository.get(subscription.nominatedCompany.utr).map {
+          case Some(config) =>
+            config.putDpsSubscription
+              .fold(Created)(config => Status(config.status)(config.defaultBodyOverride.fold("")(identity)).as(JSON))
+          case _ => Created
+        }
+      }
+
 }
 
 object PutSubscriptionsController {

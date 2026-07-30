@@ -11,7 +11,9 @@ lazy val microservice = Project("senior-accounting-officer-stubs", file("."))
     // suppress warnings in generated routes files
     scalacOptions += "-Wconf:src=routes/.*:s",
     PlayKeys.playDefaultPort := 10061,
-    Compile / unmanagedResourceDirectories += baseDirectory.value / "src/main/resources"
+    Compile / unmanagedResourceDirectories += baseDirectory.value / "src/main/resources",
+    // swagger-request-validator-core 3.0.0 requires 2.18.x
+    dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % "2.18.0"
   )
   .settings(CodeCoverageSettings.settings: _*)
   .settings(scalafixSettings *)

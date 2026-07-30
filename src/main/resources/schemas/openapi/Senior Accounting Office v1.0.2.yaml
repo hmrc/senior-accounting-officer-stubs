@@ -1,0 +1,288 @@
+---
+openapi: 3.0.3
+info:
+  title: Senior Accounting Office
+  description: "Provides data retrieval for Senior Account Office \n\n  | Version\
+    \ | Date | Author | Description |\n  |---|-----|------|-----|\n  | 1.0.0 | 09-07-2026\
+    \ | Nicholas Kirby | Initial draft including primary key get requests |\n  | 1.0.1\
+    \ | 09-07-2026 | Nicholas Kirby | Corrected path for primary key get requests\
+    \ |\n  | 1.0.2 | 15-07-2026 | Nicholas Kirby | Removed the iv_subscriptions path\
+    \ so only primarykey available |"
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+  version: 1.0.2
+  x-integration-catalogue:
+    API-Generation: V2
+    api-type: SIMPLE
+    backends:
+    - SAO
+    domain: "2"
+    platform: HIP
+    reviewed-date: 2026-07-15T10:18:51.041966879Z
+    short-description: Provides access to subscription and contacts information for
+      the Senior Accounting Office.
+    status: BETA
+    sub-domain: "2.1"
+servers:
+- url: https://api.ipaas.prod.eis.ns2p.corp.hmrc.gov.uk/business-tax/corporate-tax
+  description: Corporate - Production
+- url: https://api.ipaas.preprod.eis.ns2p.corp.hmrc.gov.uk/business-tax/corporate-tax
+  description: Corporate – Pre-Production
+- url: https://api.ipaas.test.eis.ns2n.corp.hmrc.gov.uk/business-tax/corporate-tax
+  description: Corporate - Test
+- url: https://hip.ws.hmrc.gov.uk/business-tax/corporate-tax
+  description: MDTP - Production
+- url: https://hip.ws.ibt.hmrc.gov.uk/business-tax/corporate-tax
+  description: MDTP - QA
+security:
+- oAuth2:
+  - read:dsao
+paths:
+  /iv_subscriptions/{primaryKeyValue}:
+    get:
+      tags:
+      - iv_subscriptions
+      description: Returns the row of iv_subscriptions that matches the specified
+        primary key
+      operationId: queryViewPK_iv_subscriptions
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json;charset=UTF-8;subtype=denodo-8.0:
+              schema:
+                $ref: '#/components/schemas/iv_subscriptions_element_def'
+        "204":
+          description: No results were returned
+        "400":
+          description: Bad request
+          content:
+            application/json;charset=UTF-8;subtype=denodo-8.0:
+              schema:
+                type: object
+                properties:
+                  __errors__:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/errors_def'
+                xml:
+                  name: __errors__
+                  namespace: http://www.denodo.com/restful
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/HIP-originResponse'
+        "401":
+          description: Authentication failed
+          content:
+            application/json;charset=UTF-8;subtype=denodo-8.0:
+              schema:
+                type: object
+                properties:
+                  __errors__:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/errors_def'
+                xml:
+                  name: __errors__
+                  namespace: http://www.denodo.com/restful
+        "403":
+          description: Insufficient permissions to perform this request
+          content:
+            application/json;charset=UTF-8;subtype=denodo-8.0:
+              schema:
+                type: object
+                properties:
+                  __errors__:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/errors_def'
+                xml:
+                  name: __errors__
+                  namespace: http://www.denodo.com/restful
+        "500":
+          description: Runtime error
+          content:
+            application/json;charset=UTF-8;subtype=denodo-8.0:
+              schema:
+                type: object
+                properties:
+                  __errors__:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/errors_def'
+                xml:
+                  name: __errors__
+                  namespace: http://www.denodo.com/restful
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/HIP-originResponse'
+        "503":
+          description: Service Unavailable
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/HIP-originResponse'
+    parameters:
+    - name: primaryKeyValue
+      in: path
+      description: Primary key value
+      required: true
+      schema:
+        maxItems: 1
+        minItems: 1
+        type: array
+        items:
+          type: string
+      style: simple
+      explode: true
+components:
+  schemas:
+    errors_def:
+      type: object
+      properties:
+        code:
+          format: int32
+          type: integer
+          xml:
+            attribute: true
+        dataSource:
+          type: string
+          xml:
+            attribute: true
+        httpErrorReturnedBySource:
+          type: string
+          xml:
+            attribute: true
+        httpStatusCode:
+          type: integer
+          xml:
+            attribute: true
+        message:
+          type: string
+          xml:
+            attribute: true
+      xml:
+        name: error
+    iv_subscriptions_element_def:
+      description: Extended schema of view iv_subscriptions
+      properties:
+        contacts:
+          description: "Virtual DataPort type: _array_register_id_contact_name_contact_email_status_language"
+          type: array
+          items:
+            description: "Virtual DataPort type: _register_id_contact_name_contact_email_status_language"
+            type: object
+            properties:
+              email:
+                description: "Virtual DataPort type: text"
+                type: string
+              id:
+                description: "Virtual DataPort type: decimal"
+                type: number
+              language:
+                description: "Virtual DataPort type: text"
+                type: string
+              name:
+                description: "Virtual DataPort type: text"
+                type: string
+              status:
+                description: "Virtual DataPort type: text"
+                type: string
+        created:
+          description: "Virtual DataPort type: timestamp, format: yyyy-MM-ddTHH:mm:ss.SSS"
+          pattern: "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?"
+          type: string
+          example: 2021-01-25T12:55:45.123
+        etmpSafeId:
+          description: "Virtual DataPort type: text"
+          type: string
+        id:
+          description: "Virtual DataPort type: text"
+          type: string
+        nominatedCompany:
+          description: "Virtual DataPort type: _register_nominated_company_crn_nominated_company_utr_nominated_company_name"
+          type: object
+          properties:
+            crn:
+              description: "Virtual DataPort type: text"
+              type: string
+            name:
+              description: "Virtual DataPort type: text"
+              type: string
+            utr:
+              description: "Virtual DataPort type: text"
+              type: string
+        updated:
+          description: "Virtual DataPort type: timestamp, format: yyyy-MM-ddTHH:mm:ss.SSS"
+          pattern: "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?"
+          type: string
+          example: 2021-01-25T12:55:45.123
+      xml:
+        name: iv_subscriptions
+        namespace: http://www.denodo.com/restful/dsao/views/iv_subscriptions
+    HIP-originEnum:
+      enum:
+      - HIP
+      - HoD
+      type: string
+    HIP-failureResponse:
+      required:
+      - failures
+      type: object
+      properties:
+        failures:
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            required:
+            - type
+            - reason
+            type: object
+            properties:
+              type:
+                type: string
+              reason:
+                type: string
+            additionalProperties: false
+    HIP-originResponse:
+      required:
+      - origin
+      - response
+      type: object
+      properties:
+        origin:
+          $ref: '#/components/schemas/HIP-originEnum'
+        response:
+          $ref: '#/components/schemas/HIP-failureResponse'
+      additionalProperties: false
+  parameters:
+    infrastructure_provider_header_parameter:
+      name: Infrastructure-provider
+      in: header
+      description: "By including this header, the hosting type of the client can be\
+        \ specified."
+      required: false
+      schema:
+        type: string
+      style: simple
+      explode: false
+    infrastructure_region_header_parameter:
+      name: Infrastructure-region
+      in: header
+      description: "By including this header, the region of the client can be specified."
+      required: false
+      schema:
+        type: string
+      style: simple
+      explode: false
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: Keycloak OAuth2 Client Credentials Flow
+      flows:
+        clientCredentials:
+          tokenUrl: /tokenUrl/not-required
+          scopes:
+            read:dsao: Read senior accounting office results
