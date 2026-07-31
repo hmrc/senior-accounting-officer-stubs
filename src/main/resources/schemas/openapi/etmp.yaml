@@ -1,7 +1,7 @@
 ---
-openapi: "3.0.1"
+openapi: 3.0.3
 info:
-  title: "DSAO Subscription"
+  title: DSAO Subscription
   description: "This API specification describes the data structures used in the requests\
     \ and responses relating to DSAO subscription. It allows the consumer of the API\
     \ to create a subscription in ETMP.\n\nThe consumer sends a request with idType,\
@@ -10,292 +10,405 @@ info:
     \ is implemented as a synchronous REST service.\n\n**EPID references:** \n- EPID1731\
     \ - HIP OAS \n- EPID1730 - MDTP to ETMP DSAO Subscription API\n \n```\nChange\
     \ Log\n  ```\n | Version | Date | Author| Description ||\n|---|----|------|-----|-----|\n\
-    \ |0.1.1 | 24-04-2026 | Pradeep Nair| Initial draft (EPID1731 v0.1)||\n
-    \ |0.2.1 | 21-05-2026 | Pradeep Nair| Changes for DSAO (Oct 2026)\n
-      | | | |1. Removed subscriptionDetails container from request schema|\n
-      | | | |2. Updated length of field dsaoIdNumber from 30 to 15 in the response schema|\n
-      | | | |3. Added field dsaoIdNumber in 422 error schema|\n
-      | | | |4. Updated request and response examples|\n"
-  version: "0.2.1"
-  termsOfService: "http://INSERT_LINK_TO_SLA_HERE"
+    \ |0.1.1 | 24-04-2026 | Pradeep Nair| Initial draft (EPID1731 v0.1)||\n  |0.2.1\
+    \ | 21-05-2026 | Pradeep Nair| Changes for DSAO (Oct 2026)\n | | | |1. Removed\
+    \ subscriptionDetails container from request schema|\n | | | |2. Updated length\
+    \ of field dsaoIdNumber from 30 to 15 in the response schema|\n | | | |3. Added\
+    \ field dsaoIdNumber in 422 error schema|\n | | | |4. Updated request and response\
+    \ examples|\n  |1.0.0 | 26-05-2026 | Pradeep Nair| Baselined for DSAO (Oct 2026)\n\
+    \  "
+  termsOfService: http://INSERT_LINK_TO_SLA_HERE
   license:
-    name: "Apache 2.0"
-    url: "http://www.apache.org/licenses/LICENSE-2.0"
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+  version: 1.0.0
   x-integration-catalogue:
-    api-type: "SIMPLE"
-    backends: "ETMP"
+    api-type: SIMPLE
+    backends:
+    - etmp
     domain: "8"
-    platform: "HIP"
-    reviewed-date: "2026-05-01T12:00:00Z"
-    short-description: "DSAO Subscription"
-    status: "BETA"
+    platform: HIP
+    reviewed-date: 2026-05-27T09:43:11.432952715Z
+    short-description: DSAO Subscription
+    status: BETA
     sub-domain: "8.17"
 servers:
-  - url: "http://etmp-egress-gateway.egress.svc.cluster.local"
-    description: "Egress Gateway to ETMP TEST"
+- url: https://api.ipaas.prod.eis.ns2p.corp.hmrc.gov.uk/etmp
+  description: Corporate - Production
+- url: https://api.ipaas.preprod.eis.ns2p.corp.hmrc.gov.uk/etmp
+  description: Corporate – Pre-Production
+- url: https://api.ipaas.test.eis.ns2n.corp.hmrc.gov.uk/etmp
+  description: Corporate - Test
+- url: https://hip.ws.hmrc.gov.uk/etmp
+  description: MDTP - Production
+- url: https://hip.ws.ibt.hmrc.gov.uk/etmp
+  description: MDTP - QA
+security:
+- oAuth2:
+  - write:dsao-subscription
 tags:
-  - name: "dsao"
-    description: "Digital Senior Accounting Officer"
+- name: dsao
+  description: Digital Senior Accounting Officer
 paths:
   /RESTAdapter/dsao/subscription:
     post:
-      deprecated: false
-      summary: "Consumer to ETMP DSAO Subscription"
+      tags:
+      - dsao
+      summary: Consumer to ETMP DSAO Subscription
       description: "This is an operation that will allow synchronous creation of ETMP\
         \ DSAO subscription.\n\nOnce the message is processed in ETMP the API will\
         \ respond with either the corresponding details or an appropriate error message.\n\
         \n**EPID reference:** \n- EPID1731 - HIP OAS\n- EPID1730 - MDTP to ETMP DSAO\
         \ Subscription API\n"
-      operationId: "CreateDSAOSubscription"
-      tags:
-        - "dsao"
+      operationId: CreateDSAOSubscription
       parameters:
-        - name: "X-Transmitting-System"
-          in: "header"
-          description: "Intermediary system that performs the transmission of the message.\
-          \ Fixed value of 'HIP' required."
-          required: true
-          deprecated: false
-          allowEmptyValue: false
-          style: "simple"
-          schema:
-            type: "string"
-            enum:
-              - "HIP"
-            example: "HIP"
-        - name: "X-Originating-System"
-          in: "header"
-          description: "Name of the system/service that is the originator of the message and uniquely identifies the consumer of this API. When the consumer is Digital, value 'MDTP' required."
-          required: true
-          deprecated: false
-          allowEmptyValue: false
-          style: "simple"
-          schema:
-            type: "string"
-            minLength: 1
-            maxLength: 30
-            example: "MDTP"
-        - name: "correlationid"
-          in: "header"
-          description: "Unique alphanumeric acknowledgement reference number used for correlation purposes. Must be generated by the originating system. Must conform to 36-character UUID (formatted)."
-          required: true
-          deprecated: false
-          allowEmptyValue: false
-          style: "simple"
-          schema:
-            pattern: "^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$"
-            type: "string"
-          example: "f0bd1f32-de51-45cc-9b18-0520d6e3ab1a"
-        - name: "X-Receipt-Date"
-          in: "header"
-          description: "The time the message was created by the system sending the message.\
+      - name: X-Transmitting-System
+        in: header
+        description: Intermediary system that performs the transmission of the message.
+          Fixed value of 'HIP' required.
+        required: true
+        schema:
+          enum:
+          - HIP
+          type: string
+          example: HIP
+        deprecated: false
+        style: simple
+        explode: false
+      - name: X-Originating-System
+        in: header
+        description: "Name of the system/service that is the originator of the message\
+          \ and uniquely identifies the consumer of this API. When the consumer is\
+          \ Digital, value 'MDTP' required."
+        required: true
+        schema:
+          maxLength: 30
+          minLength: 1
+          type: string
+          example: MDTP
+        deprecated: false
+        style: simple
+        explode: false
+      - name: correlationid
+        in: header
+        description: Unique alphanumeric acknowledgement reference number used for
+          correlation purposes. Must be generated by the originating system. Must
+          conform to 36-character UUID (formatted).
+        required: true
+        schema:
+          pattern: "^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$"
+          type: string
+        deprecated: false
+        style: simple
+        explode: false
+        example: f0bd1f32-de51-45cc-9b18-0520d6e3ab1a
+      - name: X-Receipt-Date
+        in: header
+        description: "The time the message was created by the system sending the message.\
           \ The value should follow this date-time pattern, and be represented in\
           \ the UTC time zone: yyyy-MM-ddTHH:mm:ssZ."
-          required: true
-          deprecated: false
-          allowEmptyValue: false
-          style: "simple"
-          schema:
-            type: "string"
-            format: "date-time"
-            example: "2026-05-05T12:05:45Z"
+        required: true
+        schema:
+          format: date-time
+          type: string
+          example: 2026-05-05T12:05:45Z
+        deprecated: false
+        style: simple
+        explode: false
       requestBody:
-        description: "Subscription Request"
-        required: false
+        description: Subscription Request
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RequestSchema"
+              $ref: '#/components/schemas/RequestSchema'
             examples:
               Subscription Request:
                 value:
-                  idType: "UTR"
                   idNumber: "9876543210"
+                  idType: UTR
+        required: false
       responses:
         "201":
-          description: "Successful Subscription Response"
+          description: Successful Subscription Response
           headers:
             correlationid:
-              $ref: "#/components/headers/correlationidResponseType"
+              $ref: '#/components/headers/correlationidResponseType'
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ResponseSchemaSuccess"
+                $ref: '#/components/schemas/ResponseSchemaSuccess'
               examples:
                 Successful Subscription Response:
                   value:
                     success:
-                      processingDate: "2026-01-31T09:26:17Z"
-                      dsaoIdNumber: "XB0000493000308"
+                      dsaoIdNumber: XB0000493000308
+                      processingDate: 2026-01-31T09:26:17Z
         "400":
-          description: "Bad Request"
+          description: Bad Request
           headers:
             correlationid:
-              $ref: "#/components/headers/correlationidResponseType"
+              $ref: '#/components/headers/correlationidResponseType'
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ResponseSystemErrorType"
+                required:
+                - origin
+                - response
+                type: object
+                properties:
+                  origin:
+                    $ref: '#/components/schemas/HIP-originEnum'
+                  response:
+                    oneOf:
+                    - $ref: '#/components/schemas/HIP-failureResponse'
+                    - $ref: '#/components/schemas/ResponseSystemErrorType'
+                additionalProperties: false
               examples:
                 Bad Request:
                   value:
-                    error:
-                      code: "400"
-                      message: "string"
-                      logID: "F51FC4C29B667B3BC5D2331E231786F7"
+                    origin: HoD
+                    response:
+                      error:
+                        code: "400"
+                        logID: F51FC4C29B667B3BC5D2331E231786F7
+                        message: string
+                HIP-originResponse:
+                  description: HIP-originResponse
+                  value:
+                    origin: HIP
+                    response:
+                    - type: Type of Failure
+                      reason: Reason for Failure
         "401":
-          description: "Unauthorized"
+          description: Unauthorized
         "403":
-          description: "Forbidden"
+          description: Forbidden
         "404":
-          description: "Not Found"
+          description: Not Found
         "422":
-          description: "Unprocessable  -  ETMP validation errors. Errors of this kind\
-            \ indicate that ETMP successfully received the data without any technical\
-            \ issues, however it is unable to process the data further for the given\
-            \ reason.\n  | Code | Text |\n  |---|----|\n 001|No Master Data Found\n\
-            \ 002|Business Partner already subscribed for DSAO\n 003|Request could\
-            \ not be processed\n 004|Duplicate Submission\n"
+          description: |
+            Unprocessable  -  ETMP validation errors. Errors of this kind indicate that ETMP successfully received the data without any technical issues, however it is unable to process the data further for the given reason.
+              | Code | Text |
+              |---|----|
+             001|No Master Data Found
+             002|Business Partner already subscribed for DSAO
+             003|Request could not be processed
+             004|Duplicate Submission
           headers:
             correlationid:
-              $ref: "#/components/headers/correlationidResponseType"
+              $ref: '#/components/headers/correlationidResponseType'
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ResponseEtmpErrorsType"
+                $ref: '#/components/schemas/ResponseEtmpErrorsType'
               examples:
                 Request could not be processed:
                   value:
                     errors:
-                      processingDate: "2026-01-31T10:26:17Z"
                       code: "003"
-                      text: "Request could not be processed"
+                      processingDate: 2026-01-31T10:26:17Z
+                      text: Request could not be processed
         "500":
-          description: "Internal Server Error"
+          description: Internal Server Error
           headers:
             correlationid:
-              $ref: "#/components/headers/correlationidResponseType"
+              $ref: '#/components/headers/correlationidResponseType'
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ResponseSystemErrorType"
+                required:
+                - origin
+                - response
+                type: object
+                properties:
+                  origin:
+                    $ref: '#/components/schemas/HIP-originEnum'
+                  response:
+                    oneOf:
+                    - $ref: '#/components/schemas/HIP-failureResponse'
+                    - $ref: '#/components/schemas/ResponseSystemErrorType'
+                additionalProperties: false
               examples:
                 Internal Server Error:
                   value:
-                    error:
-                      code: "500"
-                      message: "string"
-                      logID: "89505FF7D91484D27D33CC1E5E208807"
-components:
-  headers:
-    correlationidResponseType:
-      description: "Unique alphanumeric number used for correlation purposes. Generated by the originating system and included in the response. Conforms to 36-character UUID (formatted)."
-      style: "simple"
-      required: false
+                    origin: HoD
+                    response:
+                      error:
+                        code: "500"
+                        logID: 89505FF7D91484D27D33CC1E5E208807
+                        message: string
+                HIP-originResponse:
+                  description: HIP-originResponse
+                  value:
+                    origin: HIP
+                    response:
+                    - type: Type of Failure
+                      reason: Reason for Failure
+        "503":
+          description: Service Unavailable
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/HIP-originResponse'
       deprecated: false
-      schema:
-        type: "string"
-        pattern: "^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$"
+components:
   schemas:
     RequestSchema:
-      description: "DSAO Subscription Request JSON"
-      type: "object"
-      properties:
-        idType:
-          type: "string"
-          description: "Type of ID. Fixed value of Unique Taxpayer Reference (UTR)"
-          enum:
-            - "UTR"
-        idNumber:
-          type: "string"
-          description: "Unique Taxpayer Reference (UTR) number"
-          pattern: "^[0-9]{10}$"
+      description: DSAO Subscription Request JSON
       required:
-        - "idType"
-        - "idNumber"
+      - idNumber
+      - idType
+      type: object
+      properties:
+        idNumber:
+          description: Unique Taxpayer Reference (UTR) number
+          pattern: "^[0-9]{10}$"
+          type: string
+        idType:
+          description: Type of ID. Fixed value of Unique Taxpayer Reference (UTR)
+          enum:
+          - UTR
+          type: string
       additionalProperties: false
     ResponseEtmpErrorsType:
-      type: "object"
+      required:
+      - errors
+      type: object
       properties:
         errors:
-          description: "ETMP Business Validation Error Response"
-          type: "object"
-          properties:
-            processingDate:
-              type: "string"
-              pattern: "^[0-9]{4}-([0][1-9]|[1][0-2])-([0][1-9]|[1-2][0-9]|[3][0-1])T([0-1][0-9]|[2][0-3]):[0-5][0-9]:[0-5][0-9]Z$"
-            code:
-              type: "string"
-              enum:
-                - "001"
-                - "002"
-                - "003"
-                - "004"
-            text:
-              type: "string"
-              minLength: 1
-              maxLength: 100
-            dsaoIdNumber:
-              type: "string"
-              description: "The DSAO ID number. This is an alphanumeric field"
-              minLength: 1
-              maxLength: 15
+          description: ETMP Business Validation Error Response
           required:
-            - "processingDate"
-            - "code"
-            - "text"
+          - code
+          - processingDate
+          - text
+          type: object
+          properties:
+            code:
+              enum:
+              - "001"
+              - "002"
+              - "003"
+              - "004"
+              type: string
+            dsaoIdNumber:
+              description: The DSAO ID number. This is an alphanumeric field
+              maxLength: 15
+              minLength: 1
+              type: string
+            processingDate:
+              pattern: "^[0-9]{4}-([0][1-9]|[1][0-2])-([0][1-9]|[1-2][0-9]|[3][0-1])T([0-1][0-9]|[2][0-3]):[0-5][0-9]:[0-5][0-9]Z$"
+              type: string
+            text:
+              maxLength: 100
+              minLength: 1
+              type: string
           additionalProperties: false
-      required:
-        - "errors"
       additionalProperties: false
     ResponseSchemaSuccess:
-      description: "ETMP Get Reversed Financial Transactions API"
-      type: "object"
+      description: ETMP Get Reversed Financial Transactions API
       required:
-        - "success"
-      additionalProperties: false
+      - success
+      type: object
       properties:
         success:
-          type: "object"
           required:
-            - "processingDate"
-            - "dsaoIdNumber"
-          additionalProperties: false
+          - dsaoIdNumber
+          - processingDate
+          type: object
           properties:
-            processingDate:
-              type: "string"
-              pattern: "^[0-9]{4}-([0][1-9]|[1][0-2])-([0][1-9]|[1-2][0-9]|[3][0-1])T([0-1][0-9]|[2][0-3]):[0-5][0-9]:[0-5][0-9]Z$"
             dsaoIdNumber:
-              type: "string"
-              description: "The DSAO ID number. This is an alphanumeric field"
-              minLength: 1
+              description: The DSAO ID number. This is an alphanumeric field
               maxLength: 15
+              minLength: 1
+              type: string
+            processingDate:
+              pattern: "^[0-9]{4}-([0][1-9]|[1][0-2])-([0][1-9]|[1-2][0-9]|[3][0-1])T([0-1][0-9]|[2][0-3]):[0-5][0-9]:[0-5][0-9]Z$"
+              type: string
+          additionalProperties: false
+      additionalProperties: false
     ResponseSystemErrorType:
-      type: "object"
+      required:
+      - error
+      type: object
       properties:
         error:
-          description: "SAP PI System Error Response"
-          type: "object"
+          description: SAP PI System Error Response
+          required:
+          - code
+          - logID
+          - message
+          type: object
           properties:
             code:
-              type: "string"
               enum:
-                - "400"
-                - "500"
-            message:
-              type: "string"
-              minLength: 1
-              maxLength: 5000
+              - "400"
+              - "500"
+              type: string
             logID:
-              type: "string"
-              minLength: 32
               maxLength: 32
+              minLength: 32
               pattern: "^[A-F0-9]{32}$"
-          required:
-            - "code"
-            - "message"
-            - "logID"
+              type: string
+            message:
+              maxLength: 5000
+              minLength: 1
+              type: string
           additionalProperties: false
-      required:
-        - "error"
       additionalProperties: false
+    HIP-originEnum:
+      enum:
+      - HIP
+      - HoD
+      type: string
+    HIP-failureResponse:
+      required:
+      - failures
+      type: object
+      properties:
+        failures:
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            required:
+            - type
+            - reason
+            type: object
+            properties:
+              type:
+                type: string
+              reason:
+                type: string
+            additionalProperties: false
+    HIP-originResponse:
+      required:
+      - origin
+      - response
+      type: object
+      properties:
+        origin:
+          $ref: '#/components/schemas/HIP-originEnum'
+        response:
+          $ref: '#/components/schemas/HIP-failureResponse'
+      additionalProperties: false
+  headers:
+    correlationidResponseType:
+      description: Unique alphanumeric number used for correlation purposes. Generated
+        by the originating system and included in the response. Conforms to 36-character
+        UUID (formatted).
+      required: false
+      deprecated: false
+      style: simple
+      explode: false
+      schema:
+        pattern: "^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$"
+        type: string
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: OAuth2 Client Credentials Flow
+      flows:
+        clientCredentials:
+          tokenUrl: /tokenUrl/not-required
+          scopes:
+            write:dsao-subscription: DSAO Subscription
