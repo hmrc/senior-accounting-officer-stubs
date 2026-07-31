@@ -23,31 +23,53 @@ import com.atlassian.oai.validator.report.ValidationReport.Level.*
 import com.atlassian.oai.validator.report.{LevelResolver, ValidationReport}
 import org.apache.pekko.stream.Materializer
 import play.api.libs.json.{Json, Reads}
-import play.api.mvc.{Request, RequestHeader, Result}
+import play.api.mvc.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.ApiError
 import uk.gov.hmrc.senioraccountingofficerstubs.models.hip.{Failure, Failures, StandardHipFailures}
 
-import scala.concurrent.Await
-import scala.concurrent.duration.*
+import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 
-enum OpenApiSchema(val resourcePath: String) {
-  case SaoDigitalApi extends OpenApiSchema("schemas/openapi/SAO Digital API v1.0.9.yaml")
+enum OpenApiSchema(val resourcePath: String, val pathPrefix: String) {
+  case EtmpApi
+      extends OpenApiSchema(
+        resourcePath = "schemas/openapi/DSAO Subscription v1.0.0.yaml",
+        pathPrefix = "/etmp"
+      )
+  case DpsWriteApi
+      extends OpenApiSchema(
+        resourcePath = "schemas/openapi/SAO Digital API v1.0.9.yaml",
+        pathPrefix = "/dapm"
+      )
+  case DpsReadApi
+      extends OpenApiSchema(
+        resourcePath = "schemas/openapi/Senior Accounting Office v1.0.2.yaml",
+        pathPrefix = "/business-tax/corporate-tax"
+      )
+  case CrmmApi
+      extends OpenApiSchema(
+        resourcePath = "schemas/openapi/CRMM customer details v1.0.0-a.yaml",
+        pathPrefix = "/compliance/civil-investigation-and-avoidance"
+      )
 }
 
 object OpenApiValidator {
 
-  def of(openApi: OpenApiSchema)(pathPrefix: String): EndpointValidator = {
+  def of(openApi: OpenApiSchema): EndpointValidator = {
     val openApiAsString                        = Source.fromResource(openApi.resourcePath).mkString
     val validator: OpenApiInteractionValidator = OpenApiInteractionValidator
       .createForInlineApiSpecification(openApiAsString)
-      .withBasePathOverride(pathPrefix)
+      .withBasePathOverride(openApi.pathPrefix)
       .withLevelResolver(
         LevelResolver
           .create()
           .withLevel("validation.request.path.missing", ERROR)
+          .withLevel("validation.schema.invalidJson", ERROR)
+          .withLevel("validation.response.contentType.invalid", ERROR)
+          .withLevel("validation.response.contentType.notAllowed", ERROR)
+          .withLevel("validation.response.header.missing", ERROR)
           .build()
       )
       .build()
@@ -56,13 +78,13 @@ object OpenApiValidator {
 
 }
 
-final class EndpointValidator private[utils] (validator: OpenApiInteractionValidator) {
+final class EndpointValidator private[utils] (val validator: OpenApiInteractionValidator) {
 
   extension (request: RequestHeader) {
     private def getMethod: Method = Method.valueOf(request.method.toUpperCase)
   }
 
-  def validateRequest(request: Request[String]): Either[ValidationReport, String] =
+  def validateRequest(request: Request[AnyContentAsEmpty.type]): Either[ValidationReport, AnyContentAsEmpty.type] =
     validator
       .validateRequest(buildRequest(request)) match {
       case report if report.hasErrors => Left(report)
@@ -76,7 +98,7 @@ final class EndpointValidator private[utils] (validator: OpenApiInteractionValid
       case _                          => Right(Json.parse(request.body).as[T])
     }
 
-  private def buildRequest(request: Request[String]): SimpleRequest = {
+  private def buildRequest(request: Request[String | AnyContentAsEmpty.type]): SimpleRequest = {
     val baseBuilder =
       (request.getMethod match {
         case Method.GET  => SimpleRequest.Builder.get
@@ -92,16 +114,23 @@ final class EndpointValidator private[utils] (validator: OpenApiInteractionValid
         builder.withHeader(header, value*)
       }
 
-    val buildWithBody = builderWithHeaders.withBody(request.body)
+    val buildWithBody = request.body match {
+      case body: String => builderWithHeaders.withBody(body)
+      case _            => builderWithHeaders
+    }
 
     buildWithBody.build()
   }
 
-  def validateResponse(result: Result)(using request: Request[String], mat: Materializer): ValidationReport =
-    validator
-      .validateResponse(request.uri, request.getMethod, buildResponse(result))
+  def validateResponse(
+      result: Result
+  )(using request: RequestHeader, ec: ExecutionContext, mat: Materializer): Future[ValidationReport] = {
+    for {
+      response <- buildResponse(result)
+    } yield validator.validateResponse(request.uri, request.getMethod, response)
+  }
 
-  private def buildResponse(result: Result)(using Materializer): Response = {
+  private def buildResponse(result: Result)(using ExecutionContext, Materializer): Future[Response] = {
     val baseBuilder = SimpleResponse.Builder.status(result.header.status)
 
     val builderWithHeaders = result.header.headers.toSeq
@@ -111,10 +140,16 @@ final class EndpointValidator private[utils] (validator: OpenApiInteractionValid
         builder.withHeader(header, value)
       }
 
-    val bodyAsString = Await.result(result.body.consumeData, 5.seconds).decodeString("utf-8")
-    builderWithHeaders.withBody(bodyAsString).build()
+    for {
+      data <- result.body.consumeData
+    } yield builderWithHeaders
+      // the contentType must match exactly as the ones specified in the open api spec
+      // in order for validation to take place
+      .withContentType("application/json;charset=UTF-8;subtype=denodo-8.0")
+      .withContentType("application/json;charset=UTF-8")
+      .withBody(data.decodeString("utf-8"))
+      .build()
   }
-
 }
 
 object ValidationErrorFormatter {
@@ -140,16 +175,24 @@ object ValidationErrorFormatter {
         message.getKey match {
           case key if key.contains(".parameter") =>
             Failure(
-              `type` = message.getKey,
-              reason = message.param.fold(message.toString)(path => s"$path ${message.getMessage}")
+              `type` = key,
+              reason =
+                message.param.filter(_.trim.nonEmpty).fold(message.toString)(path => s"$path ${message.getMessage}")
             )
           case key if key.contains(".body") =>
             Failure(
-              `type` = message.getKey,
-              reason = message.fieldPath.fold(message.toString)(path => s"$path ${message.getMessage}")
+              `type` = key,
+              reason =
+                message.fieldPath.filter(_.trim.nonEmpty).fold(message.toString)(path => s"$path ${message.getMessage}")
+            )
+          case key if key.contains(".path") || key.contains(".status") =>
+            Failure(
+              `type` = key,
+              reason = message.getMessage
             )
         }
       }.toSeq
+
       StandardHipFailures(
         origin = "HIP",
         response = Failures(failures = failures)
@@ -157,15 +200,8 @@ object ValidationErrorFormatter {
     }
 
     def toApiError: Seq[ApiError] = report.getMessages.asScala.map { message =>
-      // Extract the field path using the built-in instance location context
-      val fieldPath: Option[String] =
-        for {
-          context <- message.getContext.toScala
-          pointer <- context.getPointers.toScala
-        } yield pointer.getInstance
-
       ApiError(
-        fieldPath,
+        message.fieldPath,
         message.toString
       )
     }.toSeq

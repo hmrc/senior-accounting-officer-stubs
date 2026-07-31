@@ -100,8 +100,8 @@ class PutSubscriptionsControllerSpec
         "response" -> Json.obj(
           "failures" -> Json.arr(
             Json.obj(
-              "type"   -> "LENGTH_OUT_OF_BOUNDS",
-              "reason" -> "subscriptionId"
+              "type"   -> "validation.request.parameter.schema.maxLength",
+              "reason" -> "subscriptionId must be at most 15 characters long"
             )
           )
         )
@@ -137,8 +137,8 @@ class PutSubscriptionsControllerSpec
         "response" -> Json.obj(
           "failures" -> Json.arr(
             Json.obj(
-              "type"   -> "MALFORMED_REQUEST",
-              "reason" -> ""
+              "type" -> "validation.request.body.schema.invalidJson",
+              "reason" -> "ERROR - Unable to parse JSON - Unexpected end-of-input within/between Object entries\n\t at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 17].: []"
             )
           )
         )
@@ -157,14 +157,17 @@ class PutSubscriptionsControllerSpec
         "origin"   -> "HIP",
         "response" -> Json.obj(
           "failures" -> Json.arr(
-            Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "contacts"),
             Json.obj(
-              "type"   -> "INVALID_DATA_TYPE",
-              "reason" -> "etmpSafeId"
+              "type"   -> "validation.request.body.schema.type",
+              "reason" -> "/etmpSafeId array found, string expected"
             ),
             Json.obj(
-              "type"   -> "MISSING_REQUIRED_FIELD",
-              "reason" -> "nominatedCompany"
+              "type"   -> "validation.request.body.schema.required",
+              "reason" -> "ERROR - required property 'contacts' not found: []"
+            ),
+            Json.obj(
+              "type"   -> "validation.request.body.schema.required",
+              "reason" -> "ERROR - required property 'nominatedCompany' not found: []"
             )
           )
         )
@@ -180,7 +183,12 @@ class PutSubscriptionsControllerSpec
       contentAsJson(result) shouldBe Json.obj(
         "origin"   -> "HIP",
         "response" -> Json.obj(
-          "failures" -> Json.arr(Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> "extraProperty"))
+          "failures" -> Json.arr(
+            Json.obj(
+              "type" -> "validation.request.body.schema.additionalProperties",
+              "reason" -> "ERROR - property 'extraProperty' is not defined in the schema and the schema does not allow additional properties: []"
+            )
+          )
         )
       )
     }
@@ -194,7 +202,12 @@ class PutSubscriptionsControllerSpec
       contentAsJson(result) shouldBe Json.obj(
         "origin"   -> "HIP",
         "response" -> Json.obj(
-          "failures" -> Json.arr(Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "etmpSafeId"))
+          "failures" -> Json.arr(
+            Json.obj(
+              "type"   -> "validation.request.body.schema.required",
+              "reason" -> "ERROR - required property 'etmpSafeId' not found: []"
+            )
+          )
         )
       )
     }

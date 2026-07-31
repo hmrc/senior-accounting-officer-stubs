@@ -21,7 +21,7 @@ import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{Action, ControllerComponents, Result}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.senioraccountingofficerstubs.controllers.OpenApiBlock
+import uk.gov.hmrc.senioraccountingofficerstubs.controllers.OpenApiAction
 import uk.gov.hmrc.senioraccountingofficerstubs.controllers.putsubscription.PutSubscriptionsController.subscriptionIdLengthError
 import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.ApiError
@@ -37,7 +37,7 @@ import javax.inject.Inject
 
 class PutSubscriptionsController @Inject() (
     cc: ControllerComponents,
-    openApiFilter: OpenApiBlock,
+    openApiAction: OpenApiAction,
     repository: SignupConfigRepository
 )(using
     ExecutionContext,
@@ -73,7 +73,7 @@ class PutSubscriptionsController @Inject() (
   def putSubscription_1(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText).async {
     implicit request =>
       val schemaValidator = OpenApiValidator
-        .of(OpenApiSchema.SaoDigitalApi)(pathPrefix = "/dapm")
+        .of(OpenApiSchema.DpsWriteApi)
       val requestValidationReport = schemaValidator
         .validateRequestAs[Subscription](request)
 
@@ -86,8 +86,12 @@ class PutSubscriptionsController @Inject() (
                 .fold(Created)(config => Status(config.status)(config.defaultBodyOverride.fold("")(identity)).as(JSON))
             case _ => Created
           }
-          response.map { result =>
-            val responseValidationReport = schemaValidator.validateResponse(result)
+
+          for {
+            result                   <- response
+            responseValidationReport <- schemaValidator.validateResponse(result)
+
+          } yield {
             if responseValidationReport.hasErrors then logger.warn(responseValidationReport.toString)
             result
           }
@@ -96,7 +100,7 @@ class PutSubscriptionsController @Inject() (
   }
 
   def putSubscription(saoSubscriptionId: String): Action[String] =
-    openApiFilter[Subscription](logger)(OpenApiSchema.SaoDigitalApi, pathPrefix = "/dapm")
+    openApiAction[Subscription](logger)(OpenApiSchema.DpsWriteApi)
       .fold(report => report.toStandardHipFailures) { implicit request =>
         val subscription = request.body
         repository.get(subscription.nominatedCompany.utr).map {

@@ -168,7 +168,16 @@ class NotificationControllerSpec
         Json.obj(
           "origin"   -> "HIP",
           "response" -> Json.obj(
-            "failures" -> Json.arr(Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> "companies[0]"))
+            "failures" -> Json.arr(
+              Json.obj(
+                "type"   -> "validation.request.body.schema.type",
+                "reason" -> "/companies/0 string found, object expected"
+              ),
+              Json.obj(
+                "type"   -> "validation.request.body.schema.minItems",
+                "reason" -> "/saos must have at least 1 items but found 0"
+              )
+            )
           )
         )
       )
@@ -185,7 +194,12 @@ class NotificationControllerSpec
       contentAsJson(result) shouldBe Json.obj(
         "origin"   -> "HIP",
         "response" -> Json.obj(
-          "failures" -> Json.arr(Json.obj("type" -> "MALFORMED_REQUEST", "reason" -> ""))
+          "failures" -> Json.arr(
+            Json.obj(
+              "type" -> "validation.request.body.schema.invalidJson",
+              "reason" -> "ERROR - Unable to parse JSON - Unexpected end-of-input: expected close marker for Object (start marker at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 1])\n\t at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 22].: []"
+            )
+          )
         )
       )
     }
@@ -199,7 +213,12 @@ class NotificationControllerSpec
         Json.obj(
           "origin"   -> "HIP",
           "response" -> Json.obj(
-            "failures" -> Json.arr(Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "companies"))
+            "failures" -> Json.arr(
+              Json.obj(
+                "type"   -> "validation.request.body.schema.required",
+                "reason" -> "ERROR - required property 'companies' not found: []"
+              )
+            )
           )
         )
       )

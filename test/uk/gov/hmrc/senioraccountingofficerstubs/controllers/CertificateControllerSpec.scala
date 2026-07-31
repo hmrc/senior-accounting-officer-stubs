@@ -167,14 +167,17 @@ class CertificateControllerSpec
         "origin"   -> "HIP",
         "response" -> Json.obj(
           "failures" -> Json.arr(
-            Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> "companies[0]"),
             Json.obj(
-              "type"   -> "MISSING_REQUIRED_FIELD",
-              "reason" -> "saoEmail"
+              "type"   -> "validation.request.body.schema.type",
+              "reason" -> "/companies/0 string found, object expected"
             ),
             Json.obj(
-              "type"   -> "MISSING_REQUIRED_FIELD",
-              "reason" -> "saoName"
+              "type"   -> "validation.request.body.schema.required",
+              "reason" -> "ERROR - required property 'saoEmail' not found: []"
+            ),
+            Json.obj(
+              "type"   -> "validation.request.body.schema.required",
+              "reason" -> "ERROR - required property 'saoName' not found: []"
             )
           )
         )
@@ -191,8 +194,8 @@ class CertificateControllerSpec
         "response" -> Json.obj(
           "failures" -> Json.arr(
             Json.obj(
-              "type"   -> "LENGTH_OUT_OF_BOUNDS",
-              "reason" -> "subscriptionId"
+              "type"   -> "validation.request.parameter.schema.maxLength",
+              "reason" -> "subscriptionId must be at most 15 characters long"
             )
           )
         )
@@ -212,8 +215,8 @@ class CertificateControllerSpec
         "response" -> Json.obj(
           "failures" -> Json.arr(
             Json.obj(
-              "type"   -> "MALFORMED_REQUEST",
-              "reason" -> ""
+              "type" -> "validation.request.body.schema.invalidJson",
+              "reason" -> "ERROR - Unable to parse JSON - Unexpected end-of-input: expected close marker for Object (start marker at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 1])\n\t at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 22].: []"
             )
           )
         )
@@ -229,7 +232,12 @@ class CertificateControllerSpec
         Json.obj(
           "origin"   -> "HIP",
           "response" -> Json.obj(
-            "failures" -> Json.arr(Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "companies"))
+            "failures" -> Json.arr(
+              Json.obj(
+                "type"   -> "validation.request.body.schema.required",
+                "reason" -> "ERROR - required property 'companies' not found: []"
+              )
+            )
           )
         )
       )

@@ -12,8 +12,7 @@ lazy val microservice = Project("senior-accounting-officer-stubs", file("."))
     scalacOptions += "-Wconf:src=routes/.*:s",
     PlayKeys.playDefaultPort := 10061,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "src/main/resources",
-    // swagger-request-validator-core 3.0.0 requires 2.18.x
-    dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % "2.18.0"
+    dependencyOverrides ++= AppDependencies.dependencyOverrides
   )
   .settings(CodeCoverageSettings.settings: _*)
   .settings(scalafixSettings *)
@@ -22,7 +21,10 @@ lazy val it = project
   .enablePlugins(PlayScala)
   .dependsOn(microservice % "test->test")
   .settings(DefaultBuildSettings.itSettings())
-  .settings(libraryDependencies ++= AppDependencies.compile ++ AppDependencies.it)
+  .settings(
+    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.it,
+    dependencyOverrides ++= AppDependencies.dependencyOverrides
+  )
 
 val scalafixSettings: Seq[Setting[?]] = Seq(
   semanticdbEnabled := true

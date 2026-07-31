@@ -16,48 +16,49 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
+import play.api.Logging
 import play.api.libs.json.*
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.NotificationResponse
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.OpenApiSchema
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.ValidationErrorFormatter.toStandardHipFailures
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.util.Random
 
 import javax.inject.Inject
 
-class NotificationController @Inject() (cc: ControllerComponents, repository: PostSignupConfigRepository)(using
+class NotificationController @Inject() (
+    cc: ControllerComponents,
+    openApiAction: OpenApiAction,
+    repository: PostSignupConfigRepository
+)(using
     ExecutionContext
-) extends BackendController(cc) {
+) extends BackendController(cc)
+    with Logging {
 
   private def generateNotificationId = {
     val num = Random.nextInt(10000000)
     "NOT" + f"$num%010d"
   }
 
-  def postNotification(saoSubscriptionId: String): Action[String] = Action(parse.tolerantText).async {
-    implicit request =>
-      JsonErrorHandling.parseJson(request.body) match {
-        case Right(json) =>
-          val errors = JsonErrorHandling.Validators.validateNotification(json)
-
-          if errors.nonEmpty then Future.successful(JsonErrorHandling.badRequest(errors))
-          else
-            repository.get(saoSubscriptionId).map {
-              case Some(config) =>
-                val status: Int  = config.postNotification.map(_.status).fold(201)(identity)
-                val body: String = config.postNotification
-                  .flatMap(_.defaultBodyOverride)
-                  .fold(
-                    Json.toJson(NotificationResponse(generateNotificationId)).toString
-                  )(identity)
-                Status(status)(body).as(JSON)
-              case _ =>
-                Created(Json.toJson(NotificationResponse(generateNotificationId)))
-            }
-        case Left(errorResult) => Future.successful(errorResult)
+  def postNotification(saoSubscriptionId: String): Action[String] =
+    openApiAction[JsValue](logger)(OpenApiSchema.DpsWriteApi)
+      .fold(report => report.toStandardHipFailures) { implicit request =>
+        repository.get(saoSubscriptionId).map {
+          case Some(config) =>
+            val status: Int  = config.postNotification.map(_.status).fold(201)(identity)
+            val body: String = config.postNotification
+              .flatMap(_.defaultBodyOverride)
+              .fold(
+                Json.toJson(NotificationResponse(generateNotificationId)).toString
+              )(identity)
+            Status(status)(body).as(JSON)
+          case _ =>
+            Created(Json.toJson(NotificationResponse(generateNotificationId)))
+        }
       }
-  }
+
 }
