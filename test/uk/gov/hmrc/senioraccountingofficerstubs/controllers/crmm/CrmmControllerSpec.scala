@@ -67,30 +67,6 @@ class CrmmControllerSpec
   }
 
   "POST /compliance/civil-investigation-and-avoidance/api/customer/v1/retrievecustomer" - {
-    "sourceSysRef header is not sent" - {
-      "return a 400 response" in {
-        val requestWithoutCorrelationId = FakeRequest("POST", path)
-          .withHeaders(headersNoSourceSysRefOrCorrelationId*)
-          .withTextBody("")
-
-        val expectedResponse = Json.parse("""{
-                                            |  "origin": "HIP",
-                                            |  "response": {
-                                            |    "failures" : [
-                                            |      {
-                                            |        "type": "MISSING_REQUIRED_FIELD",
-                                            |        "reason": "headers.sourceSysRef"
-                                            |      }
-                                            |    ]
-                                            |  }
-                                            |}""".stripMargin)
-
-        val result = routeResult(requestWithoutCorrelationId)
-
-        status(result) shouldBe Status.BAD_REQUEST
-        contentAsJson(result) shouldBe expectedResponse
-      }
-    }
 
     "correlationId header is not sent" - {
       "return a 400 response" in {
@@ -313,13 +289,10 @@ object CrmmControllerSpec {
 
   val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
 
-  val headersNoSourceSysRefOrCorrelationId: Seq[(String, String)] = Seq(
+  val headersNoCorrelationId: Seq[(String, String)] = Seq(
     CONTENT_TYPE  -> MimeTypes.JSON,
     AUTHORIZATION -> authHeader
   )
-
-  val headersNoCorrelationId: Seq[(String, String)] =
-    headersNoSourceSysRefOrCorrelationId.concat(Seq("sourceSysRef" -> "something"))
 
   val correlationId: String = UUID.randomUUID().toString
   val crn                   = generateCrn

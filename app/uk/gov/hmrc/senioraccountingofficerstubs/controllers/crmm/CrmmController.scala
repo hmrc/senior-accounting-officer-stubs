@@ -38,24 +38,15 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
 ) extends BackendController(cc) {
   def retrieveCustomer(): Action[String] = Action(parse.tolerantText).async { implicit request =>
     (for {
-      _            <- validateHeaders(request.headers)
+      _            <- validateHeader(request.headers)
       json         <- JsonErrorHandling.parseJson(request.body)
       _            <- jsonSchemaValidation(json)
       requestModel <- validateAtLeastOneId(json)
     } yield getConfiguredResponse(requestModel)).left.map(Future.successful).merge
   }
 
-  private def validateHeaders(requestHeaders: Headers): Either[Result, String] = {
+  private def validateHeader(requestHeaders: Headers): Either[Result, String] = {
     for {
-      _ <- requestHeaders
-        .get(sourceSysRefHeader)
-        .filter(_.nonEmpty)
-        .toRight(
-          JsonErrorHandling
-            .badRequest(
-              ApiError(Some(s"headers.$sourceSysRefHeader"), "MISSING_REQUIRED_FIELD")
-            )
-        )
       correlationId <- requestHeaders
         .get(correlationIdHeader)
         .filter(_.nonEmpty)
@@ -127,5 +118,4 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
 
 object CrmmController {
   val correlationIdHeader = "correlationId"
-  val sourceSysRefHeader  = "sourceSysRef"
 }
