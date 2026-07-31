@@ -66,7 +66,6 @@ final case class PostSignupStubConfiguration(
     getSubscriptionAndPostRetrieveCustomerId: Option[GetSubscriptionConfigUnion] = None,
     postNotification: Option[NoneDefaultApiConfiguration] = None,
     postCertificate: Option[NoneDefaultApiConfiguration] = None,
-    postCrmmRetrieveCustomer: Option[NoneDefaultApiConfiguration] = None,
     lastUpdated: Instant = Instant.now
 )
 

@@ -19,8 +19,8 @@ package uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm
 import org.mockito.ArgumentMatchers.{any, eq as meq}
 import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
@@ -34,10 +34,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm.CrmmControllerSpec.*
-import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.{
-  NoneDefaultApiConfiguration,
-  PostSignupStubConfiguration
-}
+import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.*
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.{generateCrn, generateUtr}
 
@@ -46,7 +43,7 @@ import scala.concurrent.Future
 import java.util.UUID
 
 class CrmmControllerSpec
-    extends AnyWordSpec
+    extends AnyFreeSpec
     with Matchers
     with GuiceOneAppPerSuite
     with MockitoSugar
@@ -69,213 +66,221 @@ class CrmmControllerSpec
     when(mockRepository.get(any())).thenReturn(Future.successful(None))
   }
 
-  "retrieveCustomer" must {
+  "POST /compliance/civil-investigation-and-avoidance/api/customer/v1/retrievecustomer" - {
 
-    "return code 400 for a request without sourceSysRef header" in {
-      val requestWithoutCorrelationId = FakeRequest("POST", path)
-        .withHeaders(headersNoSourceSysRefOrCorrelationId*)
-        .withTextBody("")
+    "correlationId header is not sent" - {
+      "return a 400 response" in {
+        val requestWithoutCorrelationId = FakeRequest("POST", path)
+          .withHeaders(headersNoCorrelationId*)
+          .withTextBody("")
 
-      val expectedResponse = Json
-        .obj(
-          "origin"   -> "HIP",
-          "response" -> Json.obj(
-            "failures" -> Json.arr(
-              Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "headers.sourceSysRef")
+        val expectedResponse = Json.parse("""{
+                                            |  "origin": "HIP",
+                                            |  "response": {
+                                            |    "failures": [
+                                            |      {
+                                            |        "type": "MISSING_REQUIRED_FIELD",
+                                            |        "reason": "headers.correlationId"
+                                            |      }
+                                            |    ]
+                                            |  }
+                                            |}""".stripMargin)
+
+        val result = routeResult(requestWithoutCorrelationId)
+
+        status(result) shouldBe Status.BAD_REQUEST
+        contentAsJson(result) shouldBe expectedResponse
+      }
+    }
+
+    "a request with an invalid companyRegistrationNumber is sent" - {
+      "return structured error message" in {
+        val requestBody = """{"companyRegistrationNumber": "|||"}"""
+
+        val requestWithoutCorrelationId = FakeRequest("POST", path)
+          .withHeaders(validHeaders*)
+          .withTextBody(requestBody)
+
+        val expectedResponse = Json
+          .obj(
+            "origin"   -> "HIP",
+            "response" -> Json.obj(
+              "failures" -> Json.arr(Json.obj("type" -> "INVALID_FORMAT", "reason" -> "companyRegistrationNumber"))
             )
           )
-        )
-        .toString
 
-      val result = routeResult(requestWithoutCorrelationId)
+        val result = routeResult(requestWithoutCorrelationId)
 
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsString(result) shouldBe expectedResponse
+        status(result) shouldBe Status.BAD_REQUEST
+        contentAsJson(result) shouldBe expectedResponse
+      }
     }
 
-    "return code 400 for a request without correlationId header" in {
-      val requestWithoutCorrelationId = FakeRequest("POST", path)
-        .withHeaders(headersNoCorrelationId*)
-        .withTextBody("")
+    "a request with an additional field is sent" - {
+      "return structured error message" in {
+        val requestBody = s"""{"$unkownProperty": "Firstname Lastname"}"""
 
-      val expectedResponse = Json
-        .obj(
-          "origin"   -> "HIP",
-          "response" -> Json.obj(
-            "failures" -> Json.arr(
-              Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "headers.correlationId")
+        val requestWithoutCorrelationId = FakeRequest("POST", path)
+          .withHeaders(validHeaders*)
+          .withTextBody(requestBody)
+
+        val expectedResponse = Json
+          .obj(
+            "origin"   -> "HIP",
+            "response" -> Json.obj(
+              "failures" -> Json.arr(Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> unkownProperty))
             )
           )
-        )
-        .toString
 
-      val result = routeResult(requestWithoutCorrelationId)
+        val result = routeResult(requestWithoutCorrelationId)
 
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsString(result) shouldBe expectedResponse
+        status(result) shouldBe Status.BAD_REQUEST
+        contentAsJson(result) shouldBe expectedResponse
+      }
     }
 
-    "return structured error message for a request with a companyRegistrationNumber with an invalid format" in {
-      val requestBody = """{"companyRegistrationNumber": "|||"}"""
+    "a request with an invalid uniqueTaxReference is sent" - {
+      "return structured error message" in {
+        val requestBody = """{"uniqueTaxReference": "|||"}"""
 
-      val requestWithoutCorrelationId = FakeRequest("POST", path)
-        .withHeaders(validHeaders*)
-        .withTextBody(requestBody)
+        val requestWithoutCorrelationId = FakeRequest("POST", path)
+          .withHeaders(validHeaders*)
+          .withTextBody(requestBody)
 
-      val expectedResponse = Json
-        .obj(
-          "origin"   -> "HIP",
-          "response" -> Json.obj(
-            "failures" -> Json.arr(Json.obj("type" -> "INVALID_FORMAT", "reason" -> "companyRegistrationNumber"))
-          )
-        )
-        .toString
-
-      val result = routeResult(requestWithoutCorrelationId)
-
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsString(result) shouldBe expectedResponse
-
-    }
-
-    "return structured error message for a request with an additional field companyRegistrationNumber with an invalid format" in {
-      val requestBody = s"""{"$unkownProperty": "Firstname Lastname"}"""
-
-      val requestWithoutCorrelationId = FakeRequest("POST", path)
-        .withHeaders(validHeaders*)
-        .withTextBody(requestBody)
-
-      val expectedResponse = Json
-        .obj(
-          "origin"   -> "HIP",
-          "response" -> Json.obj(
-            "failures" -> Json.arr(Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> unkownProperty))
-          )
-        )
-        .toString
-
-      val result = routeResult(requestWithoutCorrelationId)
-
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsString(result) shouldBe expectedResponse
-
-    }
-
-    "return structured error message for a request with a uniqueTaxReference with an invalid format" in {
-      val requestBody = """{"uniqueTaxReference": "|||"}"""
-
-      val requestWithoutCorrelationId = FakeRequest("POST", path)
-        .withHeaders(validHeaders*)
-        .withTextBody(requestBody)
-
-      val expectedResponse = Json
-        .obj(
-          "origin"   -> "HIP",
-          "response" -> Json.obj(
-            "failures" -> Json.arr(Json.obj("type" -> "INVALID_FORMAT", "reason" -> "uniqueTaxReference"))
-          )
-        )
-        .toString
-
-      val result = routeResult(requestWithoutCorrelationId)
-
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsString(result) shouldBe expectedResponse
-    }
-
-    "return structured error message for a request with no uniqueTaxReference and no companyRegistrationNumber" in {
-      val requestBody = "{}"
-
-      val requestWithoutCorrelationId = FakeRequest("POST", path)
-        .withHeaders(validHeaders*)
-        .withTextBody(requestBody)
-
-      val expectedResponse = Json
-        .obj(
-          "origin"   -> "HIP",
-          "response" -> Json.obj(
-            "failures" -> Json.arr(
-              Json
-                .obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "companyRegistrationNumber or uniqueTaxReference")
+        val expectedResponse = Json
+          .obj(
+            "origin"   -> "HIP",
+            "response" -> Json.obj(
+              "failures" -> Json.arr(Json.obj("type" -> "INVALID_FORMAT", "reason" -> "uniqueTaxReference"))
             )
           )
-        )
-        .toString
 
-      val result = routeResult(requestWithoutCorrelationId)
+        val result = routeResult(requestWithoutCorrelationId)
 
-      status(result) shouldBe Status.BAD_REQUEST
-      contentAsString(result) shouldBe expectedResponse
+        status(result) shouldBe Status.BAD_REQUEST
+        contentAsJson(result) shouldBe expectedResponse
+      }
     }
-  }
 
-  "return a 200 response with valid headers and request body" in {
-    val requestBody = s"""{"uniqueTaxReference": "$generateUtr", "companyRegistrationNumber": "$generateCrn"}"""
+    "a request without an uniqueTaxReference or companyRegistrationNumber is sent" - {
+      "return structured error message" in {
+        val requestBody = "{}"
 
-    val request = FakeRequest("POST", path)
-      .withHeaders(validHeaders*)
-      .withTextBody(requestBody)
+        val requestWithoutCorrelationId = FakeRequest("POST", path)
+          .withHeaders(validHeaders*)
+          .withTextBody(requestBody)
 
-    val expectedResponseRegex = """\{"customerId":".+","existingCustomer":true,"status":"Success"\}"""
-
-    val result = routeResult(request)
-
-    status(result) shouldBe Status.OK
-    contentAsString(result) should fullyMatch regex expectedResponseRegex
-  }
-
-  "return a response with a configured status code with valid headers and request body" in {
-    val requestBody = s"""{"uniqueTaxReference": "$generateUtr", "companyRegistrationNumber": "$generateCrn"}"""
-
-    when(mockRepository.get(meq(correlationId))).thenReturn(
-      Future.successful(
-        Some(
-          PostSignupStubConfiguration(
-            subscriptionId = "sub id",
-            postCrmmRetrieveCustomer = Some(NoneDefaultApiConfiguration(status = Status.IM_A_TEAPOT))
-          )
-        )
-      )
-    )
-
-    val request = FakeRequest("POST", path)
-      .withHeaders(validHeaders*)
-      .withTextBody(requestBody)
-
-    val expectedResponseRegex = """\{"customerId":".+","existingCustomer":true,"status":"Success"\}"""
-
-    val result = routeResult(request)
-
-    status(result) shouldBe Status.IM_A_TEAPOT
-    contentAsString(result) should fullyMatch regex expectedResponseRegex
-  }
-
-  "return a response with a configured status code and request body with valid headers and request body" in {
-    val expectedResponse = "random string response"
-
-    val requestBody = s"""{"uniqueTaxReference": "$generateUtr", "companyRegistrationNumber": "$generateCrn"}"""
-
-    when(mockRepository.get(meq(correlationId))).thenReturn(
-      Future.successful(
-        Some(
-          PostSignupStubConfiguration(
-            subscriptionId = "sub id",
-            postCrmmRetrieveCustomer = Some(
-              NoneDefaultApiConfiguration(status = Status.IM_A_TEAPOT, defaultBodyOverride = Some(expectedResponse))
+        val expectedResponse = Json
+          .obj(
+            "origin"   -> "HIP",
+            "response" -> Json.obj(
+              "failures" -> Json.arr(
+                Json
+                  .obj(
+                    "type"   -> "MISSING_REQUIRED_FIELD",
+                    "reason" -> "companyRegistrationNumber or uniqueTaxReference"
+                  )
+              )
             )
           )
+
+        val result = routeResult(requestWithoutCorrelationId)
+
+        status(result) shouldBe Status.BAD_REQUEST
+        contentAsJson(result) shouldBe expectedResponse
+      }
+    }
+
+    "PostSignupConfigRepository does not return a config for this endpoint" - {
+      "return 200 response with a default response payload" in {
+        val requestBody = s"""{"uniqueTaxReference": "$utr", "companyRegistrationNumber": "$crn"}"""
+
+        when(mockRepository.getByCrnAndUtr(crn = any(), utr = any())).thenReturn(
+          Future.successful(None)
         )
-      )
-    )
 
-    val request = FakeRequest("POST", path)
-      .withHeaders(validHeaders*)
-      .withTextBody(requestBody)
+        val request = FakeRequest("POST", path)
+          .withHeaders(validHeaders*)
+          .withTextBody(requestBody)
 
-    val result = routeResult(request)
+        val expectedResponseRegex = """\{"customerId":".+","existingCustomer":true,"status":"Success"\}"""
 
-    status(result) shouldBe Status.IM_A_TEAPOT
-    contentAsString(result) shouldBe expectedResponse
+        val result = routeResult(request)
+
+        status(result) shouldBe Status.OK
+        contentAsString(result) should fullyMatch regex expectedResponseRegex
+      }
+    }
+
+    "PostSignupConfigRepository returns a GetSubscriptionConfig config" - {
+      "the configuration is solely a 418 status code" - {
+        "return the configured status code and the default body" in {
+          val requestBody = s"""{"uniqueTaxReference": "$utr", "companyRegistrationNumber": "$crn"}"""
+
+          when(mockRepository.getByCrnAndUtr(crn = meq(Some(crn)), utr = meq(Some(utr)))).thenReturn(
+            Future.successful(
+              Some(
+                PostSignupStubConfiguration(
+                  subscriptionId = "sub id",
+                  getSubscriptionAndPostRetrieveCustomerId = Some(
+                    PostRetrieveCustomerIdConfig(
+                      getSubscription = GetSubscriptionConfig(utr = utr, crn = Some(crn)),
+                      status = Status.IM_A_TEAPOT,
+                      defaultBodyOverride = None
+                    )
+                  )
+                )
+              )
+            )
+          )
+
+          val request = FakeRequest("POST", path)
+            .withHeaders(validHeaders*)
+            .withTextBody(requestBody)
+
+          val result = routeResult(request)
+
+          status(result) shouldBe Status.IM_A_TEAPOT
+          contentAsString(
+            result
+          ) should fullyMatch regex """\{"customerId":".+","existingCustomer":true,"status":"Success"\}"""
+        }
+      }
+
+      "the configuration is both a status code and a body" - {
+        "return the configured status code and the configured body" in {
+          val expectedResponse = "random string response"
+
+          val requestBody = s"""{"uniqueTaxReference": "$utr", "companyRegistrationNumber": "$crn"}"""
+
+          when(mockRepository.getByCrnAndUtr(crn = meq(Some(crn)), utr = meq(Some(utr)))).thenReturn(
+            Future.successful(
+              Some(
+                PostSignupStubConfiguration(
+                  subscriptionId = "sub id",
+                  getSubscriptionAndPostRetrieveCustomerId = Some(
+                    PostRetrieveCustomerIdConfig(
+                      getSubscription = GetSubscriptionConfig(utr = utr, crn = Some(crn)),
+                      status = Status.IM_A_TEAPOT,
+                      defaultBodyOverride = Some(expectedResponse)
+                    )
+                  )
+                )
+              )
+            )
+          )
+
+          val request = FakeRequest("POST", path)
+            .withHeaders(validHeaders*)
+            .withTextBody(requestBody)
+
+          val result = routeResult(request)
+
+          status(result) shouldBe Status.IM_A_TEAPOT
+          contentAsString(result) shouldBe expectedResponse
+        }
+      }
+    }
   }
 }
 
@@ -284,15 +289,14 @@ object CrmmControllerSpec {
 
   val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
 
-  val headersNoSourceSysRefOrCorrelationId: Seq[(String, String)] = Seq(
+  val headersNoCorrelationId: Seq[(String, String)] = Seq(
     CONTENT_TYPE  -> MimeTypes.JSON,
     AUTHORIZATION -> authHeader
   )
 
-  val headersNoCorrelationId: Seq[(String, String)] =
-    headersNoSourceSysRefOrCorrelationId.concat(Seq("sourceSysRef" -> "something"))
-
   val correlationId: String = UUID.randomUUID().toString
+  val crn                   = generateCrn
+  val utr                   = generateUtr
 
   val validHeaders: Seq[(String, String)] = headersNoCorrelationId.concat(Seq("correlationId" -> correlationId))
 

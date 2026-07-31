@@ -24,6 +24,7 @@ import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.ApiError
 import uk.gov.hmrc.senioraccountingofficerstubs.models.crmm.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.PostSignupStubConfiguration
+import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.*
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.generateCustomerId
 
@@ -36,43 +37,16 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
     ExecutionContext
 ) extends BackendController(cc) {
   def retrieveCustomer(): Action[String] = Action(parse.tolerantText).async { implicit request =>
-    validateHeaders(request.headers)
-      .fold(
-        Future.successful(_),
-        correlationId => {
-          JsonErrorHandling
-            .parseJson(request.body)
-            .fold(
-              Future.successful(_),
-              json =>
-                JsonErrorHandling.Validators.validateRetrieveCustomerRequest(json) match {
-                  case errors if errors.nonEmpty => Future.successful(JsonErrorHandling.badRequest(errors))
-                  case _                         =>
-                    validateAtLeastOneId(json) match {
-                      case Left(error)                       => Future.successful(error)
-                      case Right(_: RetrieveCustomerRequest) =>
-                        repository.get(correlationId).map {
-                          case Some(config) => retrieveConfiguredResponse(config)
-                          case _            => Ok(Json.toJson(generateStandardResponse))
-                        }
-                    }
-                }
-            )
-        }
-      )
+    (for {
+      _            <- validateHeader(request.headers)
+      json         <- JsonErrorHandling.parseJson(request.body)
+      _            <- jsonSchemaValidation(json)
+      requestModel <- validateAtLeastOneId(json)
+    } yield getConfiguredResponse(requestModel)).left.map(Future.successful).merge
   }
 
-  def validateHeaders(requestHeaders: Headers): Either[Result, String] = {
+  private def validateHeader(requestHeaders: Headers): Either[Result, String] = {
     for {
-      _ <- requestHeaders
-        .get(sourceSysRefHeader)
-        .filter(_.nonEmpty)
-        .toRight(
-          JsonErrorHandling
-            .badRequest(
-              ApiError(Some(s"headers.$sourceSysRefHeader"), "MISSING_REQUIRED_FIELD")
-            )
-        )
       correlationId <- requestHeaders
         .get(correlationIdHeader)
         .filter(_.nonEmpty)
@@ -85,7 +59,13 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
     } yield correlationId
   }
 
-  def validateAtLeastOneId(json: JsValue): Either[Result, RetrieveCustomerRequest] = {
+  private def jsonSchemaValidation(json: JsValue): Either[Result, Unit] =
+    JsonErrorHandling.Validators.validateRetrieveCustomerRequest(json) match {
+      case Nil    => Right(())
+      case errors => Left(JsonErrorHandling.badRequest(errors))
+    }
+
+  private def validateAtLeastOneId(json: JsValue): Either[Result, RetrieveCustomerRequest] = {
     json.as[RetrieveCustomerRequest] match {
       case RetrieveCustomerRequest(None, None) =>
         Left(
@@ -98,17 +78,35 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
     }
   }
 
-  def retrieveConfiguredResponse(config: PostSignupStubConfiguration): Result = {
-    val status: Int  = config.postCrmmRetrieveCustomer.map(_.status).fold(200)(identity)
-    val body: String = config.postCrmmRetrieveCustomer
-      .flatMap(_.defaultBodyOverride)
-      .fold(
-        Json.toJson(generateStandardResponse).toString
-      )(identity)
+  private def getConfiguredResponse(request: RetrieveCustomerRequest): Future[Result] = {
+    repository
+      .getByCrnAndUtr(
+        request.companyRegistrationNumber,
+        request.uniqueTaxReference
+      )
+      .map {
+        case Some(config) => retrieveConfiguredResponse(config)
+        case _            => Ok(Json.toJson(generateStandardResponse))
+      }
+  }
+
+  private def retrieveConfiguredResponse(config: PostSignupStubConfiguration): Result = {
+    val status: Int = config.getSubscriptionAndPostRetrieveCustomerId
+      .collect { case PostRetrieveCustomerIdConfig(_, status, _) =>
+        status
+      }
+      .fold(200)(identity)
+
+    val body: String = config.getSubscriptionAndPostRetrieveCustomerId
+      .collect { case PostRetrieveCustomerIdConfig(getSubscription, status, Some(defaultBodyOverride)) =>
+        defaultBodyOverride
+      }
+      .fold(Json.toJson(generateStandardResponse).toString)(identity)
+
     Status(status)(body).as(JSON)
   }
 
-  def generateStandardResponse: RetrieveCustomerResponse = {
+  private def generateStandardResponse: RetrieveCustomerResponse = {
     RetrieveCustomerResponse(
       customerId = Some(generateCustomerId),
       errorDescription = None,
@@ -120,5 +118,4 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
 
 object CrmmController {
   val correlationIdHeader = "correlationId"
-  val sourceSysRefHeader  = "sourceSysRef"
 }
