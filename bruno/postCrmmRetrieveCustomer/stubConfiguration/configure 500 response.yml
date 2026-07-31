@@ -14,8 +14,8 @@ http:
         "getSubscriptionAndPostRetrieveCustomerId": {
           "api": "PostRetrieveCustomerId",
           "getSubscription": {"utr": "{{utr}}", "crn": "{{crn}}"},
-          "status": 503,
-          "defaultBodyOverride": "{{payload}}"
+          "status": 500,
+          "defaultBodyOverride": {{payload}}
         }
       }
   auth: inherit
@@ -27,8 +27,12 @@ runtime:
         const payload = JSON.stringify(`{
           "origin": "HIP",
           "response": {
-            "type": "Type of Failure",
-            "reason": "Reason for Failure"
+            "failures": [
+              {
+                "type": "type of failure",
+                "reason": "reason for failure"
+              }
+            ]
           }
         }`);
 

@@ -14,8 +14,7 @@ http:
         "getSubscriptionAndPostRetrieveCustomerId": {
           "api": "PostRetrieveCustomerId",
           "getSubscription": {"utr": "{{utr}}", "crn": "{{crn}}"},
-          "status": 500,
-          "defaultBodyOverride" : {{payload}}
+          "status": 401
         }
       }
   auth: inherit

@@ -9,10 +9,8 @@ http:
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
-    - name: sourceSysRef
-      value: afdsafdasfdas
     - name: correlationId
-      value: be0743be-4fe0-4c25-9265-973d7b920fa4
+      value: "{{$randomUUID}}"
   body:
     type: json
     data: "{"
