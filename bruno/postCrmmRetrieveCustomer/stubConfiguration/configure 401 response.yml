@@ -1,7 +1,7 @@
 info:
-  name: post signup config - CRMM 500
+  name: configure 401 response
   type: http
-  seq: 8
+  seq: 2
 
 http:
   method: POST
@@ -13,11 +13,22 @@ http:
         "subscriptionId": "{{subscriptionId}}",
         "getSubscriptionAndPostRetrieveCustomerId": {
           "api": "PostRetrieveCustomerId",
-          "getSubscription": {"utr": "300", "crn": ""},
-          "status": 500
+          "getSubscription": {"utr": "{{utr}}", "crn": "{{crn}}"},
+          "status": 500,
+          "defaultBodyOverride" : {{payload}}
         }
       }
   auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const payload = JSON.stringify(`{
+          "example": "body"
+        }`);
+
+        bru.setVar("payload", payload);
 
 settings:
   encodeUrl: true

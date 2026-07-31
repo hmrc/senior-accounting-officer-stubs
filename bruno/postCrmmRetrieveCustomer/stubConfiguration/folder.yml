@@ -1,7 +1,7 @@
 info:
-  name: getSubscription
+  name: stubConfiguration
   type: folder
-  seq: 23
+  seq: 1
 
 request:
   auth: inherit

@@ -1,0 +1,24 @@
+info:
+  name: (400) malformed json
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/compliance/civil-investigation-and-avoidance/api/customer/v1/retrievecustomer"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+    - name: sourceSysRef
+      value: afdsafdasfdas
+    - name: correlationId
+      value: be0743be-4fe0-4c25-9265-973d7b920fa4
+  body:
+    type: json
+    data: "{"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
