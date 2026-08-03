@@ -20,11 +20,11 @@ import com.atlassian.oai.validator.OpenApiInteractionValidator
 import com.atlassian.oai.validator.model.Request.Method
 import com.atlassian.oai.validator.model.{Response, SimpleRequest, SimpleResponse}
 import com.atlassian.oai.validator.report.ValidationReport.Level.*
+import com.atlassian.oai.validator.report.ValidationReport.MessageContext.Pointers
 import com.atlassian.oai.validator.report.{LevelResolver, ValidationReport}
 import org.apache.pekko.stream.Materializer
 import play.api.libs.json.{Json, Reads}
 import play.api.mvc.*
-import uk.gov.hmrc.senioraccountingofficerstubs.models.ApiError
 import uk.gov.hmrc.senioraccountingofficerstubs.models.hip.{Failure, Failures, StandardHipFailures}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -155,42 +155,52 @@ final class EndpointValidator private[utils] (val validator: OpenApiInteractionV
 object ValidationErrorFormatter {
 
   extension (message: ValidationReport.Message) {
-    private def fieldPath: Option[String] =
+    private def pointers: Option[Pointers] =
       for {
         context <- message.getContext.toScala
         pointer <- context.getPointers.toScala
-      } yield pointer.getInstance
+      } yield pointer
+
+    private def fieldPath: Option[String] =
+      message.pointers.map(_.getInstance)
+
+    private def schema: Option[String] =
+      message.pointers.map(_.getSchema)
 
     private def param: Option[String] =
       for {
         context <- message.getContext.toScala
         param   <- context.getParameter.toScala
       } yield param.getName
+
+    private def formattedMessage: String = {
+      val sb = StringBuilder()
+      message.param.foreach { s =>
+        sb.append(s.trim)
+        sb.append(" ")
+      }
+      message.schema.foreach { s =>
+        sb.append(s.trim)
+        sb.append(" ")
+      }
+      message.fieldPath.foreach { s =>
+        sb.append(s.trim)
+        sb.append(" ")
+      }
+
+      sb.append(message.toString.trim)
+      sb.toString
+    }
   }
 
   extension (report: ValidationReport) {
 
     def toStandardHipFailures: StandardHipFailures = {
       val failures: Seq[Failure] = report.getMessages.asScala.map { message =>
-        message.getKey match {
-          case key if key.contains(".parameter") =>
-            Failure(
-              `type` = key,
-              reason =
-                message.param.filter(_.trim.nonEmpty).fold(message.toString)(path => s"$path ${message.getMessage}")
-            )
-          case key if key.contains(".body") =>
-            Failure(
-              `type` = key,
-              reason =
-                message.fieldPath.filter(_.trim.nonEmpty).fold(message.toString)(path => s"$path ${message.getMessage}")
-            )
-          case key if key.contains(".path") || key.contains(".status") =>
-            Failure(
-              `type` = key,
-              reason = message.getMessage
-            )
-        }
+        Failure(
+          `type` = message.getKey,
+          reason = message.formattedMessage
+        )
       }.toSeq
 
       StandardHipFailures(
@@ -198,13 +208,6 @@ object ValidationErrorFormatter {
         response = Failures(failures = failures)
       )
     }
-
-    def toApiError: Seq[ApiError] = report.getMessages.asScala.map { message =>
-      ApiError(
-        message.fieldPath,
-        message.toString
-      )
-    }.toSeq
   }
 
 }

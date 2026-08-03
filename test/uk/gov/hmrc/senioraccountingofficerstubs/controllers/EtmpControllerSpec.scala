@@ -80,17 +80,17 @@ class EtmpControllerSpec
       )
     )
 
-  private val xTransmittingSystem = ("X-Transmitting-System" -> "HIP")
-  private val xOriginatingSystem  = ("X-Originating-System"  -> "MDTP")
-  private val correlationId       = ("correlationId"         -> UUID.randomUUID().toString)
-  private val xReceiptDate        = ("X-Receipt-Date"        -> "2026-05-05T12:05:45Z")
+  private val xTransmittingSystem = "X-Transmitting-System" -> "HIP"
+  private val xOriginatingSystem  = "X-Originating-System"  -> "MDTP"
+  private val correlationId       = "correlationId"         -> UUID.randomUUID().toString
+  private val xReceiptDate        = "X-Receipt-Date"        -> "2026-05-05T12:05:45Z"
 
   def apiUri = "/etmp/RESTAdapter/dsao/subscription"
 
   private def fakeEtmpPOSTRequest(payload: JsValue) = {
     FakeRequest("POST", apiUri).withHeaders(
-      CONTENT_TYPE   -> MimeTypes.JSON,
-      (AUTHORIZATION -> authHeader),
+      CONTENT_TYPE  -> MimeTypes.JSON,
+      AUTHORIZATION -> authHeader,
       xTransmittingSystem,
       xOriginatingSystem,
       correlationId,
@@ -128,10 +128,23 @@ class EtmpControllerSpec
         )
         .withTextBody(validEtmpRequest.toString)
 
+      val expectedContent = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.parameter.header.missing",
+          |        "reason": "correlationid ERROR - Header parameter 'correlationid' is required on path '/RESTAdapter/dsao/subscription' but not found in request.: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       val result = routeResult(requestWithoutCorrelationId)
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsString(result) shouldBe "missing correlationId header"
+
+      contentAsJson(result) shouldBe expectedContent
     }
 
     "return code 400 for a request where a required header is invalid" in {
@@ -146,9 +159,26 @@ class EtmpControllerSpec
         )
         .withTextBody(validEtmpRequest.toString)
 
+      val expectedContent = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.parameter.schema.enum",
+          |        "reason": "X-Transmitting-System #/enum  ERROR - does not have a value in the enumeration [\"HIP\"]: []"
+          |      },
+          |      {
+          |        "type": "validation.request.parameter.header.missing",
+          |        "reason": "correlationid ERROR - Header parameter 'correlationid' is required on path '/RESTAdapter/dsao/subscription' but not found in request.: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       val result = routeResult(requestWithInvalidHeader)
       status(result) shouldBe BAD_REQUEST
-      contentAsString(result) shouldBe "invalid X-Transmitting-System header"
+
+      contentAsJson(result) shouldBe expectedContent
     }
 
     "return a structured 400 for a request with invalid enum for idType" in {
@@ -156,10 +186,19 @@ class EtmpControllerSpec
         "idNumber" -> generateUtr,
         "idType"   -> "Test"
       )
-      val expectedContent = Json.obj(
-        "origin"   -> "HIP",
-        "response" -> Json.obj("failures" -> Json.arr(Json.obj("type" -> "INVALID_ENUM_VALUE", "reason" -> "idType")))
-      )
+
+      val expectedContent = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.body.schema.enum",
+          |        "reason": "#/properties/idType/enum /idType ERROR - does not have a value in the enumeration [\"UTR\"]: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       val result = routeResult(fakeEtmpPOSTRequest(invalidPayload))
 
       status(result) shouldBe BAD_REQUEST
@@ -167,35 +206,44 @@ class EtmpControllerSpec
     }
 
     "return a structured 400 for when any extra fields are added" in {
-      val invalidPayload  = validEtmpRequest.as[JsObject] ++ Json.obj("extra" -> "value")
-      val expectedPayload = Json
-        .obj(
-          "origin"   -> "HIP",
-          "response" -> Json.obj(
-            "failures" -> Json.arr(Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> "extra"))
-          )
-        )
-        .toString
+      val invalidPayload = validEtmpRequest.as[JsObject] ++ Json.obj("extra" -> "value")
+
+      val expectedPayload = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.body.schema.additionalProperties",
+          |        "reason": "#/additionalProperties  ERROR - property 'extra' is not defined in the schema and the schema does not allow additional properties: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
 
       val result = routeResult(fakeEtmpPOSTRequest(invalidPayload))
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsString(result) shouldBe expectedPayload
+      contentAsJson(result) shouldBe expectedPayload
     }
 
     "return a structured 400 for constraint violation with missing required field" in {
-      val invalidPayload  = validEtmpRequest.as[JsObject] - "idType"
-      val result          = routeResult(fakeEtmpPOSTRequest(invalidPayload))
-      val expectedPayload = Json
-        .obj(
-          "origin"   -> "HIP",
-          "response" -> Json.obj(
-            "failures" -> Json.arr(Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "idType"))
-          )
-        )
-        .toString
+      val invalidPayload = validEtmpRequest.as[JsObject] - "idType"
+      val result         = routeResult(fakeEtmpPOSTRequest(invalidPayload))
+
+      val expectedPayload = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.body.schema.required",
+          |        "reason": "#/required  ERROR - required property 'idType' not found: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsString(result) shouldBe expectedPayload
+      contentAsJson(result) shouldBe expectedPayload
     }
 
     "return a structured 400 for a malformed request" in {
@@ -203,23 +251,23 @@ class EtmpControllerSpec
         .obj(
           "origin"   -> "HIP",
           "response" -> Json.obj(
-            "failures" -> Json.arr(Json.obj("type" -> "MALFORMED_REQUEST", "reason" -> ""))
+            "failures" -> Json.arr(
+              Json.obj(
+                "type" -> "validation.request.body.schema.invalidJson",
+                "reason" -> "ERROR - Unable to parse JSON - Unexpected character ('(' (code 40)): expected a valid value (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n\t at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 1].: []"
+              )
+            )
           )
         )
-        .toString
       val result = routeResult(fakeEtmpPOSTRequest(validEtmpRequest).withTextBody("("))
+
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsString(result) shouldBe expectedPayload
+      contentAsJson(result) shouldBe expectedPayload
     }
   }
 
   "POST /etmp/RESTAdapter/dsao/subscription with a configured stub response" should {
-    val hipFailure = Json
-      .obj(
-        "origin"   -> "HIP",
-        "response" -> Json.obj("failures" -> Json.arr(Json.obj("type" -> "string", "reason" -> "string")))
-      )
-      .toString
+    val hipFailure = Json.parse("""{}""".stripMargin)
 
     Seq(
       Status.UNAUTHORIZED,
@@ -230,14 +278,14 @@ class EtmpControllerSpec
       Status.SERVICE_UNAVAILABLE
     ).foreach { configuredStatus =>
       s"return the configured $configuredStatus with its body and the correlationId header" in {
-        stubEtmpStatus(configuredStatus, Some(hipFailure))
+        stubEtmpStatus(configuredStatus, Some(hipFailure.toString))
 
         val request       = fakeEtmpPOSTRequest(validEtmpRequest)
         val correlationId = request.headers.get("correlationId").get
         val result        = routeResult(request)
 
         status(result) shouldBe configuredStatus
-        contentAsString(result) shouldBe hipFailure
+        contentAsJson(result) shouldBe hipFailure
         header("correlationId", result) shouldBe Some(correlationId)
       }
     }

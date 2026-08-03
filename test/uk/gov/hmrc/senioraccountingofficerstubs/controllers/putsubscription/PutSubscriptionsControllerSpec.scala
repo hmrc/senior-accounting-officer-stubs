@@ -93,19 +93,22 @@ class PutSubscriptionsControllerSpec
     }
 
     "return 400 for a subscriptionId that is more than 15 characters long" in {
+      val expectedResponse = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.parameter.schema.maxLength",
+          |        "reason": "subscriptionId #/maxLength  ERROR - must be at most 15 characters long: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       val result = routeResult(fakeSubscriptionsPUTRequest(testLongSubscriptionId, validSubscriptionRequest))
+
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.obj(
-        "origin"   -> "HIP",
-        "response" -> Json.obj(
-          "failures" -> Json.arr(
-            Json.obj(
-              "type"   -> "validation.request.parameter.schema.maxLength",
-              "reason" -> "subscriptionId must be at most 15 characters long"
-            )
-          )
-        )
-      )
+      contentAsJson(result) shouldBe expectedResponse
     }
 
     "return a 404 for a configured safeId" in {
@@ -120,7 +123,9 @@ class PutSubscriptionsControllerSpec
             )
           )
         )
+
       val result = routeResult(fakeSubscriptionsPUTRequest(testSubscriptionId, validSubscriptionRequest))
+
       status(result) shouldBe Status.NOT_FOUND
     }
 
@@ -129,20 +134,22 @@ class PutSubscriptionsControllerSpec
         .withHeaders(CONTENT_TYPE -> "application/json", AUTHORIZATION -> authHeader)
         .withTextBody("""{"subscription":""")
 
+      val expectedResponse = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.body.schema.invalidJson",
+          |        "reason": "ERROR - Unable to parse JSON - Unexpected end-of-input within/between Object entries\n\t at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 17].: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       val result = routeResult(fakeRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.obj(
-        "origin"   -> "HIP",
-        "response" -> Json.obj(
-          "failures" -> Json.arr(
-            Json.obj(
-              "type" -> "validation.request.body.schema.invalidJson",
-              "reason" -> "ERROR - Unable to parse JSON - Unexpected end-of-input within/between Object entries\n\t at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 17].: []"
-            )
-          )
-        )
-      )
+      contentAsJson(result) shouldBe expectedResponse
     }
 
     "return a structured 400 for constraint violation with invalid data type when the request is an invalid JSON object" in {
@@ -150,66 +157,73 @@ class PutSubscriptionsControllerSpec
         "etmpSafeId" -> Json.arr("Invalid")
       )
 
+      val expectedResponse = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.body.schema.type",
+          |        "reason": "#/properties/etmpSafeId/type /etmpSafeId ERROR - array found, string expected: []"
+          |      },
+          |      {
+          |        "type": "validation.request.body.schema.required",
+          |        "reason": "#/required  ERROR - required property 'contacts' not found: []"
+          |      },
+          |      {
+          |        "type": "validation.request.body.schema.required",
+          |        "reason": "#/required  ERROR - required property 'nominatedCompany' not found: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       val result = routeResult(fakeSubscriptionsPUTRequest(testSubscriptionId, invalidSubscriptionRequest))
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.obj(
-        "origin"   -> "HIP",
-        "response" -> Json.obj(
-          "failures" -> Json.arr(
-            Json.obj(
-              "type"   -> "validation.request.body.schema.type",
-              "reason" -> "/etmpSafeId array found, string expected"
-            ),
-            Json.obj(
-              "type"   -> "validation.request.body.schema.required",
-              "reason" -> "ERROR - required property 'contacts' not found: []"
-            ),
-            Json.obj(
-              "type"   -> "validation.request.body.schema.required",
-              "reason" -> "ERROR - required property 'nominatedCompany' not found: []"
-            )
-          )
-        )
-      )
+      contentAsJson(result) shouldBe expectedResponse
     }
 
     "return a structured 400 for constraint violation with invalid data type when there is an additional json property" in {
       val additionalProperty: JsObject     = Json.obj("extraProperty" -> "I shouldn't be here")
       val subscriptionRequestExtraProperty = validSubscriptionRequest.as[JsObject] ++ additionalProperty
 
+      val expectedResponse = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.body.schema.additionalProperties",
+          |        "reason": "#/additionalProperties  ERROR - property 'extraProperty' is not defined in the schema and the schema does not allow additional properties: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       val result = routeResult(fakeSubscriptionsPUTRequest(testSubscriptionId, subscriptionRequestExtraProperty))
+
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.obj(
-        "origin"   -> "HIP",
-        "response" -> Json.obj(
-          "failures" -> Json.arr(
-            Json.obj(
-              "type" -> "validation.request.body.schema.additionalProperties",
-              "reason" -> "ERROR - property 'extraProperty' is not defined in the schema and the schema does not allow additional properties: []"
-            )
-          )
-        )
-      )
+      contentAsJson(result) shouldBe expectedResponse
     }
 
     "return a structured 400 for constraint violation with missing required field" in {
       val subscriptionRequestMissingRequiredField = validSubscriptionRequest.as[JsObject] - "etmpSafeId"
 
+      val expectedResponse = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.body.schema.required",
+          |        "reason": "#/required  ERROR - required property 'etmpSafeId' not found: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       val result =
         routeResult(fakeSubscriptionsPUTRequest(testSubscriptionId, subscriptionRequestMissingRequiredField))
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.obj(
-        "origin"   -> "HIP",
-        "response" -> Json.obj(
-          "failures" -> Json.arr(
-            Json.obj(
-              "type"   -> "validation.request.body.schema.required",
-              "reason" -> "ERROR - required property 'etmpSafeId' not found: []"
-            )
-          )
-        )
-      )
+      contentAsJson(result) shouldBe expectedResponse
     }
   }
 }

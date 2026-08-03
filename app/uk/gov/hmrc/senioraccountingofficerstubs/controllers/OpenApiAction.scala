@@ -22,6 +22,7 @@ import play.api.Logger
 import play.api.libs.json.{Json, Reads, Writes}
 import play.api.mvc.Results.BadRequest
 import play.api.mvc.*
+import uk.gov.hmrc.senioraccountingofficerstubs.models.CorrelatableRequest
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.ValidationErrorFormatter.toStandardHipFailures
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.{EndpointValidator, OpenApiSchema, OpenApiValidator}
 
@@ -33,7 +34,7 @@ trait OpenApiActionEmptyInterface {
   def fold[L](
       badRequest: ValidationReport => L
   )(
-      block: Request[AnyContentAsEmpty.type] => Future[Result]
+      block: CorrelatableRequest[AnyContentAsEmpty.type] => Future[Result]
   )(using Writes[L]): Action[AnyContentAsEmpty.type]
 }
 
@@ -42,7 +43,7 @@ trait OpenApiActionInterface[R] {
   def fold[L](
       badRequest: ValidationReport => L
   )(
-      block: Request[R] => Future[Result]
+      block: CorrelatableRequest[R] => Future[Result]
   )(using Writes[L], Reads[R]): Action[String]
 
 }
@@ -62,7 +63,7 @@ class OpenApiAction @Inject() (controllerComponents: ControllerComponents)(using
     override def fold[L](
         badRequest: ValidationReport => L
     )(
-        block: Request[AnyContentAsEmpty.type] => Future[Result]
+        block: CorrelatableRequest[AnyContentAsEmpty.type] => Future[Result]
     )(using Writes[L]): Action[AnyContentAsEmpty.type] = {
       controllerComponents.actionBuilder(controllerComponents.parsers.ignore(AnyContentAsEmpty)).async {
         implicit request =>
@@ -76,7 +77,7 @@ class OpenApiAction @Inject() (controllerComponents: ControllerComponents)(using
     override def fold[L](
         badRequest: ValidationReport => L
     )(
-        block: Request[R] => Future[Result]
+        block: CorrelatableRequest[R] => Future[Result]
     )(using Writes[L], Reads[R]): Action[String] = {
       controllerComponents.actionBuilder(controllerComponents.parsers.tolerantText).async { implicit request =>
         val schemaValidator         = OpenApiValidator.of(openApi)
@@ -91,21 +92,25 @@ class OpenApiAction @Inject() (controllerComponents: ControllerComponents)(using
         requestValidationReport: Either[ValidationReport, T]
     )(
         badRequest: ValidationReport => L
-    )(block: Request[T] => Future[Result])(using RequestHeader, Writes[L]) = {
-      val futureResult = requestValidationReport.left
-        .map(report => Future.successful(BadRequest(Json.toJson(badRequest(report)))))
-        .map(validatedBody => block(summon[RequestHeader].withBody(validatedBody)))
-        .merge
+    )(block: CorrelatableRequest[T] => Future[Result])(using RequestHeader, Writes[L]) = {
+      val correlationId = summon[RequestHeader].headers.get("correlationId")
+
+      val futureResult = requestValidationReport match {
+        case Left(report) =>
+          Future.successful(BadRequest(Json.toJson(badRequest(report))))
+        case Right(validatedBody) =>
+          val request = summon[RequestHeader].withBody(validatedBody)
+          block(CorrelatableRequest(request, correlationId.fold("")(identity)))
+      }
 
       for {
         result                   <- futureResult
         responseValidationReport <- schemaValidator.validateResponse(result)
       } yield {
         if responseValidationReport.hasErrors then {
-          val correlationId =
-            summon[RequestHeader].headers.get("correlationId").fold("")(cId => s"correlationId=$cId, ")
+
           val errors = Json.toJson(responseValidationReport.toStandardHipFailures.response.failures).toString
-          logger.warn(s"$correlationId$errors")
+          logger.warn(s"${correlationId.fold("")(cId => s"correlationId=$cId, ")}$errors")
         }
         result
       }
