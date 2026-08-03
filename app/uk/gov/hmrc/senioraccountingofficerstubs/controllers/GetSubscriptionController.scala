@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
+import play.api.Logging
 import play.api.http.Status.*
 import play.api.libs.json.Json
 import play.api.mvc.*
@@ -24,21 +25,31 @@ import uk.gov.hmrc.senioraccountingofficerstubs.controllers.GetSubscriptionContr
 import uk.gov.hmrc.senioraccountingofficerstubs.models.getsubscription.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.*
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.OpenApiSchema
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.*
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.ValidationErrorFormatter.toStandardHipFailures
 
 import scala.concurrent.ExecutionContext
 
 import javax.inject.Inject
 
-class GetSubscriptionController @Inject() (cc: ControllerComponents, repository: PostSignupConfigRepository)(using
+class GetSubscriptionController @Inject() (
+    cc: ControllerComponents,
+    openApiAction: OpenApiAction,
+    repository: PostSignupConfigRepository
+)(using
     ExecutionContext
-) extends BackendController(cc) {
-  def getSubscription(saoSubscriptionId: String): Action[AnyContent] = Action.async { implicit request =>
-    repository.get(saoSubscriptionId).map {
-      case Some(config) => handleConfig(config)
-      case _            => Ok(Json.toJson(default200))
-    }
-  }
+) extends BackendController(cc)
+    with Logging {
+  def getSubscription(saoSubscriptionId: String): Action[AnyContentAsEmpty.type] =
+    openApiAction
+      .ignoreBody(logger)(OpenApiSchema.DpsReadApi)
+      .fold(report => report.toStandardHipFailures) { implicit request =>
+        repository.get(saoSubscriptionId).map {
+          case Some(config) => handleConfig(config)
+          case _            => Ok(Json.toJson(default200))
+        }
+      }
 
   private def handleConfig(config: PostSignupStubConfiguration): Result = {
     val configuration: Option[NoneDefaultApiConfiguration] = config.getSubscriptionResponseConfig

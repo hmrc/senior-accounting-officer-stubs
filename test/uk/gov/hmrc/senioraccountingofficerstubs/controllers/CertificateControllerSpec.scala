@@ -160,43 +160,49 @@ class CertificateControllerSpec
         "companies" -> Json.arr("Test")
       )
 
+      val expectedResponse = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.body.schema.type",
+          |        "reason": "#/properties/companies/items/type /companies/0 ERROR - string found, object expected: []"
+          |      },
+          |      {
+          |        "type": "validation.request.body.schema.required",
+          |        "reason": "#/required  ERROR - required property 'saoEmail' not found: []"
+          |      },
+          |      {
+          |        "type": "validation.request.body.schema.required",
+          |        "reason": "#/required  ERROR - required property 'saoName' not found: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       val result = routeResult(fakeCertificatePOSTRequest(testSubscriptionId, invalidCertificateRequest))
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.obj(
-        "origin"   -> "HIP",
-        "response" -> Json.obj(
-          "failures" -> Json.arr(
-            Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> "companies[0]"),
-            Json.obj(
-              "type"   -> "MISSING_REQUIRED_FIELD",
-              "reason" -> "saoEmail"
-            ),
-            Json.obj(
-              "type"   -> "MISSING_REQUIRED_FIELD",
-              "reason" -> "saoName"
-            )
-          )
-        )
-      )
+      contentAsJson(result) shouldBe expectedResponse
     }
 
     "return 400 for a subscriptionId that is more than 15 characters long" in {
+      val expectedResponse = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.parameter.schema.maxLength",
+          |        "reason": "subscriptionId #/maxLength  ERROR - must be at most 15 characters long: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
 
       val result = routeResult(fakeCertificatePOSTRequest(testLongSubscriptionId, validCertificateRequest))
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.obj(
-        "origin"   -> "HIP",
-        "response" -> Json.obj(
-          "failures" -> Json.arr(
-            Json.obj(
-              "type"   -> "LENGTH_OUT_OF_BOUNDS",
-              "reason" -> "subscriptionId"
-            )
-          )
-        )
-      )
+      contentAsJson(result) shouldBe expectedResponse
     }
 
     "return a structured 400 for constraint violation with malformed request when JSON syntax is incorrect" in {
@@ -204,34 +210,43 @@ class CertificateControllerSpec
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody("""{"companies":["Test"]""")
 
+      val expectedResponse = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.body.schema.invalidJson",
+          |        "reason": "ERROR - Unable to parse JSON - Unexpected end-of-input: expected close marker for Object (start marker at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 1])\n\t at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 22].: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.obj(
-        "origin"   -> "HIP",
-        "response" -> Json.obj(
-          "failures" -> Json.arr(
-            Json.obj(
-              "type"   -> "MALFORMED_REQUEST",
-              "reason" -> ""
-            )
-          )
-        )
-      )
+      contentAsJson(result) shouldBe expectedResponse
     }
 
     "return a structured 400 for constraint violation with missing required field" in {
+      val expectedResponse = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.body.schema.required",
+          |        "reason": "#/required  ERROR - required property 'companies' not found: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       val certificateRequestMissingRequiredField = validCertificateRequest.as[JsObject] - "companies"
 
       assertValidationError(
         testSubscriptionId,
         certificateRequestMissingRequiredField,
-        Json.obj(
-          "origin"   -> "HIP",
-          "response" -> Json.obj(
-            "failures" -> Json.arr(Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "companies"))
-          )
-        )
+        expectedResponse
       )
     }
   }

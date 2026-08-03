@@ -11,7 +11,8 @@ lazy val microservice = Project("senior-accounting-officer-stubs", file("."))
     // suppress warnings in generated routes files
     scalacOptions += "-Wconf:src=routes/.*:s",
     PlayKeys.playDefaultPort := 10061,
-    Compile / unmanagedResourceDirectories += baseDirectory.value / "src/main/resources"
+    Compile / unmanagedResourceDirectories += baseDirectory.value / "src/main/resources",
+    dependencyOverrides ++= AppDependencies.dependencyOverrides
   )
   .settings(CodeCoverageSettings.settings: _*)
   .settings(scalafixSettings *)
@@ -20,7 +21,10 @@ lazy val it = project
   .enablePlugins(PlayScala)
   .dependsOn(microservice % "test->test")
   .settings(DefaultBuildSettings.itSettings())
-  .settings(libraryDependencies ++= AppDependencies.compile ++ AppDependencies.it)
+  .settings(
+    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.it,
+    dependencyOverrides ++= AppDependencies.dependencyOverrides
+  )
 
 val scalafixSettings: Seq[Setting[?]] = Seq(
   semanticdbEnabled := true

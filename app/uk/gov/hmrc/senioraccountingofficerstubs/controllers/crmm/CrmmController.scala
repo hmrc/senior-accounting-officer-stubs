@@ -16,79 +16,46 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm
 
+import play.api.Logging
 import play.api.libs.json.*
 import play.api.mvc.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm.CrmmController.*
-import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
-import uk.gov.hmrc.senioraccountingofficerstubs.models.ApiError
+import uk.gov.hmrc.senioraccountingofficerstubs.controllers.OpenApiAction
 import uk.gov.hmrc.senioraccountingofficerstubs.models.crmm.*
-import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.PostSignupStubConfiguration
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.*
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.OpenApiSchema
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.generateCustomerId
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.ValidationErrorFormatter.toStandardHipFailures
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
 
 import javax.inject.Inject
 
-class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignupConfigRepository)(using
+class CrmmController @Inject() (
+    cc: ControllerComponents,
+    openApiAction: OpenApiAction,
+    repository: PostSignupConfigRepository
+)(using
     ExecutionContext
-) extends BackendController(cc) {
-  def retrieveCustomer(): Action[String] = Action(parse.tolerantText).async { implicit request =>
-    (for {
-      _            <- validateHeader(request.headers)
-      json         <- JsonErrorHandling.parseJson(request.body)
-      _            <- jsonSchemaValidation(json)
-      requestModel <- validateAtLeastOneId(json)
-    } yield getConfiguredResponse(requestModel)).left.map(Future.successful).merge
-  }
+) extends BackendController(cc)
+    with Logging {
 
-  private def validateHeader(requestHeaders: Headers): Either[Result, String] = {
-    for {
-      correlationId <- requestHeaders
-        .get(correlationIdHeader)
-        .filter(_.nonEmpty)
-        .toRight(
-          JsonErrorHandling
-            .badRequest(
-              ApiError(Some(s"headers.$correlationIdHeader"), "MISSING_REQUIRED_FIELD")
-            )
-        )
-    } yield correlationId
-  }
+  def retrieveCustomer(): Action[String] =
+    openApiAction[RetrieveCustomerRequest](logger)(OpenApiSchema.CrmmApi)
+      .fold(report => report.toStandardHipFailures) { implicit request =>
+        val retrieveCustomerRequest = request.body
 
-  private def jsonSchemaValidation(json: JsValue): Either[Result, Unit] =
-    JsonErrorHandling.Validators.validateRetrieveCustomerRequest(json) match {
-      case Nil    => Right(())
-      case errors => Left(JsonErrorHandling.badRequest(errors))
-    }
-
-  private def validateAtLeastOneId(json: JsValue): Either[Result, RetrieveCustomerRequest] = {
-    json.as[RetrieveCustomerRequest] match {
-      case RetrieveCustomerRequest(None, None) =>
-        Left(
-          JsonErrorHandling
-            .badRequest(
-              ApiError(Some("companyRegistrationNumber or uniqueTaxReference"), "MISSING_REQUIRED_FIELD")
-            )
-        )
-      case request => Right(request)
-    }
-  }
-
-  private def getConfiguredResponse(request: RetrieveCustomerRequest): Future[Result] = {
-    repository
-      .getByCrnAndUtr(
-        request.companyRegistrationNumber,
-        request.uniqueTaxReference
-      )
-      .map {
-        case Some(config) => retrieveConfiguredResponse(config)
-        case _            => Ok(Json.toJson(generateStandardResponse))
+        repository
+          .getByCrnAndUtr(
+            retrieveCustomerRequest.companyRegistrationNumber,
+            retrieveCustomerRequest.uniqueTaxReference
+          )
+          .map {
+            case Some(config) => retrieveConfiguredResponse(config)
+            case _            => Ok(Json.toJson(generateStandardResponse))
+          }
       }
-  }
 
   private def retrieveConfiguredResponse(config: PostSignupStubConfiguration): Result = {
     val status: Int = config.getSubscriptionAndPostRetrieveCustomerId
@@ -114,8 +81,4 @@ class CrmmController @Inject() (cc: ControllerComponents, repository: PostSignup
       status = "Success"
     )
   }
-}
-
-object CrmmController {
-  val correlationIdHeader = "correlationId"
 }

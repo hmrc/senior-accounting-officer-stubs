@@ -1,0 +1,353 @@
+---
+openapi: 3.0.3
+info:
+  title: CRMM customer details
+  description: "      | 1.0.0     | 20-07-2026 | Abdullah Mohammed| Initial draft of Retrieve Customer Details API                |\n  \n\
+               \      | 1.0.0-a   | 24-07-2026 | DSAO             | Amended 200, 400 & redescribed 404 as discussed with Abdullah |\n  \n"
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+  version: 1.0.0-a
+  x-integration-catalogue:
+    API-Generation: V2
+    api-type: SIMPLE
+    backends:
+    - CFS
+    domain: "9"
+    platform: HIP
+    reviewed-date: 2026-07-20T08:53:26.849145495Z
+    short-description: CRMM Pega API for retrieving customer Id and share with Digital
+      for DSAO .
+    status: BETA
+    sub-domain: "9.3"
+servers:
+- url: https://api.ipaas.prod.eis.ns2p.corp.hmrc.gov.uk/compliance/civil-investigation-and-avoidance
+  description: Corporate - Production
+- url: https://api.ipaas.preprod.eis.ns2p.corp.hmrc.gov.uk/compliance/civil-investigation-and-avoidance
+  description: Corporate – Pre-Production
+- url: https://api.ipaas.test.eis.ns2n.corp.hmrc.gov.uk/compliance/civil-investigation-and-avoidance
+  description: Corporate - Test
+- url: https://hip.ws.hmrc.gov.uk/compliance/civil-investigation-and-avoidance
+  description: MDTP - Production
+- url: https://hip.ws.ibt.hmrc.gov.uk/compliance/civil-investigation-and-avoidance
+  description: MDTP - QA
+security:
+- oAuth2:
+  - read:case-information
+tags:
+- name: pega-CRMM-Retrieve-CustomerID-endpoint
+  description: CRMM Retrieve Customer ID endpoint
+paths:
+  /api/customer/v1/retrievecustomer:
+    post:
+      tags:
+      - Retrieve-customer-endpoint
+      summary: Retrieve Customer ID
+      description: Provide Customer id based on UTR/CRN
+      operationId: retrievecustomer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetrieveCustomerRequest'
+        required: true
+      responses:
+        "200":
+          description: Success or Fail response
+          headers:
+            correlationId:
+              $ref: '#/components/headers/correlationId'
+            sourceSysRef:
+              $ref: '#/components/headers/sourceSysRef'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetrieveCustomerResponse'
+              examples:
+                RetrieveCustomerSuccess:
+                  $ref: '#/components/examples/RetreiveCustomerSuccess'
+        "400":
+          description: Bad Request
+          headers:
+            correlationId:
+              $ref: '#/components/headers/correlationId'
+          content:
+            application/json:
+              schema:
+                required:
+                - origin
+                - response
+                type: object
+                properties:
+                  origin:
+                    $ref: '#/components/schemas/HIP-originEnum'
+                  response:
+                    oneOf:
+                    - $ref: '#/components/schemas/HIP-failureResponse'
+                    - $ref: '#/components/schemas/errorResponseBody'
+                additionalProperties: false
+              examples:
+                errorResponseBodyExample:
+                  $ref: '#/components/examples/errorResponseBodyExample'
+                HIP-originResponse:
+                  description: HIP-originResponse
+                  value:
+                    origin: HIP
+                    response:
+                    - type: Type of Failure
+                      reason: Reason for Failure
+        "401":
+          description: Unauthorized
+          headers:
+            correlationId:
+              $ref: '#/components/headers/correlationId'
+        "403":
+          description: Forbidden
+          headers:
+            correlationId:
+              $ref: '#/components/headers/correlationId'
+        "404":
+          description: Service is in maintenance
+          headers:
+            correlationId:
+              $ref: '#/components/headers/correlationId'
+        "503":
+          description: Service Unavailable
+          headers:
+            correlationId:
+              $ref: '#/components/headers/correlationId'
+          content:
+            application/json:
+              schema:
+                required:
+                - origin
+                - response
+                type: object
+                properties:
+                  origin:
+                    $ref: '#/components/schemas/HIP-originEnum'
+                  response:
+                    oneOf:
+                    - $ref: '#/components/schemas/HIP-failureResponse'
+                    - required:
+                      - origin
+                      - response
+                      type: object
+                      properties:
+                        origin:
+                          $ref: '#/components/schemas/HIP-originEnum'
+                        response:
+                          oneOf:
+                          - $ref: '#/components/schemas/HIP-failureResponse'
+                          - $ref: '#/components/schemas/HIP-originResponse'
+                      additionalProperties: false
+                additionalProperties: false
+              examples:
+                HIP-originResponse:
+                  description: HIP-originResponse
+                  value:
+                    origin: HIP
+                    response:
+                    - type: Type of Failure
+                      reason: Reason for Failure
+        "500":
+          description: Internal Server Error
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/HIP-originResponse'
+      deprecated: false
+    parameters:
+    - $ref: '#/components/parameters/correlationId'
+components:
+  schemas:
+    HIP-failureResponse:
+      required:
+      - failures
+      type: object
+      properties:
+        failures:
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            required:
+            - type
+            - reason
+            type: object
+            properties:
+              type:
+                type: string
+              reason:
+                type: string
+            additionalProperties: false
+    HIP-originEnum:
+      enum:
+      - HIP
+      - HoD
+      type: string
+    HIP-originResponse:
+      required:
+      - origin
+      - response
+      type: object
+      properties:
+        origin:
+          $ref: '#/components/schemas/HIP-originEnum'
+        response:
+          $ref: '#/components/schemas/HIP-failureResponse'
+      additionalProperties: false
+    RetrieveCustomerRequest:
+      oneOf:
+        - $ref: '#/components/schemas/RetrieveCustomerUtrAndCrnRequest'
+        - $ref: '#/components/schemas/RetrieveCustomerCrnOnlyRequest'
+        - $ref: '#/components/schemas/RetrieveCustomerUtrOnlyRequest'
+    RetrieveCustomerCrnOnlyRequest:
+      title: Retrieve Customer CRN only Request Schema
+      type: object
+      required:
+        - companyRegistrationNumber
+      properties:
+        companyRegistrationNumber:
+          pattern: "^[A-Za-z0-9]+$"
+          type: string
+          example: AB112233
+      additionalProperties: false
+    RetrieveCustomerUtrOnlyRequest:
+      title: Retrieve Customer UTR only Request Schema
+      type: object
+      required:
+        - uniqueTaxReference
+      properties:
+        uniqueTaxReference:
+          pattern: "^[A-Za-z0-9]+$"
+          type: string
+          example: "11223344"
+      additionalProperties: false
+    RetrieveCustomerUtrAndCrnRequest:
+      title: Retrieve Customer UTR & CRN Request Schema
+      type: object
+      required:
+        - uniqueTaxReference
+        - companyRegistrationNumber
+      properties:
+        companyRegistrationNumber:
+          pattern: "^[A-Za-z0-9]+$"
+          type: string
+          example: AB112233
+        uniqueTaxReference:
+          pattern: "^[A-Za-z0-9]+$"
+          type: string
+          example: "11223344"
+      additionalProperties: false
+    RetrieveCustomerResponse:
+      oneOf:
+        - $ref: '#/components/schemas/RetrieveCustomerResponseSuccess'
+        - $ref: '#/components/schemas/RetrieveCustomerResponseFailure'
+    RetrieveCustomerResponseSuccess:
+      required:
+        - customerId
+        - existingCustomer
+        - status
+      properties:
+        customerId:
+          pattern: "^[A-Za-z0-9]+$"
+          type: string
+        existingCustomer:
+          enum:
+            - true
+          type: boolean
+        status:
+          enum:
+            - Success
+          type: string
+    RetrieveCustomerResponseFailure:
+      title: Retrieve customer Not Found Response Schema
+      type: object
+      required:
+        - errorDescription
+        - existingCustomer
+        - status
+      properties:
+        errorDescription:
+          pattern: "^[A-Za-z0-9]+$"
+          type: string
+        existingCustomer:
+          enum:
+            - false
+          type: boolean
+        status:
+          enum:
+            - Failure
+          type: string
+    errorResponseBody:
+      title: SimpleErrorObject
+      required:
+      - errorDescription
+      - status
+      type: object
+      properties:
+        errorDescription:
+          type: string
+        status:
+          enum:
+            - Error
+      additionalProperties: false
+  parameters:
+    correlationId:
+      name: correlationId
+      in: header
+      description: Unique correlationId for tracing a single request. Any non-empty
+        string.
+      required: true
+      schema:
+        pattern: ^.+$
+        type: string
+      style: simple
+      explode: false
+    sourceSysRef:
+      name: sourceSysRef
+      in: header
+      description: source system reference.
+      required: false
+      schema:
+        pattern: ^.+$
+        type: string
+      style: simple
+      explode: false
+  examples:
+    RetreiveCustomerSuccess:
+      summary: Successful response example
+      description: successful response for Retrieve Customer ID (status=Success)
+      value:
+        customerId: 112233
+        existingCustomer: true
+        status: Success
+    errorResponseBodyExample:
+      value:
+        errorDescription: Error trying to find customer id
+        existingCustomer: false
+        status: Fail
+  headers:
+    correlationId:
+      description: Same as the correlationId used for this request.
+      required: false
+      style: simple
+      explode: false
+      schema:
+        pattern: ^.+$
+        type: string
+    sourceSysRef:
+      description: source system reference.
+      required: false
+      style: simple
+      explode: false
+  securitySchemes:
+    oAuth2:
+      type: oauth2
+      description: Keycloak OAuth2 Client Credentials Flow
+      flows:
+        clientCredentials:
+          tokenUrl: /tokenUrl/not-required
+          scopes:
+            read:case-information: Read permission for the APIs

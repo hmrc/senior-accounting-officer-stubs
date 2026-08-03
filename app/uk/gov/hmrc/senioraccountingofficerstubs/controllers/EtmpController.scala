@@ -16,62 +16,55 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers
 
+import play.api.Logging
 import play.api.http.Status.*
-import play.api.libs.json.Json
-import play.api.mvc.Action
-import play.api.mvc.ControllerComponents
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.senioraccountingofficerstubs.helpers.EtmpHelper
-import uk.gov.hmrc.senioraccountingofficerstubs.helpers.JsonErrorHandling
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.NoneDefaultApiConfiguration
 import uk.gov.hmrc.senioraccountingofficerstubs.models.{EtmpSuccessResponse, Success as EtmpSuccess}
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.OpenApiSchema
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.generateDsaoIdNumber
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.ValidationErrorFormatter.*
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
-class EtmpController @Inject() (cc: ControllerComponents, repository: SignupConfigRepository)(using ExecutionContext)
-    extends BackendController(cc) {
 
-  def createEtmp: Action[String] = Action(parse.tolerantText).async { implicit request =>
-    EtmpHelper
-      .validateHeaders(request.headers)
-      .fold(
-        header_err => Future.successful(BadRequest(header_err)),
-        correlationId => {
-          JsonErrorHandling.parseJson(request.body) match {
-            case Right(json) => {
-              val errors = JsonErrorHandling.Validators.validateEtmp(json)
-              if errors.nonEmpty then Future.successful(JsonErrorHandling.badRequest(errors))
-              else {
-                repository.get((json \ "idNumber").as[String]).map { config =>
-                  val response = config.flatMap(_.postEtmpSubscription) match {
-                    case Some(NoneDefaultApiConfiguration(NO_CONTENT, _)) => NoContent
-                    case Some(NoneDefaultApiConfiguration(status, body))  =>
-                      Status(status)(body.fold("")(identity)).as(JSON)
-                    case None =>
-                      Created(
-                        Json.toJson(
-                          EtmpSuccessResponse(
-                            EtmpSuccess(
-                              Instant.now().truncatedTo(ChronoUnit.SECONDS).toString,
-                              generateDsaoIdNumber
-                            )
-                          )
-                        )
-                      )
-                  }
-                  response.withHeaders("correlationId" -> correlationId)
-                }
-              }
-            }
-            case Left(errorResult) => Future.successful(errorResult)
+class EtmpController @Inject() (
+    cc: ControllerComponents,
+    openApiAction: OpenApiAction,
+    repository: SignupConfigRepository
+)(using ExecutionContext)
+    extends BackendController(cc)
+    with Logging {
+
+  def createEtmp: Action[String] =
+    openApiAction[JsValue](logger)(OpenApiSchema.EtmpApi)
+      .fold(report => report.toStandardHipFailures) { implicit request =>
+        val json = request.body
+
+        repository.get((json \ "idNumber").as[String]).map { config =>
+          val response = config.flatMap(_.postEtmpSubscription) match {
+            case Some(NoneDefaultApiConfiguration(NO_CONTENT, _)) => NoContent
+            case Some(NoneDefaultApiConfiguration(status, body))  =>
+              Status(status)(body.fold("")(identity)).as(JSON)
+            case None =>
+              Created(
+                Json.toJson(
+                  EtmpSuccessResponse(
+                    EtmpSuccess(
+                      Instant.now().truncatedTo(ChronoUnit.SECONDS).toString,
+                      generateDsaoIdNumber
+                    )
+                  )
+                )
+              )
           }
+          response.withHeaders("correlationId" -> request.correlationId)
         }
-      )
-  }
-
+      }
 }

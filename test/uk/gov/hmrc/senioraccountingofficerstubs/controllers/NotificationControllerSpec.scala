@@ -162,15 +162,26 @@ class NotificationControllerSpec
         "saos"      -> Json.arr()
       )
 
+      val expectedResponse = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.body.schema.type",
+          |        "reason": "#/properties/companies/items/type /companies/0 ERROR - string found, object expected: []"
+          |      },
+          |      {
+          |        "type": "validation.request.body.schema.minItems",
+          |        "reason": "#/properties/saos/minItems /saos ERROR - must have at least 1 items but found 0: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       assertValidationError(
         testSubscriptionId,
         invalidNotificationRequest,
-        Json.obj(
-          "origin"   -> "HIP",
-          "response" -> Json.obj(
-            "failures" -> Json.arr(Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> "companies[0]"))
-          )
-        )
+        expectedResponse
       )
     }
 
@@ -179,29 +190,43 @@ class NotificationControllerSpec
         .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, AUTHORIZATION -> authHeader)
         .withTextBody("""{"companies":["Test"]""")
 
+      val expectedResponse = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.body.schema.invalidJson",
+          |        "reason": "ERROR - Unable to parse JSON - Unexpected end-of-input: expected close marker for Object (start marker at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 1])\n\t at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 22].: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       val result = routeResult(fakePOSTRequest)
 
       status(result) shouldBe Status.BAD_REQUEST
-      contentAsJson(result) shouldBe Json.obj(
-        "origin"   -> "HIP",
-        "response" -> Json.obj(
-          "failures" -> Json.arr(Json.obj("type" -> "MALFORMED_REQUEST", "reason" -> ""))
-        )
-      )
+      contentAsJson(result) shouldBe expectedResponse
     }
 
     "return a structured 400 for constraint violation with missing required field" in {
+      val expectedResponse = Json.parse("""{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "validation.request.body.schema.required",
+          |        "reason": "#/required  ERROR - required property 'companies' not found: []"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin)
+
       val notificationRequestMissingRequiredField = validNotificationRequest.as[JsObject] - "companies"
 
       assertValidationError(
         testSubscriptionId,
         notificationRequestMissingRequiredField,
-        Json.obj(
-          "origin"   -> "HIP",
-          "response" -> Json.obj(
-            "failures" -> Json.arr(Json.obj("type" -> "MISSING_REQUIRED_FIELD", "reason" -> "companies"))
-          )
-        )
+        expectedResponse
       )
     }
   }

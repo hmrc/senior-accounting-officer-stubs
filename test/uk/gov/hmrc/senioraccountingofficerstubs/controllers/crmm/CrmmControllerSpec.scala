@@ -75,16 +75,20 @@ class CrmmControllerSpec
           .withTextBody("")
 
         val expectedResponse = Json.parse("""{
-                                            |  "origin": "HIP",
-                                            |  "response": {
-                                            |    "failures": [
-                                            |      {
-                                            |        "type": "MISSING_REQUIRED_FIELD",
-                                            |        "reason": "headers.correlationId"
-                                            |      }
-                                            |    ]
-                                            |  }
-                                            |}""".stripMargin)
+            |  "origin": "HIP",
+            |  "response": {
+            |    "failures": [
+            |      {
+            |        "type": "validation.request.parameter.header.missing",
+            |        "reason": "correlationId ERROR - Header parameter 'correlationId' is required on path '/api/customer/v1/retrievecustomer' but not found in request.: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.missing",
+            |        "reason": "ERROR - A request body is required but none found.: []"
+            |      }
+            |    ]
+            |  }
+            |}""".stripMargin)
 
         val result = routeResult(requestWithoutCorrelationId)
 
@@ -101,13 +105,38 @@ class CrmmControllerSpec
           .withHeaders(validHeaders*)
           .withTextBody(requestBody)
 
-        val expectedResponse = Json
-          .obj(
-            "origin"   -> "HIP",
-            "response" -> Json.obj(
-              "failures" -> Json.arr(Json.obj("type" -> "INVALID_FORMAT", "reason" -> "companyRegistrationNumber"))
-            )
-          )
+        val expectedResponse = Json.parse("""
+            |{
+            |  "origin": "HIP",
+            |  "response": {
+            |    "failures": [
+            |      {
+            |        "type": "validation.request.body.schema.oneOf",
+            |        "reason": "#/oneOf  ERROR - must be valid to one and only one schema, but 0 are valid: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.pattern",
+            |        "reason": "#/oneOf/0/properties/companyRegistrationNumber/pattern /companyRegistrationNumber ERROR - does not match the regex pattern ^[A-Za-z0-9]+$: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.required",
+            |        "reason": "#/oneOf/0/required  ERROR - required property 'uniqueTaxReference' not found: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.pattern",
+            |        "reason": "#/oneOf/1/properties/companyRegistrationNumber/pattern /companyRegistrationNumber ERROR - does not match the regex pattern ^[A-Za-z0-9]+$: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.required",
+            |        "reason": "#/oneOf/2/required  ERROR - required property 'uniqueTaxReference' not found: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.additionalProperties",
+            |        "reason": "#/oneOf/2/additionalProperties  ERROR - property 'companyRegistrationNumber' is not defined in the schema and the schema does not allow additional properties: []"
+            |      }
+            |    ]
+            |  }
+            |}""".stripMargin)
 
         val result = routeResult(requestWithoutCorrelationId)
 
@@ -124,13 +153,45 @@ class CrmmControllerSpec
           .withHeaders(validHeaders*)
           .withTextBody(requestBody)
 
-        val expectedResponse = Json
-          .obj(
-            "origin"   -> "HIP",
-            "response" -> Json.obj(
-              "failures" -> Json.arr(Json.obj("type" -> "INVALID_DATA_TYPE", "reason" -> unkownProperty))
-            )
-          )
+        val expectedResponse = Json.parse("""{
+            |  "origin": "HIP",
+            |  "response": {
+            |    "failures": [
+            |      {
+            |        "type": "validation.request.body.schema.oneOf",
+            |        "reason": "#/oneOf  ERROR - must be valid to one and only one schema, but 0 are valid: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.required",
+            |        "reason": "#/oneOf/0/required  ERROR - required property 'companyRegistrationNumber' not found: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.required",
+            |        "reason": "#/oneOf/0/required  ERROR - required property 'uniqueTaxReference' not found: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.additionalProperties",
+            |        "reason": "#/oneOf/0/additionalProperties  ERROR - property 'saoMagicField' is not defined in the schema and the schema does not allow additional properties: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.required",
+            |        "reason": "#/oneOf/1/required  ERROR - required property 'companyRegistrationNumber' not found: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.additionalProperties",
+            |        "reason": "#/oneOf/1/additionalProperties  ERROR - property 'saoMagicField' is not defined in the schema and the schema does not allow additional properties: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.required",
+            |        "reason": "#/oneOf/2/required  ERROR - required property 'uniqueTaxReference' not found: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.additionalProperties",
+            |        "reason": "#/oneOf/2/additionalProperties  ERROR - property 'saoMagicField' is not defined in the schema and the schema does not allow additional properties: []"
+            |      }
+            |    ]
+            |  }
+            |}""".stripMargin)
 
         val result = routeResult(requestWithoutCorrelationId)
 
@@ -147,13 +208,37 @@ class CrmmControllerSpec
           .withHeaders(validHeaders*)
           .withTextBody(requestBody)
 
-        val expectedResponse = Json
-          .obj(
-            "origin"   -> "HIP",
-            "response" -> Json.obj(
-              "failures" -> Json.arr(Json.obj("type" -> "INVALID_FORMAT", "reason" -> "uniqueTaxReference"))
-            )
-          )
+        val expectedResponse = Json.parse("""{
+            |  "origin": "HIP",
+            |  "response": {
+            |    "failures": [
+            |      {
+            |        "type": "validation.request.body.schema.oneOf",
+            |        "reason": "#/oneOf  ERROR - must be valid to one and only one schema, but 0 are valid: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.pattern",
+            |        "reason": "#/oneOf/0/properties/uniqueTaxReference/pattern /uniqueTaxReference ERROR - does not match the regex pattern ^[A-Za-z0-9]+$: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.required",
+            |        "reason": "#/oneOf/0/required  ERROR - required property 'companyRegistrationNumber' not found: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.required",
+            |        "reason": "#/oneOf/1/required  ERROR - required property 'companyRegistrationNumber' not found: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.additionalProperties",
+            |        "reason": "#/oneOf/1/additionalProperties  ERROR - property 'uniqueTaxReference' is not defined in the schema and the schema does not allow additional properties: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.pattern",
+            |        "reason": "#/oneOf/2/properties/uniqueTaxReference/pattern /uniqueTaxReference ERROR - does not match the regex pattern ^[A-Za-z0-9]+$: []"
+            |      }
+            |    ]
+            |  }
+            |}""".stripMargin)
 
         val result = routeResult(requestWithoutCorrelationId)
 
@@ -170,19 +255,33 @@ class CrmmControllerSpec
           .withHeaders(validHeaders*)
           .withTextBody(requestBody)
 
-        val expectedResponse = Json
-          .obj(
-            "origin"   -> "HIP",
-            "response" -> Json.obj(
-              "failures" -> Json.arr(
-                Json
-                  .obj(
-                    "type"   -> "MISSING_REQUIRED_FIELD",
-                    "reason" -> "companyRegistrationNumber or uniqueTaxReference"
-                  )
-              )
-            )
-          )
+        val expectedResponse = Json.parse("""{
+            |  "origin": "HIP",
+            |  "response": {
+            |    "failures": [
+            |      {
+            |        "type": "validation.request.body.schema.oneOf",
+            |        "reason": "#/oneOf  ERROR - must be valid to one and only one schema, but 0 are valid: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.required",
+            |        "reason": "#/oneOf/0/required  ERROR - required property 'companyRegistrationNumber' not found: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.required",
+            |        "reason": "#/oneOf/0/required  ERROR - required property 'uniqueTaxReference' not found: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.required",
+            |        "reason": "#/oneOf/1/required  ERROR - required property 'companyRegistrationNumber' not found: []"
+            |      },
+            |      {
+            |        "type": "validation.request.body.schema.required",
+            |        "reason": "#/oneOf/2/required  ERROR - required property 'uniqueTaxReference' not found: []"
+            |      }
+            |    ]
+            |  }
+            |}""".stripMargin)
 
         val result = routeResult(requestWithoutCorrelationId)
 
