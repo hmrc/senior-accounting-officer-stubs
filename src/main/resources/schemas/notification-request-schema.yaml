@@ -9,6 +9,9 @@ properties:
     type: string
   staffPID:
     type: string
+  customerId:
+    type: string
+    maxLength: 10
   companies:
     type: array
     items:
