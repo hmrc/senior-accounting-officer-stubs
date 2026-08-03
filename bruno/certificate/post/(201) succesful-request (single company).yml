@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{baseUrl}}/dapm/subscriptions/12345345634/certificates"
+  url: "{{baseUrl}}/dapm/subscriptions/{{subscriptionId}}/certificates"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
@@ -18,11 +18,11 @@ http:
         "saoEmail": "soaemail_123@example.com",
         "staffPid": "staffpid_123",
         "remarks": "Testremarks",
-        "customerId": "id56787",
+        "customerId": "1234567890",
         "companies": [
           {
             "crn": "11223344",
-            "utr": "223453445566",
+            "utr": "2234534455",
             "name": "Example Subsidiary Ltd",
             "accPeriodEnd": "2025-03-31",
             "status": "COMPLIANT",
