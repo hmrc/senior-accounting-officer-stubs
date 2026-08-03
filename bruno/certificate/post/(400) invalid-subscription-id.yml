@@ -1,0 +1,49 @@
+info:
+  name: (400) invalid-subscription-id
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseUrl}}/dapm/subscriptions/37845274925274525/certificates"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      {
+        "submitterName": "Submitter Test Name",
+        "saoName": "sao testname",
+        "saoEmail": "sao.smith@example.com",
+        "staffPid": "staffpid_123",
+        "remarks": "Testremarks",
+        "customerId": "id567",
+        "companies": [
+          {
+            "crn": "11223344",
+            "utr": "223453445566",
+            "name": "Example Subsidiary Ltd",
+            "accPeriodEnd": "2025-03-31",
+            "status": "COMPLIANT",
+            "type": "LTD",
+            "isCorporationTaxQualified": true,
+            "isVatQualified": true,
+            "isPayeQualified": true,
+            "isInsurancePremiumTaxQualified": true,
+            "isStampDutyLandTaxQualified": false,
+            "isStampDutyReserveTaxQualified": false,
+            "isPetroleumRevenueTaxQualified": false,
+            "isCustomsDutiesQualified": false,
+            "isExciseDutiesQualified": false,
+            "isBankLevyQualified": false,
+            "qualificationStatement": "test"
+          }
+        ]
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

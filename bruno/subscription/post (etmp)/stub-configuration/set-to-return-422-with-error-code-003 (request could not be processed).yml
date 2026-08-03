@@ -1,0 +1,39 @@
+info:
+  name: set-to-return-422-with-error-code-003 (request could not be processed)
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/signup/config"
+  body:
+    type: json
+    data: |-
+      {
+        "utr": "{{utr}}",
+        "postEtmpSubscription": {
+          "status": 422,
+          "defaultBodyOverride" : {{payload}}
+        }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const payload = JSON.stringify(`{
+          "errors": {
+            "processingDate": "2026-01-31T10:26:17Z",
+            "code": "003",
+            "text": "Request could not be processed"
+          }
+        }`);
+
+        bru.setVar("payload", payload);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

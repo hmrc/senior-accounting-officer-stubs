@@ -1,0 +1,39 @@
+info:
+  name: set-to-return-422-with-error-code-004 (duplicate submission)
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/signup/config"
+  body:
+    type: json
+    data: |-
+      {
+        "utr": "{{utr}}",
+        "postEtmpSubscription": {
+          "status": 422,
+          "defaultBodyOverride" : {{payload}}
+        }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const payload = JSON.stringify(`{
+          "errors": {
+            "processingDate": "2026-01-31T10:26:17Z",
+            "code": "004",
+            "text": "Duplicate Submission"
+          }
+        }`);
+
+        bru.setVar("payload", payload);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

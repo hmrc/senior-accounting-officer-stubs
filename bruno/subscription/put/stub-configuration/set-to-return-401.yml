@@ -1,0 +1,43 @@
+info:
+  name: set-to-return-401
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/signup/config"
+  body:
+    type: json
+    data: |-
+      {
+        "utr": "{{utr}}",
+        "putDpsSubscription": {
+          "status": 401,
+          "defaultBodyOverride" : {{payload}}
+        }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const payload = JSON.stringify(`{
+          "origin": "HIP",
+          "response": {
+            "failures": [
+              {
+                "type": "string",
+                "reason": "string"
+              }
+            ]
+          }
+        }`);
+
+        bru.setVar("payload", payload);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

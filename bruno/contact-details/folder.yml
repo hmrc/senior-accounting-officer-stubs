@@ -1,0 +1,7 @@
+info:
+  name: contact-details
+  type: folder
+  seq: 2
+
+request:
+  auth: inherit
