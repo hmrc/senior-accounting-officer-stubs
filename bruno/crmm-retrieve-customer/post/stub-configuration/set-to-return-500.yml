@@ -1,7 +1,7 @@
 info:
   name: set-to-return-500
   type: http
-  seq: 6
+  seq: 5
 
 http:
   method: POST

@@ -1,7 +1,0 @@
-info:
-  name: putSubscription
-  type: folder
-  seq: 24
-
-request:
-  auth: inherit

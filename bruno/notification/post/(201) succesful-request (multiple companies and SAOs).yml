@@ -14,7 +14,7 @@ http:
     data: |-
       {
         "remarks": "abc",
-        "staffPID": "123",
+        "staffPid": "123",
         "companies": [
           {
             "crn": "11223344",

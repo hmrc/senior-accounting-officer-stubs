@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{baseUrl}}/dapm/subscriptions/123456789123456/certificates"
+  url: "{{baseUrl}}/dapm/subscriptions/{{subscriptionId}}/certificates"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
@@ -18,7 +18,7 @@ http:
         "saoEmail": "soaemail_123@example.com",
         "staffPid": "Lorem Ipsum is not random text",
         "remarks": "Testremarks",
-        "customerId": "Lorem Ipsum is not random text",
+        "customerId": "1234567890",
         "companies": [
           {
             "crn": "11223344",
