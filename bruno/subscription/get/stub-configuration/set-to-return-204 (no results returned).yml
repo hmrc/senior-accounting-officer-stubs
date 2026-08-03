@@ -1,0 +1,25 @@
+info:
+  name: set-to-return-204 (no results returned)
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/post-signup/config"
+  body:
+    type: json
+    data: |-
+      {
+        "subscriptionId": "{{subscriptionId}}",
+        "getSubscriptionAndPostRetrieveCustomerId": {
+          "api": "GetSubscription",
+          "status": 204
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

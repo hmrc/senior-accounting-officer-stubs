@@ -1,0 +1,27 @@
+info:
+  name: (404) invalid-id
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/contact-details/456"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      [
+        {
+          "name": "Jane Doe",
+          "email": "jane.doe@acme.com"
+        }
+      ]
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

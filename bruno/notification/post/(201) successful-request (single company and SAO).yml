@@ -1,0 +1,42 @@
+info:
+  name: (201) successful-request (single company and SAO)
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/dapm/subscriptions/123/notifications"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      {
+        "remarks": "abc",
+        "staffPid": "123",
+        "companies": [
+          {
+            "crn": "11223344",
+            "utr": "2233445566",
+            "name": "Example Subsidiary Ltd",
+            "accPeriodEnd": "2025-03-31",
+            "status": "COMPLIANT",
+            "type": "qualified"
+          }
+        ],
+        "saos": [
+          {
+            "name": "Robert Brown",
+            "email": "robert.brown@example.com",
+            "fromDate": "2024-04-01",
+            "toDate": "2025-03-31"
+          }
+        ]
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

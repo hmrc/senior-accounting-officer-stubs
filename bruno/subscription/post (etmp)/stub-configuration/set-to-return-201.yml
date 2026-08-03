@@ -1,0 +1,38 @@
+info:
+  name: set-to-return-201
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/signup/config"
+  body:
+    type: json
+    data: |-
+      {
+        "utr": "{{utr}}",
+        "postEtmpSubscription": {
+          "status": 201,
+          "defaultBodyOverride" : {{payload}}
+        }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const payload = JSON.stringify(`{
+          "success": {
+            "processingDate": "2026-01-31T09:26:17Z",
+            "dsaoIdNumber": "XB0000493000308"
+          }
+        }`);
+
+        bru.setVar("payload", payload);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

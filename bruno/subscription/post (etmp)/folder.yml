@@ -1,7 +1,7 @@
 info:
-  name: test-only
+  name: post (etmp)
   type: folder
-  seq: 7
+  seq: 2
 
 request:
   auth: inherit

@@ -1,0 +1,38 @@
+info:
+  name: (400) multiple-constraint-violations
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseUrl}}/dapm/subscriptions/123/notifications"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      {
+        "remarks": "abc",
+        "staffPID": "123",
+        "companies": [
+          {
+            "crn": "",
+            "name": "",
+            "accPeriodEnd": "25-03-2001",
+            "status": "1254",
+            "type": "qualified"
+          }
+        ],
+        "saos": [
+          {
+            "email": "robert.brown@      example.com"
+          }
+        ]
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
