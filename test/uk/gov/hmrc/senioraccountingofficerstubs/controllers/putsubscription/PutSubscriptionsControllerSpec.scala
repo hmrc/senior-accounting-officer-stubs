@@ -92,6 +92,24 @@ class PutSubscriptionsControllerSpec
       status(result) shouldBe Status.CREATED
     }
 
+    "not return 400 for an email that passes our frontend validation but not RFC5321 compliant" in {
+
+      val payloadWithNonCompliantEmail = Json.obj(
+        "etmpSafeId"       -> testSafeId,
+        "nominatedCompany" -> Json.obj(
+          "name" -> "Acme Manufacturing Ltd",
+          "utr"  -> testUtr,
+          "crn"  -> generateCrn
+        ),
+        "contacts" -> Json.arr(
+          Json.obj("name" -> "Jane Doe", "email" -> "a@a.a", "status" -> "active", "language" -> "en-gb")
+        )
+      )
+
+      val result = routeResult(fakeSubscriptionsPUTRequest(testSubscriptionId, payloadWithNonCompliantEmail))
+      status(result) shouldBe Status.CREATED
+    }
+
     "return 400 for a subscriptionId that is more than 15 characters long" in {
       val expectedResponse = Json.parse("""{
           |  "origin": "HIP",

@@ -22,6 +22,8 @@ import com.atlassian.oai.validator.model.{Response, SimpleRequest, SimpleRespons
 import com.atlassian.oai.validator.report.ValidationReport.Level.*
 import com.atlassian.oai.validator.report.ValidationReport.MessageContext.Pointers
 import com.atlassian.oai.validator.report.{LevelResolver, ValidationReport}
+import com.atlassian.oai.validator.whitelist.ValidationErrorsWhitelist
+import com.atlassian.oai.validator.whitelist.rule.WhitelistRule
 import org.apache.pekko.stream.Materializer
 import play.api.libs.json.{Json, Reads}
 import play.api.mvc.*
@@ -57,7 +59,31 @@ enum OpenApiSchema(val resourcePath: String, val pathPrefix: String) {
 
 object OpenApiValidator {
 
-  def of(openApi: OpenApiSchema): EndpointValidator = {
+  object AllowListRules {
+    final case class AllowListRule(description: String, rule: WhitelistRule)
+
+    def ignoreEmailValidationRule: AllowListRule =
+      AllowListRule(
+        "Ignore RFC 5321 Mailbox formatting errors",
+        (msg, _, _, _) => msg.getMessage.contains("must be a valid RFC 5321 Mailbox")
+      )
+
+  }
+
+  extension (rules: List[AllowListRules.AllowListRule]) {
+    private def toValidationErrorsWhitelist: ValidationErrorsWhitelist =
+      rules.foldLeft(
+        ValidationErrorsWhitelist
+          .create()
+      )((builder, rule) =>
+        builder.withRule(
+          rule.description,
+          rule.rule
+        )
+      )
+  }
+
+  def of(openApi: OpenApiSchema, allowList: List[AllowListRules.AllowListRule]): EndpointValidator = {
     val openApiAsString                        = Source.fromResource(openApi.resourcePath).mkString
     val validator: OpenApiInteractionValidator = OpenApiInteractionValidator
       .createForInlineApiSpecification(openApiAsString)
@@ -72,6 +98,7 @@ object OpenApiValidator {
           .withLevel("validation.response.header.missing", ERROR)
           .build()
       )
+      .withWhitelist(allowList.toValidationErrorsWhitelist)
       .build()
     new EndpointValidator(validator)
   }

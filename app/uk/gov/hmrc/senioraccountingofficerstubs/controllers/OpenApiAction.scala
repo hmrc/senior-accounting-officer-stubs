@@ -23,6 +23,8 @@ import play.api.libs.json.{Json, Reads, Writes}
 import play.api.mvc.Results.BadRequest
 import play.api.mvc.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.CorrelatableRequest
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.OpenApiValidator.AllowListRules
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.OpenApiValidator.AllowListRules.AllowListRule
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.ValidationErrorFormatter.toStandardHipFailures
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.{EndpointValidator, OpenApiSchema, OpenApiValidator}
 
@@ -50,13 +52,17 @@ trait OpenApiActionInterface[R] {
 
 class OpenApiAction @Inject() (controllerComponents: ControllerComponents)(using ExecutionContext, Materializer) {
 
-  def apply[T](logger: Logger)(openApi: OpenApiSchema): OpenApiActionInterface[T] =
-    OpenApiActionImpl[T](logger)(openApi)
+  def apply[T](
+      logger: Logger
+  )(openApi: OpenApiSchema, allowList: List[AllowListRule] = List.empty): OpenApiActionInterface[T] =
+    OpenApiActionImpl[T](logger)(openApi, allowList)
 
-  def ignoreBody(logger: Logger)(openApi: OpenApiSchema): OpenApiActionEmptyInterface =
-    OpenApiActionImpl(logger)(openApi)
+  def ignoreBody(
+      logger: Logger
+  )(openApi: OpenApiSchema, allowList: List[AllowListRule] = List.empty): OpenApiActionEmptyInterface =
+    OpenApiActionImpl(logger)(openApi, allowList)
 
-  private class OpenApiActionImpl[R](logger: Logger)(openApi: OpenApiSchema)
+  private class OpenApiActionImpl[R](logger: Logger)(openApi: OpenApiSchema, allowList: List[AllowListRule])
       extends OpenApiActionInterface[R]
       with OpenApiActionEmptyInterface {
 
@@ -67,7 +73,7 @@ class OpenApiAction @Inject() (controllerComponents: ControllerComponents)(using
     )(using Writes[L]): Action[AnyContentAsEmpty.type] = {
       controllerComponents.actionBuilder(controllerComponents.parsers.ignore(AnyContentAsEmpty)).async {
         implicit request =>
-          def schemaValidator         = OpenApiValidator.of(openApi)
+          def schemaValidator         = OpenApiValidator.of(openApi, allowList)
           val requestValidationReport = schemaValidator.validateRequest(request)
 
           foldCore(schemaValidator, requestValidationReport)(badRequest)(block)
@@ -80,7 +86,7 @@ class OpenApiAction @Inject() (controllerComponents: ControllerComponents)(using
         block: CorrelatableRequest[R] => Future[Result]
     )(using Writes[L], Reads[R]): Action[String] = {
       controllerComponents.actionBuilder(controllerComponents.parsers.tolerantText).async { implicit request =>
-        val schemaValidator         = OpenApiValidator.of(openApi)
+        val schemaValidator         = OpenApiValidator.of(openApi, allowList)
         val requestValidationReport = schemaValidator.validateRequestAs[R](request)
 
         foldCore(schemaValidator, requestValidationReport)(badRequest)(block)

@@ -25,6 +25,7 @@ import uk.gov.hmrc.senioraccountingofficerstubs.models.ApiError
 import uk.gov.hmrc.senioraccountingofficerstubs.models.putsubscription.Subscription
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.OpenApiSchema
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.OpenApiValidator.AllowListRules
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.ValidationErrorFormatter.*
 
 import scala.concurrent.ExecutionContext
@@ -42,7 +43,10 @@ class PutSubscriptionsController @Inject() (
     with Logging {
 
   def putSubscription(saoSubscriptionId: String): Action[String] =
-    openApiAction[Subscription](logger)(OpenApiSchema.DpsWriteApi)
+    openApiAction[Subscription](logger)(
+      OpenApiSchema.DpsWriteApi,
+      allowList = List(AllowListRules.ignoreEmailValidationRule)
+    )
       .fold(report => report.toStandardHipFailures) { implicit request =>
         val subscription = request.body
         repository.get(subscription.nominatedCompany.utr).map {
