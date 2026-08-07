@@ -1,1 +1,1 @@
-POST        /api/customer/v1/retrievecustomer        uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm.CrmmController.retrieveCustomer()
+POST        /api/customer/v1/retrievecustomer        uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm.RetrieveCustomerController.retrieve

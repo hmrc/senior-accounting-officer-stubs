@@ -5,4 +5,4 @@
 ->         /compliance/civil-investigation-and-avoidance        crmm.Routes
 
 + noauth
-POST        /notification/fileready                    uk.gov.hmrc.senioraccountingofficerstubs.controllers.SdesNotificationController.fileReady()
+POST        /notification/fileready        uk.gov.hmrc.senioraccountingofficerstubs.controllers.digital.SdesNotificationController.fileReady()

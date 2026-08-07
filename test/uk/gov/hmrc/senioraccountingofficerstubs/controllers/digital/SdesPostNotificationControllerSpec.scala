@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.controllers
+package uk.gov.hmrc.senioraccountingofficerstubs.controllers.digital
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
@@ -36,7 +36,7 @@ import uk.gov.hmrc.senioraccountingofficerstubs.connectors.FileUploadSdesStubCon
 
 import scala.concurrent.Future
 
-class SdesNotificationControllerSpec
+class SdesPostNotificationControllerSpec
     extends AnyWordSpec
     with Matchers
     with GuiceOneAppPerSuite

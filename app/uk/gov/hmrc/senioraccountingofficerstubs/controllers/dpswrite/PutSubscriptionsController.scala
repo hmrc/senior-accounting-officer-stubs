@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.controllers.putsubscription
+package uk.gov.hmrc.senioraccountingofficerstubs.controllers.dpswrite
 
 import org.apache.pekko.stream.Materializer
 import play.api.Logging

@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.controllers
+package uk.gov.hmrc.senioraccountingofficerstubs.controllers.digital
 
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.connectors.FileUploadSdesStubConnector
+import uk.gov.hmrc.senioraccountingofficerstubs.controllers.digital.SdesNotificationController.*
 
 import scala.concurrent.{ExecutionContext, Future}
 
 import javax.inject.Inject
-
-import SdesNotificationController.*
 
 class SdesNotificationController @Inject() (
     cc: ControllerComponents,
