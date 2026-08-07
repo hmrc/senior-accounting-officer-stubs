@@ -11,7 +11,7 @@ lazy val microservice = Project("senior-accounting-officer-stubs", file("."))
     // suppress warnings in generated routes files
     scalacOptions += "-Wconf:src=routes/.*:s",
     PlayKeys.playDefaultPort := 10061,
-    Compile / unmanagedResourceDirectories += baseDirectory.value / "src/main/resources",
+    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
     dependencyOverrides ++= AppDependencies.dependencyOverrides
   )
   .settings(CodeCoverageSettings.settings: _*)

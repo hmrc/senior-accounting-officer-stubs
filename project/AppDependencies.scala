@@ -7,14 +7,11 @@ object AppDependencies {
   private val jacksonVersion   = "2.18.3"
 
   val compile: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc"                     %% "bootstrap-backend-play-30"      % bootstrapVersion,
-    "uk.gov.hmrc"                     %% "domain-test-play-30"            % "13.0.0",
-    "com.networknt"                    % "json-schema-validator"          % "2.0.0",
-    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml"        % jacksonVersion,
-    "com.fasterxml.jackson.module"    %% "jackson-module-scala"           % jacksonVersion,
-    "uk.gov.hmrc.mongo"               %% "hmrc-mongo-play-30"             % hmrcMongoVersion,
-    "uk.gov.hmrc"                     %% "play-json-union-formatter"      % "1.24.0",
-    "com.atlassian.oai"                % "swagger-request-validator-core" % "3.0.0"
+    "uk.gov.hmrc"       %% "bootstrap-backend-play-30"      % bootstrapVersion,
+    "uk.gov.hmrc"       %% "domain-test-play-30"            % "13.0.0",
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-30"             % hmrcMongoVersion,
+    "uk.gov.hmrc"       %% "play-json-union-formatter"      % "1.24.0",
+    "com.atlassian.oai"  % "swagger-request-validator-core" % "3.0.0"
   )
 
   val dependencyOverrides: Seq[ModuleID] = Seq(

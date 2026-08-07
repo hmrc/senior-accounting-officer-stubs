@@ -4,11 +4,5 @@
 ->         /dapm                                                dpsWrite.Routes
 ->         /compliance/civil-investigation-and-avoidance        crmm.Routes
 
-GET        /contact-details/:saoSubscriptionId                  uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.getContactDetails(saoSubscriptionId: String)
-PUT        /contact-details/:saoSubscriptionId                  uk.gov.hmrc.senioraccountingofficerstubs.controllers.ContactDetailsController.putContactDetails(saoSubscriptionId: String)
-
-
-GET        /obligation/:saoSubscriptionId                       uk.gov.hmrc.senioraccountingofficerstubs.controllers.ObligationController.getObligation(saoSubscriptionId: String)
-
 + noauth
 POST        /notification/fileready                    uk.gov.hmrc.senioraccountingofficerstubs.controllers.SdesNotificationController.fileReady()
