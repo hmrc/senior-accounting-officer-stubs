@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.controllers
+package uk.gov.hmrc.senioraccountingofficerstubs.controllers.dpswrite
 
 import play.api.Logging
 import play.api.libs.json.*
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.senioraccountingofficerstubs.controllers.OpenApiAction
 import uk.gov.hmrc.senioraccountingofficerstubs.models.NotificationResponse
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.OpenApiSchema
@@ -30,7 +31,7 @@ import scala.util.Random
 
 import javax.inject.Inject
 
-class NotificationController @Inject() (
+class PostNotificationController @Inject() (
     cc: ControllerComponents,
     openApiAction: OpenApiAction,
     repository: PostSignupConfigRepository

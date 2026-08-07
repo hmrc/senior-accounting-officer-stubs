@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.controllers
+package uk.gov.hmrc.senioraccountingofficerstubs.controllers.etmp
 
 import play.api.Logging
 import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.senioraccountingofficerstubs.controllers.OpenApiAction
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.NoneDefaultApiConfiguration
 import uk.gov.hmrc.senioraccountingofficerstubs.models.{EtmpSuccessResponse, Success as EtmpSuccess}
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.SignupConfigRepository
@@ -34,7 +35,7 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
-class EtmpController @Inject() (
+class CreateSubscriptionController @Inject() (
     cc: ControllerComponents,
     openApiAction: OpenApiAction,
     repository: SignupConfigRepository
@@ -42,7 +43,7 @@ class EtmpController @Inject() (
     extends BackendController(cc)
     with Logging {
 
-  def createEtmp: Action[String] =
+  def create: Action[String] =
     openApiAction[JsValue](logger)(OpenApiSchema.EtmpApi)
       .fold(report => report.toStandardHipFailures) { implicit request =>
         val json = request.body

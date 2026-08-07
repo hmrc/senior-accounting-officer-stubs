@@ -32,7 +32,7 @@ import scala.concurrent.ExecutionContext
 
 import javax.inject.Inject
 
-class CrmmController @Inject() (
+class RetrieveCustomerController @Inject() (
     cc: ControllerComponents,
     openApiAction: OpenApiAction,
     repository: PostSignupConfigRepository
@@ -41,7 +41,7 @@ class CrmmController @Inject() (
 ) extends BackendController(cc)
     with Logging {
 
-  def retrieveCustomer(): Action[String] =
+  def retrieve: Action[String] =
     openApiAction[RetrieveCustomerRequest](logger)(OpenApiSchema.CrmmApi)
       .fold(report => report.toStandardHipFailures) { implicit request =>
         val retrieveCustomerRequest = request.body
