@@ -1,7 +1,7 @@
 info:
-  name: set-to-return-500
+  name: set-to-return-200-customer-not-found
   type: http
-  seq: 6
+  seq: 2
 
 http:
   method: POST
@@ -14,7 +14,7 @@ http:
         "getSubscriptionAndPostRetrieveCustomerId": {
           "api": "PostRetrieveCustomerId",
           "getSubscription": {"utr": "{{utr}}", "crn": "{{crn}}"},
-          "status": 500,
+          "status": 200,
           "defaultBodyOverride": {{payload}}
         }
       }
@@ -25,15 +25,9 @@ runtime:
     - type: before-request
       code: |-
         const payload = JSON.stringify(`{
-          "origin": "HIP",
-          "response": {
-            "failures": [
-              {
-                "type": "type of failure",
-                "reason": "reason for failure"
-              }
-            ]
-          }
+          "errorDescription": "bruno",
+          "existingCustomer": false,
+          "status": "Failure"
         }`);
 
         bru.setVar("payload", payload);
