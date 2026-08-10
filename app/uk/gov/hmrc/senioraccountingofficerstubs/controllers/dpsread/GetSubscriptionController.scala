@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.controllers
+package uk.gov.hmrc.senioraccountingofficerstubs.controllers.dpsread
 
 import play.api.Logging
 import play.api.http.Status.*
 import play.api.libs.json.Json
 import play.api.mvc.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.senioraccountingofficerstubs.controllers.GetSubscriptionController.*
+import uk.gov.hmrc.senioraccountingofficerstubs.controllers.OpenApiAction
 import uk.gov.hmrc.senioraccountingofficerstubs.models.getsubscription.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.*
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
@@ -32,6 +32,8 @@ import uk.gov.hmrc.senioraccountingofficerstubs.utils.ValidationErrorFormatter.t
 import scala.concurrent.ExecutionContext
 
 import javax.inject.Inject
+
+import GetSubscriptionController.*
 
 class GetSubscriptionController @Inject() (
     cc: ControllerComponents,

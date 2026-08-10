@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.controllers
+package uk.gov.hmrc.senioraccountingofficerstubs.controllers.etmp
 
 import org.mockito.ArgumentMatchers.{any, eq as meq}
 import org.mockito.Mockito.*
@@ -40,7 +40,7 @@ import scala.concurrent.Future
 
 import java.util.UUID
 
-class EtmpControllerSpec
+class CreateSubscriptionControllerSpec
     extends AnyWordSpec
     with Matchers
     with GuiceOneAppPerSuite

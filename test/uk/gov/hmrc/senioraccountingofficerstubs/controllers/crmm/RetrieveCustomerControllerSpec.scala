@@ -33,7 +33,7 @@ import play.api.mvc.AnyContentAsText
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm.CrmmControllerSpec.*
+import uk.gov.hmrc.senioraccountingofficerstubs.controllers.crmm.RetrieveCustomerControllerSpec.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.*
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.{generateCrn, generateUtr}
@@ -42,7 +42,7 @@ import scala.concurrent.Future
 
 import java.util.UUID
 
-class CrmmControllerSpec
+class RetrieveCustomerControllerSpec
     extends AnyFreeSpec
     with Matchers
     with GuiceOneAppPerSuite
@@ -147,7 +147,7 @@ class CrmmControllerSpec
 
     "a request with an additional field is sent" - {
       "return structured error message" in {
-        val requestBody = s"""{"$unkownProperty": "Firstname Lastname"}"""
+        val requestBody = s"""{"$unknownProperty": "Firstname Lastname"}"""
 
         val requestWithoutCorrelationId = FakeRequest("POST", path)
           .withHeaders(validHeaders*)
@@ -383,7 +383,7 @@ class CrmmControllerSpec
   }
 }
 
-object CrmmControllerSpec {
+object RetrieveCustomerControllerSpec {
   val path = "/compliance/civil-investigation-and-avoidance/api/customer/v1/retrievecustomer"
 
   val authHeader = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
@@ -399,5 +399,5 @@ object CrmmControllerSpec {
 
   val validHeaders: Seq[(String, String)] = headersNoCorrelationId.concat(Seq("correlationId" -> correlationId))
 
-  val unkownProperty = "saoMagicField"
+  val unknownProperty = "saoMagicField"
 }

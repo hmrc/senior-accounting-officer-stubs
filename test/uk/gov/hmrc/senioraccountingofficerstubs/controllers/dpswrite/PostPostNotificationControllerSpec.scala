@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.senioraccountingofficerstubs.controllers
+package uk.gov.hmrc.senioraccountingofficerstubs.controllers.dpswrite
 
 import org.mockito.ArgumentMatchers.{any, eq as meq}
 import org.mockito.Mockito.*
@@ -30,7 +30,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.*
 import play.api.mvc.{AnyContentAsText, Result}
 import play.api.test.FakeRequest
-import play.api.test.Helpers.*
+import play.api.test.Helpers.{status, *}
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.{
   NoneDefaultApiConfiguration,
   PostSignupStubConfiguration
@@ -40,7 +40,7 @@ import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.*
 
 import scala.concurrent.Future
 
-class NotificationControllerSpec
+class PostPostNotificationControllerSpec
     extends AnyWordSpec
     with Matchers
     with GuiceOneAppPerSuite
