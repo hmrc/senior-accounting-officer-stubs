@@ -72,13 +72,14 @@ object GetSubscriptionController {
       config.getSubscriptionAndPostRetrieveCustomerId.map {
         case GetSubscriptionOnlyConfig(status, defaultBodyOverride) =>
           NoneDefaultApiConfiguration(status, defaultBodyOverride)
-        case PostRetrieveCustomerIdConfig(GetSubscriptionConfig(utr, crn, name, contacts), _, _) =>
+        case PostRetrieveCustomerIdConfig(GetSubscriptionConfig(utr, crn, name, contacts, etmpSafeId), _, _) =>
           NoneDefaultApiConfiguration(
             status = OK,
             defaultBodyOverride = Some(
               Json
                 .toJson(
                   GetSubscriptionResponse(
+                    etmpSafeId = etmpSafeId,
                     contacts = contacts,
                     nominatedCompany = Some(NominatedCompany(utr = Some(utr), crn = crn, name = name))
                   )
