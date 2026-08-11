@@ -45,7 +45,7 @@ final case class GetSubscriptionConfig(
     crn: Option[String] = None,
     name: Option[String] = None,
     contacts: List[Contact] = List.empty,
-    etmpSafeId: Option[String] = Some("example etmp safe id")
+    etmpSafeId: Option[String] = Some("etmp safe id")
 )
 
 object GetSubscriptionConfig {

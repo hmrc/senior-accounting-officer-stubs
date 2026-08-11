@@ -195,7 +195,7 @@ class GetSubscriptionControllerSpec
         status(result) mustBe 200
         contentAsJson(result) mustBe Json.parse(
           s"""{
-             |  "etmpSafeId": "example etmp safe id",
+             |  "etmpSafeId": "etmp safe id",
              |  "contacts":[
              |    {"name":"Test Contact Name","email":"Some email","language":"Some language","status":"Some status"}
              |  ],
