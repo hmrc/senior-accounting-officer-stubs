@@ -1,5 +1,5 @@
 info:
-  name: set-to-return-200 (customer-found)
+  name: set-to-return-500
   type: http
   seq: 8
 
@@ -13,17 +13,8 @@ http:
         "subscriptionId": "{{subscriptionId}}",
         "getSubscriptionAndPostRetrieveCustomerId": {
           "api": "PostRetrieveCustomerId",
-          "getSubscription": {
-            "utr": "{{utr}}",
-            "name": "Test Company LTD PLC",
-            "contacts": [{
-              "name": "Firstname Lastname",
-              "email": "firstname.lastname@example.com",
-              "language": "en-GB",
-              "status": "valid"
-            }]
-          },
-          "status": 200,
+          "getSubscription": {"utr": "{{utr}}"},
+          "status": 500,
           "defaultBodyOverride": {{payload}}
         }
       }
@@ -34,9 +25,15 @@ runtime:
     - type: before-request
       code: |-
         const payload = JSON.stringify(`{
-          "errorDescription": "bruno",
-          "existingCustomer": false,
-          "status": "Failure"
+          "origin": "HIP",
+          "response": {
+            "failures": [
+              {
+                "type": "type of failure",
+                "reason": "reason for failure"
+              }
+            ]
+          }
         }`);
 
         bru.setVar("payload", payload);

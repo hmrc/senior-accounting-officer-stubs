@@ -1,7 +1,7 @@
 info:
-  name: set-to-return-503
+  name: set-to-return-400
   type: http
-  seq: 8
+  seq: 4
 
 http:
   method: POST
@@ -14,8 +14,7 @@ http:
         "getSubscriptionAndPostRetrieveCustomerId": {
           "api": "PostRetrieveCustomerId",
           "getSubscription": {"utr": "{{utr}}", "crn": "{{crn}}"},
-          "status": 503,
-          "defaultBodyOverride": {{payload}}
+          "status": 400
         }
       }
   auth: inherit
@@ -25,11 +24,7 @@ runtime:
     - type: before-request
       code: |-
         const payload = JSON.stringify(`{
-          "origin": "HIP",
-          "response": {
-            "type": "Type of Failure",
-            "reason": "Reason for Failure"
-          }
+          "example": "body"
         }`);
 
         bru.setVar("payload", payload);

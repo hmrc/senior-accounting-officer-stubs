@@ -1,5 +1,5 @@
 info:
-  name: set-to-return-500
+  name: set-to-return-404
   type: http
   seq: 7
 
@@ -14,8 +14,7 @@ http:
         "getSubscriptionAndPostRetrieveCustomerId": {
           "api": "PostRetrieveCustomerId",
           "getSubscription": {"utr": "{{utr}}", "crn": "{{crn}}"},
-          "status": 500,
-          "defaultBodyOverride": {{payload}}
+          "status": 404
         }
       }
   auth: inherit
@@ -25,15 +24,7 @@ runtime:
     - type: before-request
       code: |-
         const payload = JSON.stringify(`{
-          "origin": "HIP",
-          "response": {
-            "failures": [
-              {
-                "type": "type of failure",
-                "reason": "reason for failure"
-              }
-            ]
-          }
+          "example": "body"
         }`);
 
         bru.setVar("payload", payload);

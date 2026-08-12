@@ -1,7 +1,7 @@
 info:
-  name: set-to-return-401
+  name: set-to-return-200 (customer-found)
   type: http
-  seq: 3
+  seq: 2
 
 http:
   method: POST
@@ -13,8 +13,18 @@ http:
         "subscriptionId": "{{subscriptionId}}",
         "getSubscriptionAndPostRetrieveCustomerId": {
           "api": "PostRetrieveCustomerId",
-          "getSubscription": {"utr": "{{utr}}"},
-          "status": 401
+          "getSubscription": {
+            "utr": "{{utr}}",
+            "name": "Test Company LTD PLC",
+            "contacts": [{
+              "name": "Firstname Lastname",
+              "email": "firstname.lastname@example.com",
+              "language": "en-GB",
+              "status": "valid"
+            }]
+          },
+          "status": 200,
+          "defaultBodyOverride": {{payload}}
         }
       }
   auth: inherit
@@ -24,7 +34,9 @@ runtime:
     - type: before-request
       code: |-
         const payload = JSON.stringify(`{
-          "example": "body"
+          "errorDescription": "bruno",
+          "existingCustomer": false,
+          "status": "Failure"
         }`);
 
         bru.setVar("payload", payload);

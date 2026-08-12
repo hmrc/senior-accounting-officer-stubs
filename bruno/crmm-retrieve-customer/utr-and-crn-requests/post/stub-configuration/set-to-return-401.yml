@@ -1,7 +1,7 @@
 info:
-  name: set-to-return-404
+  name: set-to-return-401
   type: http
-  seq: 6
+  seq: 5
 
 http:
   method: POST
@@ -14,7 +14,7 @@ http:
         "getSubscriptionAndPostRetrieveCustomerId": {
           "api": "PostRetrieveCustomerId",
           "getSubscription": {"utr": "{{utr}}", "crn": "{{crn}}"},
-          "status": 404
+          "status": 401
         }
       }
   auth: inherit
