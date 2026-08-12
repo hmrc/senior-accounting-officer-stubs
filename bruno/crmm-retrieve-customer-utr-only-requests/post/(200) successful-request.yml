@@ -1,0 +1,25 @@
+info:
+  name: (200) successful-request
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/compliance/civil-investigation-and-avoidance/api/customer/v1/retrievecustomer"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+    - name: correlationId
+      value: "{{$randomUUID}}"
+  body:
+    type: json
+    data: |-
+      {
+        "uniqueTaxReference": "{{utr}}"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

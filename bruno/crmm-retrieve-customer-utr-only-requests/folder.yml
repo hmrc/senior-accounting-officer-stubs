@@ -1,0 +1,7 @@
+info:
+  name: crmm-retrieve-customer-utr-only-requests
+  type: folder
+  seq: 6
+
+request:
+  auth: inherit

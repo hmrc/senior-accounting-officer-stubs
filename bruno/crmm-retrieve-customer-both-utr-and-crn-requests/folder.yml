@@ -1,0 +1,7 @@
+info:
+  name: crmm-retrieve-customer-both-utr-and-crn-requests
+  type: folder
+  seq: 2
+
+request:
+  auth: inherit

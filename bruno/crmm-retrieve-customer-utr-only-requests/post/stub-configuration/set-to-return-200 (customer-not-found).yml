@@ -1,5 +1,5 @@
 info:
-  name: set-to-return-200-customer-not-found
+  name: set-to-return-200 (customer-not-found)
   type: http
   seq: 2
 
@@ -15,7 +15,6 @@ http:
           "api": "PostRetrieveCustomerId",
           "getSubscription": {
             "utr": "{{utr}}",
-            "crn": "{{crn}}",
             "name": "Test Company LTD PLC",
             "contacts": [{
               "name": "Firstname Lastname",
