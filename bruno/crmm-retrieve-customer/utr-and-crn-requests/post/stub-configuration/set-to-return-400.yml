@@ -13,7 +13,19 @@ http:
         "subscriptionId": "{{subscriptionId}}",
         "getSubscriptionAndPostRetrieveCustomerId": {
           "api": "PostRetrieveCustomerId",
-          "getSubscription": {"utr": "{{utr}}", "crn": "{{crn}}"},
+          "getSubscription": {
+            "utr": "{{utr}}",
+            "crn": "{{crn}}",
+            "name": "Test Company LTD PLC",
+            "contacts": [
+              {
+                "name": "Firstname Lastname",
+                "email": "firstname.lastname@example.com",
+                "language": "en-GB",
+                "status": "valid"
+              }
+            ]
+          },
           "status": 400
         }
       }

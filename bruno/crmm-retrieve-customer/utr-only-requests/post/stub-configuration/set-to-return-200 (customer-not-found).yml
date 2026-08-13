@@ -16,12 +16,14 @@ http:
           "getSubscription": {
             "utr": "{{utr}}",
             "name": "Test Company LTD PLC",
-            "contacts": [{
-              "name": "Firstname Lastname",
-              "email": "firstname.lastname@example.com",
-              "language": "en-GB",
-              "status": "valid"
-            }]
+            "contacts": [
+              {
+                "name": "Firstname Lastname",
+                "email": "firstname.lastname@example.com",
+                "language": "en-GB",
+                "status": "valid"
+              }
+            ]
           },
           "status": 200,
           "defaultBodyOverride": {{payload}}
