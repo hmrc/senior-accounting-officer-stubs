@@ -1,0 +1,49 @@
+info:
+  name: set-to-return-200 (customer-not-found)
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/post-signup/config"
+  body:
+    type: json
+    data: |-
+      {
+        "subscriptionId": "{{subscriptionId}}",
+        "getSubscriptionAndPostRetrieveCustomerId": {
+          "api": "PostRetrieveCustomerId",
+          "getSubscription": {
+            "utr": "{{utr}}",
+            "crn": "{{crn}}",
+            "name": "Test Company LTD PLC",
+            "contacts": [{
+              "name": "Firstname Lastname",
+              "email": "firstname.lastname@example.com",
+              "language": "en-GB",
+              "status": "valid"
+            }]
+          },
+          "status": 200,
+          "defaultBodyOverride": {{payload}}
+        }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const payload = JSON.stringify(`{
+          "errorDescription": "bruno",
+          "existingCustomer": false,
+          "status": "Failure"
+        }`);
+
+        bru.setVar("payload", payload);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

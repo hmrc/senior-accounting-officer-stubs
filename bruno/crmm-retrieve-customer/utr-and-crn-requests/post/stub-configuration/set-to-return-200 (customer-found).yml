@@ -1,7 +1,7 @@
 info:
-  name: set-to-return-503
+  name: set-to-return-200 (customer-found)
   type: http
-  seq: 7
+  seq: 2
 
 http:
   method: POST
@@ -13,8 +13,18 @@ http:
         "subscriptionId": "{{subscriptionId}}",
         "getSubscriptionAndPostRetrieveCustomerId": {
           "api": "PostRetrieveCustomerId",
-          "getSubscription": {"utr": "{{utr}}", "crn": "{{crn}}"},
-          "status": 503,
+          "getSubscription": {
+            "utr": "{{utr}}",
+            "crn": "{{crn}}",
+            "name": "Test Company LTD PLC",
+            "contacts": [{
+              "name": "Firstname Lastname",
+              "email": "firstname.lastname@example.com",
+              "language": "en-GB",
+              "status": "valid"
+            }]
+          },
+          "status": 200,
           "defaultBodyOverride": {{payload}}
         }
       }
@@ -25,11 +35,9 @@ runtime:
     - type: before-request
       code: |-
         const payload = JSON.stringify(`{
-          "origin": "HIP",
-          "response": {
-            "type": "Type of Failure",
-            "reason": "Reason for Failure"
-          }
+          "customerId": "456785",
+          "existingCustomer": true,
+          "status": "Success"
         }`);
 
         bru.setVar("payload", payload);

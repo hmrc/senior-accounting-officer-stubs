@@ -1,0 +1,36 @@
+info:
+  name: set-to-return-404
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/post-signup/config"
+  body:
+    type: json
+    data: |-
+      {
+        "subscriptionId": "{{subscriptionId}}",
+        "getSubscriptionAndPostRetrieveCustomerId": {
+          "api": "PostRetrieveCustomerId",
+          "getSubscription": {"utr": "{{utr}}"},
+          "status": 404
+        }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const payload = JSON.stringify(`{
+          "example": "body"
+        }`);
+
+        bru.setVar("payload", payload);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
