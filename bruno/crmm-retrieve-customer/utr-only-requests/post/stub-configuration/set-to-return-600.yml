@@ -15,7 +15,6 @@ http:
           "api": "PostRetrieveCustomerId",
           "getSubscription": {
             "utr": "{{utr}}",
-            "crn": "{{crn}}",
             "name": "Test Company LTD PLC",
             "contacts": [
               {
