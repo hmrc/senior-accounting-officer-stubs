@@ -1,7 +1,7 @@
 info:
-  name: set-to-return-200 (customer-found)
+  name: set-to-return-600
   type: http
-  seq: 2
+  seq: 11
 
 http:
   method: POST
@@ -15,6 +15,7 @@ http:
           "api": "PostRetrieveCustomerId",
           "getSubscription": {
             "utr": "{{utr}}",
+            "crn": "{{crn}}",
             "name": "Test Company LTD PLC",
             "contacts": [
               {
@@ -25,8 +26,7 @@ http:
               }
             ]
           },
-          "status": 200,
-          "defaultBodyOverride": {{payload}}
+          "status": 600
         }
       }
   auth: inherit
@@ -36,9 +36,7 @@ runtime:
     - type: before-request
       code: |-
         const payload = JSON.stringify(`{
-          "customerId": "456785",
-          "existingCustomer": true,
-          "status": "Success"
+          "example": "body"
         }`);
 
         bru.setVar("payload", payload);
