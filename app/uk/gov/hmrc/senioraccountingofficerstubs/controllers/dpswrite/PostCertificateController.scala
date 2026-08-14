@@ -24,6 +24,7 @@ import uk.gov.hmrc.senioraccountingofficerstubs.controllers.OpenApiAction
 import uk.gov.hmrc.senioraccountingofficerstubs.models.CertificateResponse
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.OpenApiSchema
+import uk.gov.hmrc.senioraccountingofficerstubs.utils.OpenApiValidator.AllowListRules
 import uk.gov.hmrc.senioraccountingofficerstubs.utils.ValidationErrorFormatter.toStandardHipFailures
 
 import scala.concurrent.ExecutionContext
@@ -45,8 +46,11 @@ class PostCertificateController @Inject() (
     "CRT" + f"$num%010d"
   }
 
-  def postCertificate(saoSubscriptionId: String): Action[String] =
-    openApiAction[JsValue](logger)(OpenApiSchema.DpsWriteApi)
+  def postCertificate(saoSubscriptionId: String): Action[String] = {
+    openApiAction[JsValue](logger)(
+      OpenApiSchema.DpsWriteApi,
+      allowList = List(AllowListRules.ignoreEmailValidationRule)
+    )
       .fold(report => report.toStandardHipFailures) { implicit request =>
         repository.get(saoSubscriptionId).map {
           case Some(config) =>
@@ -61,5 +65,6 @@ class PostCertificateController @Inject() (
             Created(Json.toJson(CertificateResponse(generateCertificateId)))
         }
       }
+  }
 
 }
