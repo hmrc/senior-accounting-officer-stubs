@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.senioraccountingofficerstubs.controllers.digital
 
+import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -30,9 +31,11 @@ class SdesNotificationController @Inject() (
     cc: ControllerComponents,
     fileUploadSdesStubConnector: FileUploadSdesStubConnector
 )(using ExecutionContext)
-    extends BackendController(cc) {
+    extends BackendController(cc)
+    with Logging {
 
   def fileReady(): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    logger.info(s"${request.method} ${request.uri}\n${request.headers.toSimpleMap.mkString}\n${request.body}")
     request.headers.get("X-Client-ID") match {
       case Some(`supportedClientId`) =>
         (request.body \ "informationType").asOpt[String] match {
