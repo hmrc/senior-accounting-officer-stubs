@@ -22,6 +22,9 @@ request:
       value: "2233445567"
     - name: crn
       value: "0123456789"
+  scripts:
+    - type: before-request
+      code: bru.cookies.jar().clear();
 bundled: false
 extensions:
   bruno:
