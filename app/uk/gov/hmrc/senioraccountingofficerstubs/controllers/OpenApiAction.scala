@@ -73,7 +73,7 @@ class OpenApiAction @Inject() (controllerComponents: ControllerComponents)(using
     )(using Writes[L]): Action[AnyContentAsEmpty.type] = {
       controllerComponents.actionBuilder(controllerComponents.parsers.ignore(AnyContentAsEmpty)).async {
         implicit request =>
-          logger.info(s"${request.method} ${request.uri}\n${request.headers.toSimpleMap.mkString}")
+          logger.info(s"${request.method} ${request.uri}\n${request.headers.toSimpleMap.mkString("\n")}")
 
           def schemaValidator         = OpenApiValidator.of(openApi, allowList)
           val requestValidationReport = schemaValidator.validateRequest(request)
@@ -88,7 +88,7 @@ class OpenApiAction @Inject() (controllerComponents: ControllerComponents)(using
         block: CorrelatableRequest[R] => Future[Result]
     )(using Writes[L], Reads[R]): Action[String] = {
       controllerComponents.actionBuilder(controllerComponents.parsers.tolerantText).async { implicit request =>
-        logger.info(s"${request.method} ${request.uri}\n${request.headers.toSimpleMap.mkString(",")}\n${request.body}")
+        logger.info(s"${request.method} ${request.uri}\n${request.headers.toSimpleMap.mkString("\n")}\n${request.body}")
 
         val schemaValidator         = OpenApiValidator.of(openApi, allowList)
         val requestValidationReport = schemaValidator.validateRequestAs[R](request)

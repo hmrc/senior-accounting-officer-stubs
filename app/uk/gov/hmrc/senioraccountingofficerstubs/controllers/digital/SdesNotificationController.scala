@@ -35,7 +35,7 @@ class SdesNotificationController @Inject() (
     with Logging {
 
   def fileReady(): Action[JsValue] = Action.async(parse.json) { implicit request =>
-    logger.info(s"${request.method} ${request.uri}\n${request.headers.toSimpleMap.mkString}\n${request.body}")
+    logger.info(s"${request.method} ${request.uri}\n${request.headers.toSimpleMap.mkString("\n")}\n${request.body}")
     request.headers.get("X-Client-ID") match {
       case Some(`supportedClientId`) =>
         (request.body \ "informationType").asOpt[String] match {
