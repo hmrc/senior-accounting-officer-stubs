@@ -31,6 +31,10 @@ import play.api.libs.json.Json
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, *}
+import uk.gov.hmrc.senioraccountingofficerstubs.controllers.dpsread.GetSubscriptionController.{
+  defaultCreated,
+  defaultUpdated
+}
 import uk.gov.hmrc.senioraccountingofficerstubs.models.getsubscription.Contact
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.*
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
@@ -38,12 +42,16 @@ import uk.gov.hmrc.senioraccountingofficerstubs.utils.TestDataGenerator.*
 
 import scala.concurrent.Future
 
+import java.time.{Clock, Instant, ZoneOffset}
+
 class GetSubscriptionControllerSpec
     extends AnyWordSpec
     with Matchers
     with GuiceOneAppPerSuite
     with BeforeAndAfterEach
     with MockitoSugar {
+
+  given Clock = Clock.fixed(Instant.now(), ZoneOffset.UTC)
 
   private val authHeader         = "Basic Q2xpZW50SWQ6Q2xpZW50U2VjcmV0"
   private val testSubscriptionId = "123"
@@ -61,7 +69,10 @@ class GetSubscriptionControllerSpec
   private val mockRepository = mock[PostSignupConfigRepository]
 
   override lazy val app: Application = GuiceApplicationBuilder()
-    .overrides(bind[PostSignupConfigRepository].toInstance(mockRepository))
+    .overrides(
+      bind[PostSignupConfigRepository].toInstance(mockRepository),
+      bind[Clock].to(summon[Clock])
+    )
     .build()
 
   override def beforeEach(): Unit = {
@@ -78,7 +89,8 @@ class GetSubscriptionControllerSpec
         status(result) mustBe Status.OK
         contentAsString(
           result
-        ) must fullyMatch regex """^\{"etmpSafeId":".+","contacts":\[\{"name":".+","email":".+","language":".+","status":".+"\},\{"name":".+","email":".+","language":".+","status":".+"\}\],"nominatedCompany":\{"crn":".+","name":".+","utr":".+"\}\}$"""
+        ) must fullyMatch regex s"""^\\{"etmpSafeId":".+","contacts":\\[\\{"name":".+","email":".+","language":".+","status":".+"\\},\\{"name":".+","email":".+","language":".+","status":".+"\\}\\],"nominatedCompany":\\{"crn":".+","name":".+","utr":".+"\\},"created":"${defaultCreated
+            .replaceAll(".", "\\.")}","updated":"${defaultUpdated.replaceAll(".", "\\.")}"\\}$$"""
       }
     }
 
@@ -125,7 +137,8 @@ class GetSubscriptionControllerSpec
           status(result) mustBe testConfiguredStatus
           contentAsString(
             result
-          ) must fullyMatch regex """^\{"etmpSafeId":".+","contacts":\[\{"name":".+","email":".+","language":".+","status":".+"\},\{"name":".+","email":".+","language":".+","status":".+"\}\],"nominatedCompany":\{"crn":".+","name":".+","utr":".+"\}\}$"""
+          ) must fullyMatch regex s"""^\\{"etmpSafeId":".+","contacts":\\[\\{"name":".+","email":".+","language":".+","status":".+"\\},\\{"name":".+","email":".+","language":".+","status":".+"\\}\\],"nominatedCompany":\\{"crn":".+","name":".+","utr":".+"\\},"created":"${defaultCreated
+              .replaceAll(".", "\\.")}","updated":"${defaultUpdated.replaceAll(".", "\\.")}"\\}$$"""
         }
       }
 
@@ -199,7 +212,9 @@ class GetSubscriptionControllerSpec
              |  "contacts":[
              |    {"name":"Test Contact Name","email":"Some email","language":"Some language","status":"Some status"}
              |  ],
-             |  "nominatedCompany":{"crn":"$testCrn","name":"Tester Name","utr":"$testUtr"}
+             |  "nominatedCompany":{"crn":"$testCrn","name":"Tester Name","utr":"$testUtr"},
+             |  "created":"$defaultCreated",
+             |  "updated":"$defaultUpdated"
              |}""".stripMargin
         )
       }

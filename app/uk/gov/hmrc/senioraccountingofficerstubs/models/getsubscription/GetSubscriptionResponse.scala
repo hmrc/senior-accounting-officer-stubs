@@ -28,7 +28,11 @@ object Contact {
   given OFormat[Contact] = Json.format
 }
 
-final case class NominatedCompany(crn: Option[String] = None, name: Option[String] = None, utr: Option[String] = None)
+final case class NominatedCompany(
+    crn: Option[String] = None,
+    name: Option[String] = None,
+    utr: Option[String] = None
+)
 
 object NominatedCompany {
   given OFormat[NominatedCompany] = Json.format
@@ -37,7 +41,10 @@ object NominatedCompany {
 final case class GetSubscriptionResponse(
     etmpSafeId: Option[String] = None,
     contacts: List[Contact] = List.empty,
-    nominatedCompany: Option[NominatedCompany] = None
+    nominatedCompany: Option[NominatedCompany] = None,
+    // DPS will return the dates in UK local date time format
+    created: Option[String] = None,
+    updated: Option[String] = None
 )
 
 object GetSubscriptionResponse {
