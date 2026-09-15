@@ -22,6 +22,7 @@ import play.api.libs.json.Json
 import play.api.mvc.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.senioraccountingofficerstubs.controllers.OpenApiAction
+import uk.gov.hmrc.senioraccountingofficerstubs.controllers.dpsread.GetSubscriptionController.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.getsubscription.*
 import uk.gov.hmrc.senioraccountingofficerstubs.models.testOnly.*
 import uk.gov.hmrc.senioraccountingofficerstubs.repositories.PostSignupConfigRepository
@@ -31,16 +32,16 @@ import uk.gov.hmrc.senioraccountingofficerstubs.utils.ValidationErrorFormatter.t
 
 import scala.concurrent.ExecutionContext
 
+import java.time.{Clock, LocalDateTime}
 import javax.inject.Inject
-
-import GetSubscriptionController.*
 
 class GetSubscriptionController @Inject() (
     cc: ControllerComponents,
     openApiAction: OpenApiAction,
     repository: PostSignupConfigRepository
 )(using
-    ExecutionContext
+    ExecutionContext,
+    Clock
 ) extends BackendController(cc)
     with Logging {
   def getSubscription(saoSubscriptionId: String): Action[AnyContentAsEmpty.type] =
@@ -56,7 +57,8 @@ class GetSubscriptionController @Inject() (
   private def handleConfig(config: PostSignupStubConfiguration): Result = {
     val configuration: Option[NoneDefaultApiConfiguration] = config.getSubscriptionResponseConfig
     val status: Int                                        = configuration.map(_.status).fold(OK)(identity)
-    val body: String = configuration.flatMap(_.defaultBodyOverride).fold(Json.toJson(default200).toString)(identity)
+    val body: String                                       =
+      configuration.flatMap(_.defaultBodyOverride).fold(Json.toJson(default200).toString)(identity)
 
     status match {
       case NO_CONTENT => NoContent
@@ -68,11 +70,15 @@ class GetSubscriptionController @Inject() (
 
 object GetSubscriptionController {
   extension (config: PostSignupStubConfiguration) {
-    def getSubscriptionResponseConfig: Option[NoneDefaultApiConfiguration] =
+    def getSubscriptionResponseConfig(using clock: Clock): Option[NoneDefaultApiConfiguration] =
       config.getSubscriptionAndPostRetrieveCustomerId.map {
         case GetSubscriptionOnlyConfig(status, defaultBodyOverride) =>
           NoneDefaultApiConfiguration(status, defaultBodyOverride)
-        case PostRetrieveCustomerIdConfig(GetSubscriptionConfig(utr, crn, name, contacts, etmpSafeId), _, _) =>
+        case PostRetrieveCustomerIdConfig(
+              GetSubscriptionConfig(utr, crn, name, contacts, created, updated, etmpSafeId),
+              _,
+              _
+            ) =>
           NoneDefaultApiConfiguration(
             status = OK,
             defaultBodyOverride = Some(
@@ -81,7 +87,11 @@ object GetSubscriptionController {
                   GetSubscriptionResponse(
                     etmpSafeId = etmpSafeId,
                     contacts = contacts,
-                    nominatedCompany = Some(NominatedCompany(utr = Some(utr), crn = crn, name = name))
+                    nominatedCompany = Some(
+                      NominatedCompany(utr = Some(utr), crn = crn, name = name)
+                    ),
+                    created = created.orElse(Some(defaultCreated)),
+                    updated = updated.orElse(Some(defaultUpdated))
                   )
                 )
                 .toString
@@ -90,7 +100,10 @@ object GetSubscriptionController {
       }
   }
 
-  def default200: GetSubscriptionResponse = GetSubscriptionResponse(
+  def defaultCreated(using clock: Clock): String = LocalDateTime.now(clock).minusDays(5).toString
+  def defaultUpdated(using clock: Clock): String = LocalDateTime.now(clock).minusDays(1).toString
+
+  def default200(using clock: Clock): GetSubscriptionResponse = GetSubscriptionResponse(
     etmpSafeId = Some("1234567890"),
     contacts = List(
       Contact(
@@ -112,7 +125,9 @@ object GetSubscriptionController {
         name = Some("Fake Company Ltd"),
         utr = Some(generateUtr)
       )
-    )
+    ),
+    created = Some(defaultCreated),
+    updated = Some(defaultUpdated)
   )
 
 }
