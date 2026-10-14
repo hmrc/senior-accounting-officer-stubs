@@ -6,13 +6,17 @@ info:
 http:
   method: POST
   url: "{{baseUrl}}/test-only/post-signup/config"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
   body:
     type: json
     data: |-
       {
         "subscriptionId": "{{subscriptionId}}",
         "postNotification": {
-          "status": 500
+          "status": 500,
+          "defaultBodyOverride": "{\"origin\":\"HIP\",\"response\":{\"failures\":[{\"type\":\"INTERNAL_SERVER_ERROR\",\"reason\":\"Internal server error\"}]}}"
         }
       }
   auth: inherit
