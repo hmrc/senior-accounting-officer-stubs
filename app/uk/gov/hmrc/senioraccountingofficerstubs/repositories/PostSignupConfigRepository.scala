@@ -79,10 +79,10 @@ class PostSignupConfigRepository @Inject() (
 
   private def byId(subscriptionId: String): Bson = equal("subscriptionId", subscriptionId)
 
-  private def byCrnAndUtr(crn: Option[String], utr: Option[String]): Bson =
+  private def byCrnAndUtr(crn: Option[String], utr: String): Bson =
     and(
       crn.fold(not(exists(crnPath)))(crn => equal(crnPath, crn)),
-      utr.fold(not(exists(utrPath)))(utr => equal(utrPath, utr))
+      equal(utrPath, utr)
     )
 
   def keepAlive(subscriptionId: String): Future[Boolean] = Mdc.preservingMdc {
@@ -95,7 +95,7 @@ class PostSignupConfigRepository @Inject() (
       .map(_ => true)
   }
 
-  def keepAliveViaCrnAndUtr(crn: Option[String], utr: Option[String]): Future[Boolean] = Mdc.preservingMdc {
+  def keepAliveViaCrnAndUtr(crn: Option[String], utr: String): Future[Boolean] = Mdc.preservingMdc {
     collection
       .updateOne(
         filter = byCrnAndUtr(crn, utr),
@@ -113,7 +113,7 @@ class PostSignupConfigRepository @Inject() (
     }
   }
 
-  def getByCrnAndUtr(crn: Option[String], utr: Option[String]): Future[Option[PostSignupStubConfiguration]] =
+  def getByCrnAndUtr(crn: Option[String], utr: String): Future[Option[PostSignupStubConfiguration]] =
     Mdc.preservingMdc {
       keepAliveViaCrnAndUtr(crn, utr).flatMap { _ =>
         collection

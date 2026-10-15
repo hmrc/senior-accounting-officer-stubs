@@ -78,7 +78,7 @@ class RetrieveCustomerController @Inject() (
       customerId = Some(generateCustomerId),
       errorDescription = None,
       existingCustomer = true,
-      status = "Success"
+      status = Some("Success")
     )
   }
 }
