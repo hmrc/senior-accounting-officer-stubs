@@ -21,7 +21,7 @@ request:
     - name: utr
       value: "2233445567"
     - name: crn
-      value: "0123456789"
+      value: "01234567"
   scripts:
     - type: before-request
       code: bru.cookies.jar().clear();
