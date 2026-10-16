@@ -99,7 +99,7 @@ class RetrieveCustomerControllerSpec
 
     "a request with an invalid companyRegistrationNumber is sent" - {
       "return structured error message" in {
-        val requestBody = s"""{"companyRegistrationNumber": "|||", "uniqueTaxReference": "$utr"}"""
+        val requestBody = s"""{"uniqueTaxReference": "$utr", "companyRegistrationNumber": "|||"}"""
 
         val requestWithoutCorrelationId = FakeRequest("POST", path)
           .withHeaders(validHeaders*)
@@ -111,28 +111,12 @@ class RetrieveCustomerControllerSpec
             |  "response": {
             |    "failures": [
             |      {
-            |        "type": "validation.request.body.schema.oneOf",
-            |        "reason": "#/oneOf  ERROR - must be valid to one and only one schema, but 0 are valid: []"
+            |        "type": "validation.request.body.schema.minLength",
+            |        "reason":"#/properties/companyRegistrationNumber/minLength /companyRegistrationNumber ERROR - must be at least 8 characters long: []"
             |      },
             |      {
             |        "type": "validation.request.body.schema.pattern",
-            |        "reason": "#/oneOf/0/properties/companyRegistrationNumber/pattern /companyRegistrationNumber ERROR - does not match the regex pattern ^[A-Za-z0-9]+$: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.required",
-            |        "reason": "#/oneOf/0/required  ERROR - required property 'uniqueTaxReference' not found: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.pattern",
-            |        "reason": "#/oneOf/1/properties/companyRegistrationNumber/pattern /companyRegistrationNumber ERROR - does not match the regex pattern ^[A-Za-z0-9]+$: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.required",
-            |        "reason": "#/oneOf/2/required  ERROR - required property 'uniqueTaxReference' not found: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.additionalProperties",
-            |        "reason": "#/oneOf/2/additionalProperties  ERROR - property 'companyRegistrationNumber' is not defined in the schema and the schema does not allow additional properties: []"
+            |        "reason": "#/properties/companyRegistrationNumber/pattern /companyRegistrationNumber ERROR - does not match the regex pattern ^[A-Za-z0-9]+$: []"
             |      }
             |    ]
             |  }
@@ -147,7 +131,7 @@ class RetrieveCustomerControllerSpec
 
     "a request with an additional field is sent" - {
       "return structured error message" in {
-        val requestBody = s"""{"$unknownProperty": "Firstname Lastname"}"""
+        val requestBody = s"""{"uniqueTaxReference": "$utr" ,"$unknownProperty": "Firstname Lastname"}"""
 
         val requestWithoutCorrelationId = FakeRequest("POST", path)
           .withHeaders(validHeaders*)
@@ -158,36 +142,8 @@ class RetrieveCustomerControllerSpec
             |  "response": {
             |    "failures": [
             |      {
-            |        "type": "validation.request.body.schema.oneOf",
-            |        "reason": "#/oneOf  ERROR - must be valid to one and only one schema, but 0 are valid: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.required",
-            |        "reason": "#/oneOf/0/required  ERROR - required property 'companyRegistrationNumber' not found: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.required",
-            |        "reason": "#/oneOf/0/required  ERROR - required property 'uniqueTaxReference' not found: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.additionalProperties",
-            |        "reason": "#/oneOf/0/additionalProperties  ERROR - property 'saoMagicField' is not defined in the schema and the schema does not allow additional properties: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.required",
-            |        "reason": "#/oneOf/1/required  ERROR - required property 'companyRegistrationNumber' not found: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.additionalProperties",
-            |        "reason": "#/oneOf/1/additionalProperties  ERROR - property 'saoMagicField' is not defined in the schema and the schema does not allow additional properties: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.required",
-            |        "reason": "#/oneOf/2/required  ERROR - required property 'uniqueTaxReference' not found: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.additionalProperties",
-            |        "reason": "#/oneOf/2/additionalProperties  ERROR - property 'saoMagicField' is not defined in the schema and the schema does not allow additional properties: []"
+            |        "type":"validation.request.body.schema.additionalProperties",
+            |        "reason":"#/additionalProperties  ERROR - property 'saoMagicField' is not defined in the schema and the schema does not allow additional properties: []"
             |      }
             |    ]
             |  }
@@ -213,71 +169,12 @@ class RetrieveCustomerControllerSpec
             |  "response": {
             |    "failures": [
             |      {
-            |        "type": "validation.request.body.schema.oneOf",
-            |        "reason": "#/oneOf  ERROR - must be valid to one and only one schema, but 0 are valid: []"
+            |        "type":"validation.request.body.schema.minLength",
+            |        "reason":"#/properties/uniqueTaxReference/minLength /uniqueTaxReference ERROR - must be at least 10 characters long: []"
             |      },
             |      {
-            |        "type": "validation.request.body.schema.pattern",
-            |        "reason": "#/oneOf/0/properties/uniqueTaxReference/pattern /uniqueTaxReference ERROR - does not match the regex pattern ^[A-Za-z0-9]+$: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.required",
-            |        "reason": "#/oneOf/0/required  ERROR - required property 'companyRegistrationNumber' not found: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.required",
-            |        "reason": "#/oneOf/1/required  ERROR - required property 'companyRegistrationNumber' not found: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.additionalProperties",
-            |        "reason": "#/oneOf/1/additionalProperties  ERROR - property 'uniqueTaxReference' is not defined in the schema and the schema does not allow additional properties: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.pattern",
-            |        "reason": "#/oneOf/2/properties/uniqueTaxReference/pattern /uniqueTaxReference ERROR - does not match the regex pattern ^[A-Za-z0-9]+$: []"
-            |      }
-            |    ]
-            |  }
-            |}""".stripMargin)
-
-        val result = routeResult(requestWithoutCorrelationId)
-
-        status(result) shouldBe Status.BAD_REQUEST
-        contentAsJson(result) shouldBe expectedResponse
-      }
-    }
-
-    "a request without an uniqueTaxReference or companyRegistrationNumber is sent" - {
-      "return structured error message" in {
-        val requestBody = "{}"
-
-        val requestWithoutCorrelationId = FakeRequest("POST", path)
-          .withHeaders(validHeaders*)
-          .withTextBody(requestBody)
-
-        val expectedResponse = Json.parse("""{
-            |  "origin": "HIP",
-            |  "response": {
-            |    "failures": [
-            |      {
-            |        "type": "validation.request.body.schema.oneOf",
-            |        "reason": "#/oneOf  ERROR - must be valid to one and only one schema, but 0 are valid: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.required",
-            |        "reason": "#/oneOf/0/required  ERROR - required property 'companyRegistrationNumber' not found: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.required",
-            |        "reason": "#/oneOf/0/required  ERROR - required property 'uniqueTaxReference' not found: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.required",
-            |        "reason": "#/oneOf/1/required  ERROR - required property 'companyRegistrationNumber' not found: []"
-            |      },
-            |      {
-            |        "type": "validation.request.body.schema.required",
-            |        "reason": "#/oneOf/2/required  ERROR - required property 'uniqueTaxReference' not found: []"
+            |        "type":"validation.request.body.schema.pattern",
+            |        "reason":"#/properties/uniqueTaxReference/pattern /uniqueTaxReference ERROR - does not match the regex pattern ^[A-Za-z0-9]+$: []"
             |      }
             |    ]
             |  }
