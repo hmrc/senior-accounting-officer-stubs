@@ -99,7 +99,7 @@ class RetrieveCustomerControllerSpec
 
     "a request with an invalid companyRegistrationNumber is sent" - {
       "return structured error message" in {
-        val requestBody = """{"companyRegistrationNumber": "|||"}"""
+        val requestBody = s"""{"companyRegistrationNumber": "|||", "uniqueTaxReference": "$utr"}"""
 
         val requestWithoutCorrelationId = FakeRequest("POST", path)
           .withHeaders(validHeaders*)
@@ -316,7 +316,7 @@ class RetrieveCustomerControllerSpec
         "return the configured status code and the default body" in {
           val requestBody = s"""{"uniqueTaxReference": "$utr", "companyRegistrationNumber": "$crn"}"""
 
-          when(mockRepository.getByCrnAndUtr(crn = meq(Some(crn)), utr = meq(Some(utr)))).thenReturn(
+          when(mockRepository.getByCrnAndUtr(crn = meq(Some(crn)), utr = meq(utr))).thenReturn(
             Future.successful(
               Some(
                 PostSignupStubConfiguration(
@@ -352,7 +352,7 @@ class RetrieveCustomerControllerSpec
 
           val requestBody = s"""{"uniqueTaxReference": "$utr", "companyRegistrationNumber": "$crn"}"""
 
-          when(mockRepository.getByCrnAndUtr(crn = meq(Some(crn)), utr = meq(Some(utr)))).thenReturn(
+          when(mockRepository.getByCrnAndUtr(crn = meq(Some(crn)), utr = meq(utr))).thenReturn(
             Future.successful(
               Some(
                 PostSignupStubConfiguration(
