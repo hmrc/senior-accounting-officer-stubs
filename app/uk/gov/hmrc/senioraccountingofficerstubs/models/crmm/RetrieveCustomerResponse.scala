@@ -28,7 +28,7 @@ final case class RetrieveCustomerResponse(
     customerId: Option[String],
     errorDescription: Option[String],
     existingCustomer: Boolean,
-    status: String
+    status: Option[String]
 )
 
 object RetrieveCustomerResponse {

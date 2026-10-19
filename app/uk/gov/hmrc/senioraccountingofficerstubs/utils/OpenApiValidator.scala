@@ -52,7 +52,7 @@ enum OpenApiSchema(val resourcePath: String, val pathPrefix: String) {
       )
   case CrmmApi
       extends OpenApiSchema(
-        resourcePath = "schemas/openapi/CRMM customer details v1.0.0-a.yaml",
+        resourcePath = "schemas/openapi/CRMM customer details v1.0.5.yaml",
         pathPrefix = "/compliance/civil-investigation-and-avoidance"
       )
 }

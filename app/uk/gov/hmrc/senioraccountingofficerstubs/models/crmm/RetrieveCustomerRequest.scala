@@ -21,7 +21,7 @@ import play.api.libs.json.OFormat
 
 final case class RetrieveCustomerRequest(
     companyRegistrationNumber: Option[String],
-    uniqueTaxReference: Option[String]
+    uniqueTaxReference: String
 )
 
 object RetrieveCustomerRequest {
