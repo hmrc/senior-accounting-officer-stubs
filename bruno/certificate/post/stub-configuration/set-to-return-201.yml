@@ -15,7 +15,7 @@ http:
       {
         "subscriptionId": "{{subscriptionId}}",
         "postCertificate": {
-          "status": 200
+          "status": 201
         }
       }
   auth: inherit
