@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{baseUrl}}/dapm/subscriptions/123/notifications"
+  url: "{{baseUrl}}/dapm/subscriptions/{{subscriptionId}}/notifications"
   headers:
     - name: Authorization
       value: Basic {{base64Password}}
@@ -40,3 +40,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

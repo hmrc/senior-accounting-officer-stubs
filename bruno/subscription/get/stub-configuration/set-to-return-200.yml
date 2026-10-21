@@ -26,20 +26,20 @@ runtime:
         const payload = JSON.stringify(`{
           "contacts": [
             {
-              "email": "string",
-              "id": 0,
-              "language": "string",
-              "name": "string",
-              "status": "string"
+              "email": "firstname.lastname@example.com",
+              "id": 1234567890,
+              "language": "en-GB",
+              "name": "Firstname Lastname",
+              "status": "valid"
             }
           ],
           "created": "2021-01-25T12:55:45.123",
           "etmpSafeId": "string",
-          "id": "string",
+          "id": "456785",
           "nominatedCompany": {
-            "crn": "string",
-            "name": "string",
-            "utr": "string"
+            "crn": "01234567",
+            "name": "Test Company LTD PLC",
+            "utr": "2233445567"
           },
           "updated": "2021-01-25T12:55:45.123"
         }`);
@@ -51,3 +51,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true
