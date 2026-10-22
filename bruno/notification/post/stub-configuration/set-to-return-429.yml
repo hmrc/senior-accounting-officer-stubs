@@ -1,7 +1,7 @@
 info:
   name: set-to-return-429
   type: http
-  seq: 6
+  seq: 5
 
 http:
   method: POST
@@ -15,8 +15,7 @@ http:
       {
         "subscriptionId": "{{subscriptionId}}",
         "postNotification": {
-          "status": 429,
-          "defaultBodyOverride": "{\"origin\":\"HIP\",\"response\":{\"failures\":[{\"type\":\"INTERNAL_SERVER_ERROR\",\"reason\":\"Internal server error\"}]}}"
+          "status": 429
         }
       }
   auth: inherit

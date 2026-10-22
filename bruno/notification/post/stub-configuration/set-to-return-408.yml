@@ -15,8 +15,7 @@ http:
       {
         "subscriptionId": "{{subscriptionId}}",
         "postNotification": {
-          "status": 408,
-          "defaultBodyOverride": "{\"origin\":\"HIP\",\"response\":{\"failures\":[{\"type\":\"INTERNAL_SERVER_ERROR\",\"reason\":\"Internal server error\"}]}}"
+          "status": 408
         }
       }
   auth: inherit
