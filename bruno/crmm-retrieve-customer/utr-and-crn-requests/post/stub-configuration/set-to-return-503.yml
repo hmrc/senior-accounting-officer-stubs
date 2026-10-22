@@ -1,7 +1,7 @@
 info:
   name: set-to-return-503
   type: http
-  seq: 9
+  seq: 12
 
 http:
   method: POST
@@ -51,3 +51,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true
