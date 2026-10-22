@@ -1,7 +1,7 @@
 info:
   name: set-to-return-500
   type: http
-  seq: 8
+  seq: 11
 
 http:
   method: POST
@@ -55,3 +55,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true
