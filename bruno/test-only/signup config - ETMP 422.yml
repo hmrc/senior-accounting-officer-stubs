@@ -1,0 +1,28 @@
+info:
+  name: signup config - ETMP 422
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/signup/config"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      {
+        "utr": "{{utr}}",
+        "postEtmpSubscription": {
+          "status": 422,
+          "defaultBodyOverride": "{\"errors\":{\"processingDate\":\"2026-01-31T10:26:17Z\",\"code\":\"003\",\"text\":\"Request could not be processed\"}}"
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
