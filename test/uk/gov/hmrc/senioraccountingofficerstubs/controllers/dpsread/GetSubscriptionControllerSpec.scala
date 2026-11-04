@@ -82,6 +82,27 @@ class GetSubscriptionControllerSpec
   }
 
   "GET /business-tax/corporate-tax/iv_subscriptions/:saoSubscriptionId" when {
+    "configured with an unavailable SAFE ID" must {
+      "return the marker in the subscription response" in {
+        val body =
+          play.api.libs.json.Json.toJson(GetSubscriptionController.default200).as[play.api.libs.json.JsObject] ++
+            play.api.libs.json.Json.obj("etmpSafeId" -> "-")
+        when(mockRepository.get(meq(testSubscriptionId))).thenReturn(
+          Future.successful(
+            Some(
+              PostSignupStubConfiguration(
+                subscriptionId = testSubscriptionId,
+                getSubscriptionAndPostRetrieveCustomerId = Some(GetSubscriptionOnlyConfig(200, Some(body.toString)))
+              )
+            )
+          )
+        )
+        val result = routeResult(fakeGetSubscriptionRequest(testSubscriptionId))
+        status(result) mustBe Status.OK
+        (contentAsJson(result) \ "etmpSafeId").as[String] mustBe "-"
+      }
+    }
+
     "PostSignupConfigRepository does not return a config for this endpoint" must {
       "return 200 with a default response payload" in {
         val result = routeResult(fakeGetSubscriptionRequest(testSubscriptionId))

@@ -87,6 +87,11 @@ class PutSubscriptionsControllerSpec
   }
 
   "PUT /dapm/subscriptions" should {
+    "accept the unavailable SAFE ID marker" in {
+      val payload = validSubscriptionRequest ++ Json.obj("etmpSafeId" -> "-")
+      status(routeResult(fakeSubscriptionsPUTRequest(testSubscriptionId, payload))) shouldBe Status.CREATED
+    }
+
     "return 201 for a valid request payload" in {
       val result = routeResult(fakeSubscriptionsPUTRequest(testSubscriptionId, validSubscriptionRequest))
       status(result) shouldBe Status.CREATED

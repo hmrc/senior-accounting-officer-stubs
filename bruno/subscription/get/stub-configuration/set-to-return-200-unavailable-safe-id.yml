@@ -1,0 +1,54 @@
+info:
+  name: set-to-return-200-unavailable-safe-id
+  type: http
+  seq: 20
+
+http:
+  method: POST
+  url: "{{baseUrl}}/test-only/post-signup/config"
+  body:
+    type: json
+    data: |-
+      {
+        "subscriptionId": "{{subscriptionId}}",
+        "getSubscriptionAndPostRetrieveCustomerId": {
+          "api": "GetSubscription",
+          "status": 200,
+          "defaultBodyOverride" : {{payload}}
+        }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const payload = JSON.stringify(`{
+          "contacts": [
+            {
+              "email": "firstname.lastname@example.com",
+              "id": 1234567890,
+              "language": "en-GB",
+              "name": "Firstname Lastname",
+              "status": "valid"
+            }
+          ],
+          "created": "2021-01-25T12:55:45.123",
+          "etmpSafeId": "-",
+          "id": "456785",
+          "nominatedCompany": {
+            "crn": "01234567",
+            "name": "Test Company LTD PLC",
+            "utr": "2233445567"
+          },
+          "updated": "2021-01-25T12:55:45.123"
+        }`);
+
+        bru.setVar("payload", payload);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
