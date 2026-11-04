@@ -1,0 +1,37 @@
+info:
+  name: (201) unavailable-safe-id
+  type: http
+  seq: 20
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/dapm/subscriptions/{{subscriptionId}}"
+  headers:
+    - name: Authorization
+      value: Basic {{base64Password}}
+  body:
+    type: json
+    data: |-
+      {
+        "etmpSafeId": "-",
+        "nominatedCompany": {
+          "name": "Acme Manufacturing Ltd",
+          "crn": "12345678",
+          "utr": "{{utr}}"
+        },
+        "contacts": [
+          {
+            "name": "ABC Doe",
+            "email": "jane.doe@example.com",
+            "status": "valid",
+            "language": "en-GB"
+          }
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
