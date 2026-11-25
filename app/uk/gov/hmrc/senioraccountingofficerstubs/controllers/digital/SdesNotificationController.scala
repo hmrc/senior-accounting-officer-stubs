@@ -36,37 +36,36 @@ class SdesNotificationController @Inject() (
 
   def fileReady(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     logger.info(s"${request.method} ${request.uri}\n${request.headers.toSimpleMap.mkString("\n")}\n${request.body}")
-    Future.successful(Forbidden)
-    // request.headers.get("X-Client-ID") match {
-    //   case Some(`supportedClientId`) =>
-    //     (request.body \ "informationType").asOpt[String] match {
-    //       case Some(`supportedInformationType`) =>
+    request.headers.get("X-Client-ID") match {
+      case Some(`supportedClientId`) =>
+        (request.body \ "informationType").asOpt[String] match {
+          case Some(`supportedInformationType`) =>
 
-    //         fileUploadSdesStubConnector.notifyFileReady(request.body).map { response =>
-    //           Status(response.status)(response.body)
-    //         }
+            fileUploadSdesStubConnector.notifyFileReady(request.body).map { response =>
+              Status(response.status)(response.body)
+            }
 
-    //       case _ =>
-    //         Future.successful(
-    //           BadRequest(
-    //             Json.obj(
-    //               "code"    -> "INVALID_INFORMATION_TYPE",
-    //               "message" -> "The supplied informationType is not supported"
-    //             )
-    //           )
-    //         )
-    //     }
+          case _ =>
+            Future.successful(
+              BadRequest(
+                Json.obj(
+                  "code"    -> "INVALID_INFORMATION_TYPE",
+                  "message" -> "The supplied informationType is not supported"
+                )
+              )
+            )
+        }
 
-    //   case _ =>
-    //     Future.successful(
-    //       Forbidden(
-    //         Json.obj(
-    //           "code"    -> "INVALID_CLIENT_ID",
-    //           "message" -> "The supplied X-Client-ID is not supported"
-    //         )
-    //       )
-    //     )
-    // }
+      case _ =>
+        Future.successful(
+          Forbidden(
+            Json.obj(
+              "code"    -> "INVALID_CLIENT_ID",
+              "message" -> "The supplied X-Client-ID is not supported"
+            )
+          )
+        )
+    }
   }
 }
 

@@ -74,48 +74,48 @@ class SdesPostNotificationControllerSpec
       .withHeaders(CONTENT_TYPE -> MimeTypes.JSON, "X-Client-ID" -> clientId)
       .withJsonBody(payload)
 
-  // "POST /notification/fileready" should {
-  //   "forward a valid file ready notification to FILE_UPLOAD_SDES_STUB" in {
-  //     when(mockConnector.notifyFileReady(any[JsValue])(using any[HeaderCarrier]))
-  //       .thenReturn(Future.successful(HttpResponse(Status.ACCEPTED, """{"accepted":true}""")))
+  "POST /notification/fileready" should {
+    "forward a valid file ready notification to FILE_UPLOAD_SDES_STUB" in {
+      when(mockConnector.notifyFileReady(any[JsValue])(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(HttpResponse(Status.ACCEPTED, """{"accepted":true}""")))
 
-  //     val result = routeResult(request())
+      val result = routeResult(request())
 
-  //     status(result) shouldBe Status.ACCEPTED
-  //     contentAsJson(result) shouldBe Json.obj("accepted" -> true)
-  //     verify(mockConnector).notifyFileReady(any[JsValue])(using any[HeaderCarrier])
-  //   }
+      status(result) shouldBe Status.ACCEPTED
+      contentAsJson(result) shouldBe Json.obj("accepted" -> true)
+      verify(mockConnector).notifyFileReady(any[JsValue])(using any[HeaderCarrier])
+    }
 
-  //   "reject a notification with an invalid X-Client-ID" in {
-  //     val result = routeResult(request(clientId = "wrong-client"))
+    "reject a notification with an invalid X-Client-ID" in {
+      val result = routeResult(request(clientId = "wrong-client"))
 
-  //     status(result) shouldBe Status.FORBIDDEN
-  //     contentAsJson(result) shouldBe Json.obj(
-  //       "code"    -> "INVALID_CLIENT_ID",
-  //       "message" -> "The supplied X-Client-ID is not supported"
-  //     )
-  //     verifyNoInteractions(mockConnector)
-  //   }
+      status(result) shouldBe Status.FORBIDDEN
+      contentAsJson(result) shouldBe Json.obj(
+        "code"    -> "INVALID_CLIENT_ID",
+        "message" -> "The supplied X-Client-ID is not supported"
+      )
+      verifyNoInteractions(mockConnector)
+    }
 
-  //   "reject a notification with an invalid informationType" in {
-  //     val result = routeResult(request(payload = validPayload ++ Json.obj("informationType" -> "wrong-type")))
+    "reject a notification with an invalid informationType" in {
+      val result = routeResult(request(payload = validPayload ++ Json.obj("informationType" -> "wrong-type")))
 
-  //     status(result) shouldBe Status.BAD_REQUEST
-  //     contentAsJson(result) shouldBe Json.obj(
-  //       "code"    -> "INVALID_INFORMATION_TYPE",
-  //       "message" -> "The supplied informationType is not supported"
-  //     )
-  //     verifyNoInteractions(mockConnector)
-  //   }
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsJson(result) shouldBe Json.obj(
+        "code"    -> "INVALID_INFORMATION_TYPE",
+        "message" -> "The supplied informationType is not supported"
+      )
+      verifyNoInteractions(mockConnector)
+    }
 
-  //   "surface the FILE_UPLOAD_SDES_STUB response status and body" in {
-  //     when(mockConnector.notifyFileReady(any[JsValue])(using any[HeaderCarrier]))
-  //       .thenReturn(Future.successful(HttpResponse(Status.INTERNAL_SERVER_ERROR, """{"failed":true}""")))
+    "surface the FILE_UPLOAD_SDES_STUB response status and body" in {
+      when(mockConnector.notifyFileReady(any[JsValue])(using any[HeaderCarrier]))
+        .thenReturn(Future.successful(HttpResponse(Status.INTERNAL_SERVER_ERROR, """{"failed":true}""")))
 
-  //     val result = routeResult(request())
+      val result = routeResult(request())
 
-  //     status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-  //     contentAsJson(result) shouldBe Json.obj("failed" -> true)
-  //   }
-  // }
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      contentAsJson(result) shouldBe Json.obj("failed" -> true)
+    }
+  }
 }
